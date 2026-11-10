@@ -1,5 +1,13 @@
 # Voice-Bridge
 
+[![CI](https://github.com/stefaneicher/voice-bridge/actions/workflows/ci.yml/badge.svg)](https://github.com/stefaneicher/voice-bridge/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/stefaneicher/voice-bridge/actions/workflows/codeql.yml/badge.svg)](https://github.com/stefaneicher/voice-bridge/actions/workflows/codeql.yml)
+[![Release](https://img.shields.io/github/v/release/stefaneicher/voice-bridge?label=Release&color=2aa5a1)](https://github.com/stefaneicher/voice-bridge/releases/latest)
+[![Windows](https://img.shields.io/badge/Windows-Installer-245e71?logo=windows&logoColor=white)](https://github.com/stefaneicher/voice-bridge/releases/latest)
+[![Android](https://img.shields.io/badge/Android-APK-a3d858?logo=android&logoColor=white)](https://github.com/stefaneicher/voice-bridge/releases/latest)
+[![Webseite](https://img.shields.io/badge/Webseite-stefaneicher.github.io-2aa5a1)](https://stefaneicher.github.io/voice-bridge/)
+[![Conventional Commits](https://img.shields.io/badge/Conventional_Commits-1.0.0-686a7a)](https://www.conventionalcommits.org/)
+
 Systemweite Push-to-Talk-Spracheingabe für Windows. Schweizerdeutsch rein, Hochdeutsch raus.
 
 **Webseite:** https://stefaneicher.github.io/voice-bridge/

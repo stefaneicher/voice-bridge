@@ -171,7 +171,7 @@ jobs:
         run: |
           echo "@stefaneicher:registry=https://npm.pkg.github.com" > .npmrc
           echo "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" >> .npmrc
-          npm publish artifacts/*.tgz --registry https://npm.pkg.github.com
+          npm publish ./artifacts/*.tgz --registry https://npm.pkg.github.com
           rm .npmrc
       - name: Publish to npmjs.com (only if NPM_TOKEN is set)
         env:
@@ -182,5 +182,5 @@ jobs:
             exit 0
           fi
           echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > .npmrc
-          npm publish artifacts/*.tgz --access public --provenance
+          npm publish ./artifacts/*.tgz --access public --provenance
           rm .npmrc
