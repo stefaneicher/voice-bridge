@@ -1,9 +1,9 @@
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import type { TLSSocket } from 'node:tls';
+import type { PeerCertificate } from 'node:tls';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import WebSocket from 'ws';
+import WebSocket, { type ClientOptions } from 'ws';
 import { PairingStore, type PairedDevice } from '../../src/remote/pairing';
 import type { AppMessage, PcMessage } from '../../src/remote/protocol';
 import { RemoteServer, type RemoteClient, type RemoteHost } from '../../src/remote/server';
@@ -47,7 +47,15 @@ async function connect(): Promise<{
   next: () => Promise<PcMessage>;
   closed: Promise<number>;
 }> {
-  const ws = new WebSocket(`wss://127.0.0.1:${server.port}/vb`, { rejectUnauthorized: false });
+  const ws = new WebSocket(`wss://127.0.0.1:${server.port}/vb`, {
+    // Like the app: trust exactly this certificate, checked by its fingerprint.
+    ca: identity.cert,
+    // ws types this callback differently from Node's tls, which is what actually calls it.
+    checkServerIdentity: ((_host: string, cert: PeerCertificate) =>
+      cert.fingerprint256.replace(/:/g, '').toLowerCase() === identity.fingerprint
+        ? undefined
+        : new Error('fingerprint mismatch')) as unknown as ClientOptions['checkServerIdentity'],
+  });
   const queue: PcMessage[] = [];
   const waiters: ((m: PcMessage) => void)[] = [];
   ws.on('message', (d) => {
@@ -58,11 +66,6 @@ async function connect(): Promise<{
   });
   const closed = new Promise<number>((r) => ws.on('close', (code) => r(code)));
   await new Promise<void>((resolve, reject) => {
-    ws.once('upgrade', (res) => {
-      const cert = (res.socket as TLSSocket).getPeerCertificate();
-      const fp = cert.fingerprint256.replace(/:/g, '').toLowerCase();
-      if (fp !== identity.fingerprint) reject(new Error('fingerprint mismatch'));
-    });
     ws.once('open', () => resolve());
     ws.once('error', reject);
   });
@@ -139,6 +142,16 @@ describe('RemoteServer (TLS + WebSocket)', () => {
 
     const d = await connect();
     expect(await d.next()).toMatchObject({ t: 'error', code: 'auth' }); // login timeout
+  });
+
+  it('cannot be reached when the pinned fingerprint does not match', async () => {
+    const ws = new WebSocket(`wss://127.0.0.1:${server.port}/vb`, {
+      ca: identity.cert,
+      checkServerIdentity: (() =>
+        new Error('fingerprint mismatch')) as unknown as ClientOptions['checkServerIdentity'],
+    });
+    const error = await new Promise<Error>((resolve) => ws.once('error', resolve));
+    expect(error.message).toContain('fingerprint mismatch');
   });
 
   it('rejects other protocol versions', async () => {

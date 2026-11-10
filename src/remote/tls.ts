@@ -1,5 +1,5 @@
 import { X509Certificate } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { generate } from 'selfsigned';
 
@@ -21,11 +21,12 @@ export function fingerprintOf(certPem: string): string {
 export async function loadOrCreateIdentity(dir: string, now = new Date()): Promise<TlsIdentity> {
   const certPath = join(dir, 'remote-cert.pem');
   const keyPath = join(dir, 'remote-key.pem');
-  if (existsSync(certPath) && existsSync(keyPath)) {
-    const cert = readFileSync(certPath, 'utf8');
+  const cert = readIfExists(certPath);
+  const key = readIfExists(keyPath);
+  if (cert && key) {
     const validTo = new Date(new X509Certificate(cert).validTo);
     if (validTo.getTime() - now.getTime() > 30 * 24 * 3600_000) {
-      return { cert, key: readFileSync(keyPath, 'utf8'), fingerprint: fingerprintOf(cert) };
+      return { cert, key, fingerprint: fingerprintOf(cert) };
     }
   }
   const notAfter = new Date(now);
@@ -40,4 +41,14 @@ export async function loadOrCreateIdentity(dir: string, now = new Date()): Promi
   writeFileSync(certPath, pems.cert, { mode: 0o600 });
   writeFileSync(keyPath, pems.private, { mode: 0o600 });
   return { cert: pems.cert, key: pems.private, fingerprint: fingerprintOf(pems.cert) };
+}
+
+/** Reads a file in one step (no exists-then-read race). Missing files return null. */
+function readIfExists(path: string): string | null {
+  try {
+    return readFileSync(path, 'utf8');
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code === 'ENOENT') return null;
+    throw err;
+  }
 }
