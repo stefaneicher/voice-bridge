@@ -28,6 +28,14 @@ describe('vb arguments', () => {
     expect(parseCliArgs([], {})).toEqual({ kind: 'help' });
     expect(parseCliArgs(['run', '--'], {})).toMatchObject({ kind: 'error' });
     expect(parseCliArgs(['run', '--name'], {})).toMatchObject({ kind: 'error' });
+    expect(parseCliArgs(['run', '--copilot'], {})).toEqual({
+      kind: 'error',
+      message: 'Unbekannte Option: --copilot. Meintest du: vb run -- copilot',
+    });
+    expect(parseCliArgs(['run', '-x'], {})).toEqual({
+      kind: 'error',
+      message: 'Unbekannte Option: -x.',
+    });
     expect(parseCliArgs(['launch'], {})).toMatchObject({ kind: 'error' });
     expect(parseCliArgs(['--version'], {})).toEqual({ kind: 'version' });
   });

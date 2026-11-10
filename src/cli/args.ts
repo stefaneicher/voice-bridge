@@ -58,6 +58,10 @@ export function parseCliArgs(argv: string[], env: NodeJS.ProcessEnv = process.en
       continue;
     }
     if (a === '-h' || a === '--help') return { kind: 'help' };
+    if (a.startsWith('-')) {
+      const hint = a.startsWith('--') ? ` Meintest du: vb run -- ${a.slice(2)}` : '';
+      return { kind: 'error', message: `Unbekannte Option: ${a}.${hint}` };
+    }
     // First non-option starts the command (the `--` is recommended but optional).
     break;
   }
