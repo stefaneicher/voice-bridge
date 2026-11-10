@@ -2,6 +2,16 @@
 
 Systemweite Push-to-Talk-Spracheingabe für Windows. Schweizerdeutsch rein, Hochdeutsch raus.
 
+**Webseite:** https://stefaneicher.github.io/voice-bridge/
+
+![Ablauf: Mikrofon → Voice-Bridge → Spracherkennung (OpenAI) → Text → Cursor oder Agent-Session](docs/ablauf.png)
+
+Die Spracherkennung läuft über OpenAI. Claude bietet keine Sprach-API an, kann aber Ziel sein (`vb run -- claude`).
+
+![Konzept: das Handy als Mikrofon](docs/handy-mikrofon.png)
+
+*Konzept, noch nicht umgesetzt: das Handy als Mikrofon (siehe Backlog T-030/T-031).*
+
 ## Installation
 
 Voraussetzung: [Node.js 22](https://nodejs.org/) oder neuer.
@@ -47,12 +57,6 @@ vb run -- copilot
 Beide Tasten sind in den Einstellungen frei belegbar (auch Tastaturtasten). Für Citrix ein eigenes Profil nutzen: `voice-bridge --profile citrix` und `vb run --profile citrix -- copilot`.
 
 Geht etwas schief (Session beendet, Transkription fehlgeschlagen), bleibt der Text bzw. die Aufnahme erhalten, bis du entscheidest: erneut versuchen, andere Session wählen, kopieren oder verwerfen.
-
-## Ablauf
-
-![Ablauf: Mikrofon → Voice-Bridge → Spracherkennung (OpenAI) → Text → Cursor oder Agent-Session](docs/ablauf.png)
-
-Die Spracherkennung läuft über OpenAI. Claude bietet keine Sprach-API an, kann aber Ziel sein (`vb run -- claude`).
 
 ## Mockups
 

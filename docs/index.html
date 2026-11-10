@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="de-CH">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Voice-Bridge</title>
+    <meta
+      name="description"
+      content="Push-to-Talk-Spracheingabe für Windows: Schweizerdeutsch rein, Hochdeutsch raus – am Cursor oder direkt in Copilot und Claude Code."
+    />
+    <style>
+      :root {
+        --bg: #0b0d11;
+        --ink: #0e1014;
+        --ink2: #15181e;
+        --line: rgba(255, 255, 255, 0.09);
+        --t1: #f2f4f7;
+        --t2: #c5cbd6;
+        --t3: #9aa3b2;
+        --mint: #5ee6b0;
+        --amber: #ffb547;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--t1);
+        font-family: Inter, 'Segoe UI', system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      a {
+        color: var(--mint);
+      }
+      .wrap {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 0 16px;
+      }
+      header {
+        padding: 56px 0 24px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--t2);
+        font-weight: 600;
+        margin-bottom: 28px;
+      }
+      .brand span {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        background: var(--mint);
+        display: grid;
+        place-items: center;
+        color: var(--ink);
+      }
+      h1 {
+        font-size: clamp(34px, 6vw, 60px);
+        line-height: 1.05;
+        letter-spacing: -0.02em;
+        margin: 0 0 16px;
+      }
+      h1 em {
+        font-style: normal;
+        color: var(--mint);
+      }
+      .lead {
+        font-size: clamp(17px, 2.2vw, 20px);
+        line-height: 1.55;
+        color: var(--t2);
+        max-width: 720px;
+        margin: 0 0 28px;
+      }
+      .cta {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .btn {
+        display: inline-block;
+        padding: 11px 18px;
+        border-radius: 20px;
+        font-weight: 600;
+        text-decoration: none;
+        border: 1px solid var(--line);
+        color: var(--t1);
+      }
+      .btn.primary {
+        background: var(--mint);
+        color: var(--ink);
+        border-color: transparent;
+      }
+      section {
+        padding: 36px 0;
+      }
+      h2 {
+        font-size: 26px;
+        margin: 0 0 8px;
+      }
+      .sub {
+        color: var(--t3);
+        margin: 0 0 18px;
+        line-height: 1.5;
+      }
+      figure {
+        margin: 0;
+      }
+      figure img {
+        display: block;
+        width: 100%;
+        height: auto;
+        border-radius: 14px;
+        border: 1px solid var(--line);
+      }
+      figcaption {
+        color: var(--t3);
+        font-size: 14px;
+        margin-top: 10px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 12px;
+      }
+      .card {
+        display: block;
+        padding: 16px;
+        border-radius: 14px;
+        background: var(--ink);
+        border: 1px solid var(--line);
+        text-decoration: none;
+        color: var(--t1);
+      }
+      .card:hover {
+        border-color: rgba(94, 230, 176, 0.5);
+      }
+      .card b {
+        display: block;
+        margin-bottom: 4px;
+      }
+      .card span {
+        color: var(--t3);
+        font-size: 14px;
+      }
+      ol {
+        line-height: 1.7;
+        color: var(--t2);
+        padding-left: 20px;
+      }
+      pre {
+        background: var(--ink2);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 12px 14px;
+        overflow-x: auto;
+        font: 14px 'JetBrains Mono', Consolas, monospace;
+        color: var(--t1);
+      }
+      code {
+        font-family: 'JetBrains Mono', Consolas, monospace;
+      }
+      footer {
+        padding: 36px 0 48px;
+        color: var(--t3);
+        font-size: 14px;
+        border-top: 1px solid var(--line);
+        margin-top: 24px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div class="brand">
+          <span
+            ><svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              aria-hidden="true"
+            >
+              <rect x="9" y="2" width="6" height="12" rx="3" />
+              <path d="M5 10a7 7 0 0 0 14 0" />
+              <path d="M12 17v4" /></svg></span
+          >Voice-Bridge
+        </div>
+        <h1>Sprechen statt tippen. <em>Überall auf dem PC.</em></h1>
+        <p class="lead">
+          Taste halten, sprechen, loslassen. Schweizerdeutsch rein, Hochdeutsch raus: der Text erscheint
+          am Cursor oder geht als Prompt direkt an deine Copilot- oder Claude-Session, ohne
+          Fensterwechsel.
+        </p>
+        <div class="cta">
+          <a class="btn primary" href="#installation">Installieren</a>
+          <a class="btn" href="https://github.com/stefaneicher/voice-bridge">Code auf GitHub</a>
+          <a class="btn" href="mockups/index.html">Alle Mockups</a>
+        </div>
+      </header>
+
+      <section>
+        <h2>So läuft eine Spracheingabe</h2>
+        <p class="sub">
+          Eine KI (OpenAI) macht aus dem Ton Text, Voice-Bridge bringt den Text ans gewählte Ziel.
+        </p>
+        <figure>
+          <img
+            src="ablauf.png"
+            width="3520"
+            height="1062"
+            alt="Ablauf: Mikrofon, Voice-Bridge, Spracherkennung mit OpenAI, Text, dann Cursor oder Agent-Session"
+          />
+          <figcaption>
+            Claude bietet keine Sprach-API an, kann aber Ziel sein: <code>vb run -- claude</code>.
+          </figcaption>
+        </figure>
+      </section>
+
+      <section>
+        <h2>Bald: das Handy als Mikrofon</h2>
+        <p class="sub">Konzept, noch nicht umgesetzt.</p>
+        <figure>
+          <img
+            src="handy-mikrofon.png"
+            width="3200"
+            height="1800"
+            alt="Konzept: Handy mit Sprechknopf schickt Text an eine Copilot-Session auf dem PC"
+          />
+        </figure>
+      </section>
+
+      <section>
+        <h2>Mockups</h2>
+        <p class="sub">Klickbare Entwürfe aller Abläufe.</p>
+        <div class="grid">
+          <a class="card" href="mockups/1a-diktat-aufnahme.html"
+            ><b>1a · Diktat</b><span>Aufnahme läuft</span></a
+          >
+          <a class="card" href="mockups/1b-diktat-eingefuegt.html"
+            ><b>1b · Diktat</b><span>Text eingefügt</span></a
+          >
+          <a class="card" href="mockups/2a-agent-session-popup.html"
+            ><b>2a · Agent</b><span>Session wählen</span></a
+          >
+          <a class="card" href="mockups/2b-agent-gesendet.html"
+            ><b>2b · Agent</b><span>Prompt gesendet</span></a
+          >
+          <a class="card" href="mockups/3a-fehlerfaelle.html"
+            ><b>3a · Fehlerfälle</b><span>Text bleibt erhalten</span></a
+          >
+          <a class="card" href="mockups/3b-tray-menue.html"
+            ><b>3b · Tray-Menü</b><span>Profil, Verlauf</span></a
+          >
+          <a class="card" href="mockups/3c-einstellungen.html"
+            ><b>3c · Einstellungen</b><span>Spracherkennung</span></a
+          >
+          <a class="card" href="mockups/4-ablauf.html"
+            ><b>4 · Ablauf</b><span>Mikrofon → KI → Ziel</span></a
+          >
+          <a class="card" href="mockups/5-handy-mikrofon.html"
+            ><b>5 · Handy als Mikrofon</b><span>Konzept</span></a
+          >
+        </div>
+      </section>
+
+      <section id="installation">
+        <h2>Installation</h2>
+        <p class="sub">Voraussetzung: Node.js 22 oder neuer.</p>
+        <ol>
+          <li>
+            Auf der
+            <a href="https://github.com/stefaneicher/voice-bridge/releases/latest">Release-Seite</a> die
+            Datei <code>stefaneicher-voice-bridge-&lt;version&gt;.tgz</code> herunterladen.
+          </li>
+          <li>Installieren und starten:</li>
+        </ol>
+        <pre>npm install -g ./stefaneicher-voice-bridge-&lt;version&gt;.tgz
+voice-bridge</pre>
+        <ol start="3">
+          <li>Im Tray-Menü unter <b>Einstellungen → Spracherkennung</b> den OpenAI-API-Key eintragen.</li>
+          <li>Agents über Voice-Bridge starten:</li>
+        </ol>
+        <pre>vb run -- copilot
+vb run -- claude</pre>
+        <p class="sub">
+          Maus 4 halten = Diktat am Cursor. Maus 5 halten = Prompt an die gewählte Session. Beide Tasten
+          sind frei belegbar.
+        </p>
+      </section>
+
+      <footer>
+        Voice-Bridge · Audio nur im Arbeitsspeicher, API-Keys in der sicheren Ablage des Systems, kein
+        Tracking.
+      </footer>
+    </div>
+  </body>
+</html>
