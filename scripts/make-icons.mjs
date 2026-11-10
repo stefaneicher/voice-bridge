@@ -97,11 +97,11 @@ function render(size, { color, dot, slash, background }) {
 }
 
 const states = {
-  ready: { color: '#9AA3B2' },
-  'recording-dictate': { color: '#5EE6B0', dot: true },
-  'recording-agent': { color: '#FFB547', dot: true },
-  working: { color: '#C5CBD6' },
-  paused: { color: '#9AA3B2', slash: true },
+  ready: { color: '#9A9CAB' },
+  'recording-dictate': { color: '#2AA5A1', dot: true },
+  'recording-agent': { color: '#A3D858', dot: true },
+  working: { color: '#C6CAD3' },
+  paused: { color: '#9A9CAB', slash: true },
   error: { color: '#FF5A5F' },
 };
 
@@ -110,5 +110,5 @@ for (const [name, style] of Object.entries(states)) {
   writeFileSync(`resources/tray/${name}.png`, render(16, style));
   writeFileSync(`resources/tray/${name}@2x.png`, render(32, style));
 }
-writeFileSync('resources/icon.png', render(512, { color: '#5EE6B0', background: '#0E1014' }));
+writeFileSync('resources/icon.png', render(512, { color: '#2AA5A1', background: '#15151C' }));
 console.log('icons written');

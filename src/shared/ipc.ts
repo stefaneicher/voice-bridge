@@ -85,6 +85,22 @@ export interface VoiceBridgeApi {
   >;
   testConnection(): Promise<{ ok: boolean; message: string }>;
   clearHistory(): Promise<void>;
+
+  // phone (remote microphone)
+  getRemote(): Promise<RemoteData>;
+  newPairingCode(): Promise<RemoteData>;
+  removeDevice(id: string): Promise<RemoteData>;
+}
+
+export interface RemoteData {
+  enabled: boolean;
+  running: boolean;
+  error?: string;
+  port: number;
+  /** QR code content; only while a pairing code is valid. */
+  pairingUri?: string;
+  hosts: string[];
+  devices: { id: string; name: string; pairedAt: string; lastSeen?: string }[];
 }
 
 export const IPC = {
@@ -104,6 +120,9 @@ export const IPC = {
   captureHotkey: 'vb:capture-hotkey',
   testConnection: 'vb:test-connection',
   clearHistory: 'vb:clear-history',
+  getRemote: 'vb:get-remote',
+  newPairingCode: 'vb:new-pairing-code',
+  removeDevice: 'vb:remove-device',
   recorderCommand: 'vb:recorder-command',
   recorderReply: 'vb:recorder-reply',
   recorderLevel: 'vb:recorder-level',

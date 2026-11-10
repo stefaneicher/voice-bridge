@@ -54,3 +54,27 @@ export function level(frame: Float32Array): number {
   const rms = Math.sqrt(sum / frame.length);
   return Math.min(1, rms * 4);
 }
+
+/** Wraps raw 16-bit little-endian mono PCM (as sent by the phone) in a WAV header. */
+export function wrapPcm16(pcm: Uint8Array, sampleRate: number): Uint8Array {
+  const out = new Uint8Array(44 + pcm.length);
+  const view = new DataView(out.buffer);
+  const ascii = (o: number, s: string) => {
+    for (let i = 0; i < s.length; i++) view.setUint8(o + i, s.charCodeAt(i));
+  };
+  ascii(0, 'RIFF');
+  view.setUint32(4, 36 + pcm.length, true);
+  ascii(8, 'WAVE');
+  ascii(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+  ascii(36, 'data');
+  view.setUint32(40, pcm.length, true);
+  out.set(pcm, 44);
+  return out;
+}

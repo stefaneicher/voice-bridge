@@ -124,3 +124,27 @@ describe('AgentRegistry details', () => {
     expect(errorMessage(new Error('boom'))).toBe('boom');
   });
 });
+
+describe('preselected target from a remote press', () => {
+  it('uses the target sent with the down event', async () => {
+    const t = setup();
+    t.input.emit({ type: 'down', action: 'agent', targetId: 's2' });
+    await flush();
+    expect(t.controller.getState().phase).toMatchObject({ selectedId: 's2' });
+  });
+
+  it('never replaces a preselected target that does not exist', async () => {
+    const t = setup();
+    t.input.emit({ type: 'down', action: 'agent', targetId: 'gone' });
+    await flush();
+    expect(t.controller.getState().phase).toMatchObject({ selectedId: null });
+    t.clock.advance(500);
+    t.input.emit({ type: 'up', action: 'agent' });
+    await flush();
+    expect(t.adapter.sent).toEqual([]);
+    expect(t.controller.getState().failures[0]).toMatchObject({
+      kind: 'session-gone',
+      text: 'Hallo Welt',
+    });
+  });
+});

@@ -8,9 +8,9 @@ Systemweite Push-to-Talk-Spracheingabe für Windows. Schweizerdeutsch rein, Hoch
 
 Die Spracherkennung läuft über OpenAI. Claude bietet keine Sprach-API an, kann aber Ziel sein (`vb run -- claude`).
 
-![Konzept: das Handy als Mikrofon](docs/handy-mikrofon.png)
+![Android-App: das Handy als Mikrofon](docs/handy-mikrofon.png)
 
-*Konzept, noch nicht umgesetzt: das Handy als Mikrofon (siehe Backlog T-030/T-031).*
+*Das Handy als Mikrofon: mit der Voice-Bridge-App für Android (siehe [Handy als Mikrofon](#handy-als-mikrofon-android)).*
 
 ## Installation
 
@@ -58,6 +58,15 @@ Beide Tasten sind in den Einstellungen frei belegbar (auch Tastaturtasten). Für
 
 Geht etwas schief (Session beendet, Transkription fehlgeschlagen), bleibt der Text bzw. die Aufnahme erhalten, bis du entscheidest: erneut versuchen, andere Session wählen, kopieren oder verwerfen.
 
+## Handy als Mikrofon (Android)
+
+1. Im Release die Datei `voice-bridge-android-<version>.apk` aufs Handy laden und installieren (Installation aus unbekannten Quellen erlauben).
+2. Auf dem PC in Voice-Bridge unter **Einstellungen → Handy** «Verbindungen vom Handy erlauben» einschalten, speichern und «QR-Code anzeigen» wählen. Windows fragt einmal nach der Firewall: «Zulassen».
+3. In der App «QR-Code scannen». Handy und PC müssen im selben WLAN sein.
+4. Ziel wählen («Am Cursor einfügen» oder eine Session), Knopf halten, sprechen, loslassen.
+
+Die Verbindung ist verschlüsselt: Die App vertraut nur dem Zertifikat des gekoppelten PCs (Fingerabdruck im QR-Code). Im Firmennetz und unter Citrix blockiert die Firewall die Verbindung möglicherweise.
+
 ## Mockups
 
 Alle Mockups im Browser: [Übersicht](https://raw.githack.com/stefaneicher/voice-bridge/main/docs/mockups/index.html)
@@ -72,7 +81,7 @@ Alle Mockups im Browser: [Übersicht](https://raw.githack.com/stefaneicher/voice
 | [3b](https://raw.githack.com/stefaneicher/voice-bridge/main/docs/mockups/3b-tray-menue.html) | Tray-Menü |
 | [3c](https://raw.githack.com/stefaneicher/voice-bridge/main/docs/mockups/3c-einstellungen.html) | Einstellungen |
 | [4](https://raw.githack.com/stefaneicher/voice-bridge/main/docs/mockups/4-ablauf.html) | Ablauf: Mikrofon → KI → Ziel |
-| [5](https://raw.githack.com/stefaneicher/voice-bridge/main/docs/mockups/5-handy-mikrofon.html) | Konzept: Handy als Mikrofon |
+| [5](https://raw.githack.com/stefaneicher/voice-bridge/main/docs/mockups/5-handy-mikrofon.html) | Android-App: Handy als Mikrofon |
 
 ## Lokal testen (ohne Release)
 

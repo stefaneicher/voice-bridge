@@ -25,6 +25,9 @@ const api: VoiceBridgeApi = {
   captureHotkey: () => ipcRenderer.invoke(IPC.captureHotkey),
   testConnection: () => ipcRenderer.invoke(IPC.testConnection),
   clearHistory: () => ipcRenderer.invoke(IPC.clearHistory),
+  getRemote: () => ipcRenderer.invoke(IPC.getRemote),
+  newPairingCode: () => ipcRenderer.invoke(IPC.newPairingCode),
+  removeDevice: (id) => ipcRenderer.invoke(IPC.removeDevice, id),
 };
 
 /** Only for the hidden recorder window. */

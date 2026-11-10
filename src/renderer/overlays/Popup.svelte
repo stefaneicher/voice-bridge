@@ -41,7 +41,7 @@
         <span class="chip" style:background="var(--vb-agent)">{rec.hotkeyLabel}</span>
       </div>
       <div class="meta">
-        <span>Copilot CLI · {live.length} {live.length === 1 ? 'Session' : 'Sessions'}</span>
+        <span>Agents · {live.length} {live.length === 1 ? 'Session' : 'Sessions'}</span>
         <span>Profil {rec.profile}</span>
       </div>
 
@@ -171,8 +171,8 @@
     background: rgba(255, 255, 255, 0.05);
   }
   .row.sel {
-    background: rgba(255, 181, 71, 0.14);
-    box-shadow: inset 0 0 0 1px rgba(255, 181, 71, 0.55);
+    background: rgba(163, 216, 88, 0.12);
+    box-shadow: inset 0 0 0 1px rgba(163, 216, 88, 0.5);
   }
   .row.gone {
     cursor: default;
@@ -213,7 +213,7 @@
   .target {
     font-size: 11px;
     font-weight: 600;
-    color: var(--vb-ink);
+    color: var(--vb-on-accent);
     background: var(--vb-agent);
     padding: 3px 8px;
     border-radius: 10px;
@@ -237,10 +237,10 @@
     background: var(--vb-ink-2);
     border-top: 1px solid rgba(255, 255, 255, 0.07);
     font-size: 12px;
-    color: #aeb5c2;
+    color: var(--vb-text-3);
   }
   .release {
     margin-left: auto;
-    color: #ffcb80;
+    color: var(--vb-agent);
   }
 </style>

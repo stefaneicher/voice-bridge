@@ -1,19 +1,20 @@
 :root {
-  --vb-ink: #0e1014;
-  --vb-ink-2: #15181e;
-  --vb-ink-3: #181b22;
-  --vb-line: rgba(255, 255, 255, 0.09);
-  --vb-text: #f2f4f7;
-  --vb-text-2: #c5cbd6;
-  --vb-text-3: #9aa3b2;
-  --vb-dictate: #5ee6b0;
-  --vb-agent: #ffb547;
+  --vb-ink: #15151c;
+  --vb-ink-2: #1d1d27;
+  --vb-ink-3: #24242f;
+  --vb-line: #2e2e3b;
+  --vb-text: #edf6f3;
+  --vb-text-2: #c6cad3;
+  --vb-text-3: #9a9cab;
+  --vb-dictate: #2aa5a1;
+  --vb-agent: #a3d858;
   --vb-rec: #ff5a5f;
-  --vb-light-bg: #fafaf8;
-  --vb-light-accent: #0f7a57;
+  --vb-blue: #245e71;
+  --vb-on-accent: #0d1716;
+  --vb-dim: #686a7a;
   --vb-shadow: 0 24px 70px rgba(0, 0, 0, 0.6);
   --font-ui: 'Inter', system-ui, sans-serif;
-  --font-title: 'Space Grotesk', 'Inter', sans-serif;
+  --font-title: 'Inter', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 }
 
@@ -59,7 +60,7 @@ html:not([data-view='settings']) body {
 .chip {
   font-size: 12px;
   font-weight: 500;
-  color: var(--vb-ink);
+  color: var(--vb-on-accent);
   padding: 5px 9px;
   border-radius: 14px;
   white-space: nowrap;
@@ -71,7 +72,7 @@ html:not([data-view='settings']) body {
 
 button.vb-btn {
   font: 500 13px var(--font-ui);
-  border-radius: 18px;
+  border-radius: 12px;
   padding: 8px 14px;
   border: 1px solid var(--vb-line);
   background: transparent;
@@ -81,7 +82,7 @@ button.vb-btn {
 
 button.vb-btn.primary {
   border-color: transparent;
-  color: var(--vb-ink);
+  color: var(--vb-on-accent);
 }
 
 button.vb-btn:hover {

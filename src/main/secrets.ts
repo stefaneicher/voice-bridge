@@ -18,11 +18,11 @@ export class SecretStore {
   }
 
   get(): string | null {
-    if (!this.has() || !this.available()) return null;
+    if (!this.available()) return null;
     try {
       return safeStorage.decryptString(readFileSync(this.path));
     } catch {
-      return null;
+      return null; // missing or unreadable
     }
   }
 

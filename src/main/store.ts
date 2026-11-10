@@ -1,9 +1,8 @@
-import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 
 /** Reads JSON, returning `undefined` for a missing or unreadable file (callers normalise). */
 export function readJson(path: string): unknown {
-  if (!existsSync(path)) return undefined;
   try {
     return JSON.parse(readFileSync(path, 'utf8'));
   } catch {

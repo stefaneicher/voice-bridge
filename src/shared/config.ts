@@ -40,6 +40,11 @@ export interface AppConfig {
     cloudAllowed: boolean;
     historyEntries: number;
   };
+  /** Phone as microphone (Android app, ADR-013). Off by default. */
+  remote: {
+    enabled: boolean;
+    port: number;
+  };
 }
 
 export const STT_MODELS = ['gpt-4o-transcribe', 'gpt-4o-mini-transcribe', 'whisper-1'] as const;
@@ -78,6 +83,7 @@ export function defaultConfig(profile: string): AppConfig {
       lastSessionId: null,
     },
     privacy: { cloudAllowed: true, historyEntries: 50 },
+    remote: { enabled: false, port: 47613 },
   };
 }
 
@@ -120,6 +126,7 @@ export function normalizeConfig(input: unknown, profile: string): AppConfig {
   merged.hotkeys.maxRecordingSec = clamp(merged.hotkeys.maxRecordingSec, 5, 600);
   merged.stt.timeoutMs = clamp(merged.stt.timeoutMs, 1000, 120_000);
   merged.privacy.historyEntries = clamp(merged.privacy.historyEntries, 0, 1000);
+  merged.remote.port = clamp(merged.remote.port, 1024, 65535);
   return merged;
 }
 

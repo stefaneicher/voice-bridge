@@ -160,6 +160,36 @@ Kurzform: Kontext → Entscheid → Folgen. Neue Einträge unten anhängen, alte
 
 ---
 
+## ADR-013 · Handy als Mikrofon über eine Android-App
+
+**Status:** angenommen (10.11.2026), ersetzt das Browser-Konzept aus T-031
+
+**Kontext:** Das Handy soll als Mikrofon dienen. Eine Seite im Handy-Browser bräuchte HTTPS, und ein selbst signiertes Zertifikat erzeugt dort eine Warnung, die man jedem Nutzer erklären muss. Eine native App kann das Zertifikat dagegen selbst prüfen.
+
+**Entscheid:**
+- **Android-App** in Kotlin mit Jetpack Compose (`android/`), gebaut mit Gradle, in CI getestet und im Release als APK angehängt. Keine iOS-App vorerst.
+- **Verbindung:** WebSocket über TLS im lokalen Netz (`wss://<ip>:47613/vb`). Voice-Bridge erzeugt pro Profil ein selbst signiertes Zertifikat (5 Jahre). Der QR-Code enthält Adressen, Port, den SHA-256-Fingerabdruck des Zertifikats und einen Einmal-Code. Die App vertraut nur genau diesem Zertifikat (Pinning), ohne CA und ohne Hostnamen-Prüfung.
+- **Kopplung:** Einmal-Code (10 Minuten, 5 Fehlversuche), danach Geräte-Token. Der PC speichert nur Hashes der Tokens; Geräte lassen sich in den Einstellungen entfernen.
+- **Ablauf:** Ein Druck auf dem Handy wird zu einem Hotkey-Ereignis mit vorgewähltem Ziel; die Audiodaten (16 kHz PCM16) ersetzen für diese Aufnahme das PC-Mikrofon. Der Kern bleibt unverändert, bis auf das vorgewählte Ziel: ein ausdrücklich gewähltes Ziel wird nie durch eine andere Session ersetzt.
+- **Standard: aus.** Der Server läuft nur, wenn «Verbindungen vom Handy erlauben» eingeschaltet ist.
+
+**Folgen:**
+- Windows fragt beim ersten Start nach der Firewall. Im Firmennetz und unter Citrix blockiert die Firewall eingehende Verbindungen wahrscheinlich.
+- Release-APKs brauchen für Updates denselben Schlüssel: Secrets `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`. Ohne sie wird mit einem Debug-Schlüssel signiert.
+- Zum Bauen braucht es das Android-SDK (CI hat es; lokal Android Studio oder die Kommandozeilen-Tools).
+
+---
+
+## ADR-014 · Gestaltung im Stil von stefaneicher.github.io
+
+**Status:** angenommen (10.11.2026), löst die Farben der ursprünglichen Mockups ab
+
+**Entscheid:** Desktop-App, Android-App, Webseite und Grafiken nutzen die Palette der persönlichen Webseite (Disroop): Hintergrund `#15151C`, Teal `#2AA5A1` für Diktat, Lime `#A3D858` für Agent, Blau `#245E71`, Schriften Inter und JetBrains Mono. Das Einstellungsfenster ist jetzt dunkel. Werte in `docs/ui-spec.md`.
+
+**Folgen:** Die Mockups sind umgefärbt; ihre Abläufe gelten unverändert.
+
+---
+
 ## Offen
 
 | # | Frage | Wer/Wann |

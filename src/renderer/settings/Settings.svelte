@@ -2,13 +2,15 @@
   import { bindingLabel } from '../../core/bindings';
   import type { HotkeyAction, HotkeyBinding } from '../../core/types';
   import { STT_MODELS, type AppConfig } from '../../shared/config';
-  import type { SettingsData } from '../../shared/ipc';
+  import QRCode from 'qrcode';
+  import type { RemoteData, SettingsData } from '../../shared/ipc';
 
   const SECTIONS = [
     ['general', 'Allgemein'],
     ['hotkeys', 'Hotkeys'],
     ['stt', 'Spracherkennung'],
     ['agents', 'Agents & Sessions'],
+    ['phone', 'Handy'],
     ['privacy', 'Datenschutz'],
     ['citrix', 'Citrix'],
   ] as const;
@@ -22,6 +24,19 @@
   let capturing = $state<HotkeyAction | null>(null);
   let notice = $state<{ ok: boolean; text: string } | null>(null);
   let saving = $state(false);
+  let remote = $state<RemoteData | null>(null);
+  let qr = $state<string | null>(null);
+
+  async function showRemote(next: RemoteData) {
+    remote = next;
+    qr = next.pairingUri
+      ? await QRCode.toDataURL(next.pairingUri, { margin: 1, width: 240 })
+      : null;
+  }
+
+  $effect(() => {
+    if (section === 'phone') void window.vb.getRemote().then(showRemote);
+  });
 
   async function load() {
     data = await window.vb.getSettings();
@@ -44,6 +59,7 @@
         .map((t) => t.trim())
         .filter(Boolean);
       data = await window.vb.saveSettings($state.snapshot(config));
+      if (section === 'phone') await showRemote(await window.vb.getRemote());
       config = $state.snapshot(data.config);
       flash(true, 'Gespeichert');
     } catch (err) {
@@ -228,6 +244,73 @@
           <input id="bp" type="checkbox" bind:checked={config.agents.bracketedPaste} />
         </div>
         <p class="hint">Diese beiden Einstellungen gelten nach einem Neustart von Voice-Bridge.</p>
+      {:else if section === 'phone'}
+        <h1>Handy als Mikrofon</h1>
+        <p class="lead">
+          Mit der Voice-Bridge-App für Android sprichst du ins Handy, der Text erscheint auf diesem
+          PC: am Cursor oder in der gewählten Session. Handy und PC müssen im selben WLAN sein.
+        </p>
+        <div class="field">
+          <label class="label" for="remote">Verbindungen vom Handy erlauben</label>
+          <input id="remote" type="checkbox" bind:checked={config.remote.enabled} />
+        </div>
+        <div class="field">
+          <label class="label" for="rport">Port</label>
+          <input id="rport" type="number" min="1024" max="65535" bind:value={config.remote.port} />
+        </div>
+        {#if remote}
+          {#if remote.error}
+            <p class="hint bad">{remote.error}</p>
+          {:else if remote.running}
+            <div class="field column">
+              <div class="label">Handy koppeln</div>
+              <div class="hint">
+                In der App «QR-Code scannen» wählen. Der Code gilt 10 Minuten und nur für ein Gerät.
+              </div>
+              {#if qr}
+                <img class="qr" src={qr} alt="QR-Code zum Koppeln" width="240" height="240" />
+                <div class="hint">
+                  Erreichbar unter {remote.hosts.join(', ')} · Port {remote.port}
+                </div>
+              {:else if !remote.hosts.length}
+                <p class="hint bad">Kein Netzwerk gefunden. Ist der PC mit dem WLAN verbunden?</p>
+              {/if}
+              <div class="row">
+                <button class="btn" onclick={() => window.vb.newPairingCode().then(showRemote)}>
+                  {qr ? 'Neuen Code erzeugen' : 'QR-Code anzeigen'}
+                </button>
+              </div>
+            </div>
+            <div class="field column">
+              <div class="label">Gekoppelte Geräte</div>
+              {#each remote.devices as d (d.id)}
+                <div class="row">
+                  <span>{d.name}</span>
+                  <span class="hint">
+                    {d.lastSeen
+                      ? `zuletzt ${new Date(d.lastSeen).toLocaleString('de-CH')}`
+                      : 'noch nie verbunden'}
+                  </span>
+                  <button
+                    class="btn ghost"
+                    onclick={() => window.vb.removeDevice(d.id).then(showRemote)}
+                  >
+                    Entfernen
+                  </button>
+                </div>
+              {:else}
+                <div class="hint">Noch kein Handy gekoppelt.</div>
+              {/each}
+            </div>
+          {:else}
+            <p class="hint">Einschalten und speichern, dann erscheint hier der QR-Code.</p>
+          {/if}
+        {/if}
+        <p class="hint">
+          Windows fragt beim ersten Start, ob Voice-Bridge Verbindungen im privaten Netzwerk
+          annehmen darf: mit «Zulassen» bestätigen. Die Verbindung ist verschlüsselt; die App
+          vertraut nur diesem PC.
+        </p>
       {:else if section === 'privacy'}
         <h1>Datenschutz</h1>
         <div class="field">
@@ -282,8 +365,11 @@
 <style>
   :global(html[data-view='settings']),
   :global(html[data-view='settings'] body) {
-    background: var(--vb-light-bg);
-    color: #1d2128;
+    background:
+      radial-gradient(900px 600px at 85% 5%, rgba(42, 165, 161, 0.14), transparent 60%),
+      radial-gradient(700px 500px at 0% 60%, rgba(36, 94, 113, 0.18), transparent 60%),
+      var(--vb-ink);
+    color: var(--vb-text);
     height: 100%;
   }
   .settings {
@@ -296,11 +382,12 @@
     flex-direction: column;
     gap: 2px;
     padding: 20px 12px;
-    border-right: 1px solid #e6e6e1;
-    background: #f3f3ef;
+    border-right: 1px solid var(--vb-line);
+    background: rgba(29, 29, 39, 0.7);
   }
   .brand {
-    font: 600 18px var(--font-title);
+    font: 800 18px var(--font-ui);
+    letter-spacing: -0.02em;
     padding: 0 10px 16px;
   }
   nav button {
@@ -310,30 +397,31 @@
     border-radius: 8px;
     background: transparent;
     font: 500 14px var(--font-ui);
-    color: #3b414c;
+    color: var(--vb-text-2);
     cursor: pointer;
   }
   nav button.active {
-    background: #fff;
-    color: var(--vb-light-accent);
-    box-shadow: 0 0 0 1px #e6e6e1;
+    background: var(--vb-ink-3);
+    color: var(--vb-dictate);
+    box-shadow: 0 0 0 1px var(--vb-line);
   }
   .version {
     margin-top: auto;
     padding: 10px;
     font-size: 12px;
-    color: #6b7280;
+    color: var(--vb-dim);
   }
   main {
     padding: 32px 40px;
     max-width: 760px;
   }
   h1 {
-    font: 600 24px var(--font-title);
+    font: 800 28px var(--font-ui);
+    letter-spacing: -0.03em;
     margin: 0 0 6px;
   }
   .lead {
-    color: #4b5260;
+    color: var(--vb-text-2);
     margin: 0 0 24px;
     line-height: 1.5;
   }
@@ -343,7 +431,7 @@
     justify-content: space-between;
     gap: 16px;
     padding: 14px 0;
-    border-bottom: 1px solid #ecece7;
+    border-bottom: 1px solid var(--vb-line);
   }
   .field.column {
     flex-direction: column;
@@ -355,22 +443,23 @@
   }
   .hint {
     font-size: 13px;
-    color: #6b7280;
+    color: var(--vb-text-3);
   }
   input:not([type='checkbox']),
   select,
   textarea {
     font: 14px var(--font-ui);
     padding: 8px 10px;
-    border: 1px solid #d6d6d0;
-    border-radius: 8px;
-    background: #fff;
+    border: 1px solid var(--vb-line);
+    border-radius: 10px;
+    background: var(--vb-ink-2);
+    color: var(--vb-text);
     min-width: 240px;
   }
   input[type='checkbox'] {
     width: 18px;
     height: 18px;
-    accent-color: var(--vb-light-accent);
+    accent-color: var(--vb-dictate);
   }
   .row {
     display: flex;
@@ -384,23 +473,26 @@
     font: 500 13px var(--font-mono);
     padding: 8px 14px;
     border-radius: 8px;
-    border: 1px solid #d6d6d0;
-    background: #fff;
+    border: 1px solid var(--vb-line);
+    background: var(--vb-ink-2);
+    color: var(--vb-text);
     cursor: pointer;
     min-width: 160px;
   }
   .btn {
     font: 500 14px var(--font-ui);
     padding: 9px 16px;
-    border-radius: 18px;
-    border: 1px solid var(--vb-light-accent);
-    background: var(--vb-light-accent);
-    color: #fff;
+    border-radius: 12px;
+    border: 1px solid var(--vb-dictate);
+    background: var(--vb-dictate);
+    color: var(--vb-on-accent);
+    font-weight: 600;
     cursor: pointer;
   }
   .btn.ghost {
-    background: transparent;
-    color: var(--vb-light-accent);
+    background: var(--vb-ink-2);
+    border-color: var(--vb-line);
+    color: var(--vb-text);
   }
   .btn:disabled {
     opacity: 0.5;
@@ -415,15 +507,26 @@
   }
   .notice {
     font-size: 13px;
-    color: var(--vb-light-accent);
+    color: var(--vb-dictate);
+  }
+  .hint.bad {
+    color: #ff8a8e;
+  }
+  .qr {
+    display: block;
+    margin: 12px 0;
+    border-radius: 8px;
+    border: 1px solid var(--vb-line);
+    image-rendering: pixelated;
   }
   .notice.bad {
-    color: #b42318;
+    color: #ff8a8e;
   }
   code {
     font-family: var(--font-mono);
     font-size: 13px;
-    background: #efefea;
+    background: var(--vb-ink-3);
+    color: var(--vb-agent);
     padding: 1px 5px;
     border-radius: 4px;
   }
@@ -433,7 +536,7 @@
     gap: 10px;
   }
   dt {
-    color: #6b7280;
+    color: var(--vb-text-3);
   }
   dd {
     margin: 0;
