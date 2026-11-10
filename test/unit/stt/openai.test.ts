@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { OpenAiTranscriber, buildPrompt, type OpenAiSttConfig } from '../../../src/stt/openai';
+import {
+  OpenAiTranscriber,
+  buildPrompt,
+  isPromptEcho,
+  looksLikeAnswer,
+  type OpenAiSttConfig,
+} from '../../../src/stt/openai';
 import { defaultConfig } from '../../../src/shared/config';
 
 const clip = { data: new Uint8Array([1, 2, 3]), mimeType: 'audio/wav', durationMs: 900 };
@@ -53,7 +59,47 @@ describe('OpenAiTranscriber', () => {
       messages: { content: string }[];
     };
     expect(chat.model).toBe('gpt-4o-mini');
-    expect(chat.messages[1]!.content).toBe('I mäude mi morn.');
+    expect(chat.messages[1]!.content).toBe('<diktat>I mäude mi morn.</diktat>');
+  });
+
+  it('keeps a question a question when the polishing model answers it', async () => {
+    const answer = 'Das Design basiert auf:\n\n1. Klarer Struktur\n2. Farben\n3. Navigation';
+    const f = fakeFetch([
+      json({ text: 'Was ist das Design?' }),
+      json({ choices: [{ message: { content: answer } }] }),
+    ]);
+    const stt = new OpenAiTranscriber({
+      config: () => config(),
+      apiKey: async () => 'k',
+      fetch: f.fn,
+    });
+    expect(await stt.transcribe(clip)).toEqual({ text: 'Was ist das Design?' });
+  });
+
+  it('treats a transcript that only echoes the glossary as silence', async () => {
+    const f = fakeFetch([json({ text: 'Copilot, Citrix, Pull Request, Deployment' })]);
+    const stt = new OpenAiTranscriber({
+      config: () => config(),
+      apiKey: async () => 'k',
+      fetch: f.fn,
+    });
+    expect(await stt.transcribe(clip)).toEqual({ text: '' });
+    expect(f.calls).toHaveLength(1);
+  });
+
+  it('detects answers and prompt echoes', () => {
+    expect(looksLikeAnswer('Ähm, hallo zäme', 'Hallo zusammen')).toBe(false);
+    expect(
+      looksLikeAnswer('Was ist X?', 'X ist ein Werkzeug, das sehr vieles kann und mehr.'),
+    ).toBe(true);
+    expect(looksLikeAnswer('Was ist X?', 'X ist:\nA')).toBe(true);
+    const cfg = { dialectHint: 'Berndeutsch', glossary: ['Copilot', 'Citrix'] };
+    expect(isPromptEcho('Copilot.', cfg)).toBe(true);
+    expect(isPromptEcho('Gesprochen wird Berndeutsch. Fachbegriffe: Copilot, Citrix.', cfg)).toBe(
+      true,
+    );
+    expect(isPromptEcho('Starte Copilot bitte', cfg)).toBe(false);
+    expect(isPromptEcho('', cfg)).toBe(false);
   });
 
   it('skips polishing when disabled', async () => {
