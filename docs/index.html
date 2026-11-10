@@ -3,109 +3,344 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Voice-Bridge</title>
+    <title>Voice-Bridge · Stefan Eicher</title>
     <meta
       name="description"
-      content="Push-to-Talk-Spracheingabe für Windows: Schweizerdeutsch rein, Hochdeutsch raus – am Cursor oder direkt in Copilot und Claude Code."
+      content="Voice-Bridge: Push-to-Talk-Spracheingabe für Windows. Schweizerdeutsch rein, Hochdeutsch raus – am Cursor oder direkt in Copilot und Claude Code."
+    />
+    <meta name="theme-color" content="#15151c" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%2315151c'/><rect x='22' y='24' width='16' height='16' fill='%232aa5a1'/><rect x='22' y='44' width='16' height='16' fill='%23245e71'/><rect x='30' y='4' width='16' height='16' fill='%23a3d858' transform='rotate(29 38 12)'/></svg>"
     />
     <style>
       :root {
-        --bg: #0b0d11;
-        --ink: #0e1014;
-        --ink2: #15181e;
-        --line: rgba(255, 255, 255, 0.09);
-        --t1: #f2f4f7;
-        --t2: #c5cbd6;
-        --t3: #9aa3b2;
-        --mint: #5ee6b0;
-        --amber: #ffb547;
+        --bg: #15151c;
+        --panel: #1d1d27;
+        --panel-2: #24242f;
+        --line: #2e2e3b;
+        --text: #edf6f3;
+        --muted: #9a9cab;
+        --dim: #686a7a;
+        --teal: #2aa5a1;
+        --teal-soft: rgba(42, 165, 161, 0.14);
+        --blue: #245e71;
+        --lime: #a3d858;
+        --lime-soft: rgba(163, 216, 88, 0.12);
+        color-scheme: dark;
       }
       * {
         box-sizing: border-box;
       }
-      html,
+      html {
+        scroll-behavior: smooth;
+      }
       body {
         margin: 0;
-        background: var(--bg);
-        color: var(--t1);
-        font-family: Inter, 'Segoe UI', system-ui, sans-serif;
+        background:
+          radial-gradient(900px 600px at 85% 5%, rgba(42, 165, 161, 0.14), transparent 60%),
+          radial-gradient(700px 500px at 0% 60%, rgba(36, 94, 113, 0.18), transparent 60%),
+          var(--bg);
+        color: var(--text);
+        font:
+          16px/1.6 Inter,
+          system-ui,
+          -apple-system,
+          Segoe UI,
+          sans-serif;
         -webkit-font-smoothing: antialiased;
       }
       a {
-        color: var(--mint);
+        color: inherit;
+        text-decoration: none;
       }
       .wrap {
         max-width: 1120px;
         margin: 0 auto;
-        padding: 0 16px;
+        padding: 0 24px;
       }
-      header {
-        padding: 56px 0 24px;
+      .mono,
+      code,
+      pre {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+      }
+
+      /* Top bar */
+      .top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 24px 0;
+        gap: 16px;
       }
       .brand {
         display: flex;
         align-items: center;
-        gap: 10px;
-        color: var(--t2);
-        font-weight: 600;
-        margin-bottom: 28px;
+        gap: 14px;
       }
-      .brand span {
-        width: 28px;
-        height: 28px;
-        border-radius: 8px;
-        background: var(--mint);
+      .brand svg {
+        height: 30px;
+        width: auto;
+        display: block;
+      }
+      .brand .who {
+        padding-left: 14px;
+        border-left: 1px solid var(--line);
+        font-weight: 600;
+        font-size: 15px;
+        white-space: nowrap;
+      }
+      .pill {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--lime);
+        border: 1px solid rgba(163, 216, 88, 0.5);
+        background: var(--lime-soft);
+        padding: 5px 11px;
+        border-radius: 7px;
+        white-space: nowrap;
+      }
+      .pill::before {
+        content: '';
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--lime);
+        margin-right: 8px;
+        vertical-align: 1px;
+        box-shadow: 0 0 8px var(--lime);
+      }
+
+      /* Hero */
+      .hero {
         display: grid;
-        place-items: center;
-        color: var(--ink);
+        grid-template-columns: 1.05fr 1fr;
+        gap: 56px;
+        align-items: center;
+        padding: 72px 0 96px;
       }
       h1 {
-        font-size: clamp(34px, 6vw, 60px);
-        line-height: 1.05;
-        letter-spacing: -0.02em;
-        margin: 0 0 16px;
+        font-size: clamp(40px, 6vw, 64px);
+        line-height: 1.04;
+        letter-spacing: -0.035em;
+        font-weight: 800;
+        margin: 0 0 22px;
       }
-      h1 em {
+      em {
         font-style: normal;
-        color: var(--mint);
+        color: var(--teal);
       }
       .lead {
-        font-size: clamp(17px, 2.2vw, 20px);
-        line-height: 1.55;
-        color: var(--t2);
-        max-width: 720px;
-        margin: 0 0 28px;
+        color: #c6cad3;
+        font-size: 18px;
+        max-width: 520px;
+        margin: 0 0 32px;
       }
-      .cta {
+      .points {
+        list-style: none;
+        margin: 0 0 36px;
+        padding: 0;
+        display: grid;
+        gap: 16px;
+      }
+      .points li {
         display: flex;
-        gap: 12px;
+        gap: 14px;
+        align-items: flex-start;
+      }
+      .ibox {
+        flex: none;
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
+        background: var(--panel-2);
+        border: 1px solid var(--line);
+        display: grid;
+        place-items: center;
+        color: var(--teal);
+      }
+      .ibox svg {
+        width: 17px;
+        height: 17px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .points b {
+        display: block;
+        font-size: 15px;
+        font-weight: 600;
+      }
+      .points span {
+        display: block;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .btns {
+        display: flex;
         flex-wrap: wrap;
+        gap: 12px;
       }
       .btn {
-        display: inline-block;
-        padding: 11px 18px;
-        border-radius: 20px;
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        padding: 12px 20px;
+        border-radius: 12px;
         font-weight: 600;
-        text-decoration: none;
+        font-size: 15px;
         border: 1px solid var(--line);
-        color: var(--t1);
+        background: var(--panel);
+        transition:
+          transform 0.15s ease,
+          border-color 0.15s ease,
+          box-shadow 0.15s ease;
+      }
+      .btn:hover {
+        transform: translateY(-2px);
+        border-color: var(--dim);
       }
       .btn.primary {
-        background: var(--mint);
-        color: var(--ink);
-        border-color: transparent;
+        background: var(--teal);
+        border-color: var(--teal);
+        color: #0d1716;
+        box-shadow: 0 8px 30px rgba(42, 165, 161, 0.28);
       }
+      .btn.primary:hover {
+        box-shadow: 0 10px 40px rgba(42, 165, 161, 0.45);
+      }
+      .btn svg {
+        width: 18px;
+        height: 18px;
+        fill: currentColor;
+      }
+
+      /* Terminal */
+      .term {
+        background: linear-gradient(180deg, #1b1b24, #16161e);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+        overflow: hidden;
+      }
+      .term-bar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--line);
+        font-size: 12px;
+      }
+      .dots {
+        display: flex;
+        gap: 6px;
+      }
+      .dots i {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #34343f;
+      }
+      .tab {
+        background: var(--panel-2);
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 3px 9px;
+      }
+      .tab::before {
+        content: '●';
+        color: var(--teal);
+        margin-right: 6px;
+        font-size: 9px;
+      }
+      .path {
+        color: var(--dim);
+      }
+      .term-body {
+        padding: 20px 20px 24px;
+        font-size: 13.5px;
+        line-height: 1.75;
+      }
+      .term-body p {
+        margin: 0;
+      }
+      .p {
+        color: var(--teal);
+      }
+      .c {
+        color: var(--muted);
+      }
+      .hl {
+        margin: 12px 0;
+        padding: 12px 14px;
+        border-left: 2px solid var(--lime);
+        background: var(--lime-soft);
+        border-radius: 0 8px 8px 0;
+        color: #e3ead8;
+      }
+      .hl small {
+        display: block;
+        margin-top: 6px;
+        color: var(--lime);
+        font-size: 11px;
+      }
+      .cursor {
+        display: inline-block;
+        width: 8px;
+        height: 15px;
+        background: var(--teal);
+        vertical-align: -2px;
+        animation: blink 1.1s steps(1) infinite;
+      }
+      @keyframes blink {
+        50% {
+          opacity: 0;
+        }
+      }
+      .caption {
+        margin-top: 18px;
+        font-size: 14px;
+        color: var(--muted);
+      }
+      .caption b {
+        color: var(--text);
+      }
+
+      /* Sections */
       section {
-        padding: 36px 0;
+        padding: 80px 0;
+        border-top: 1px solid var(--line);
+      }
+      .eyebrow {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 12px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--lime);
+        margin: 0 0 12px;
       }
       h2 {
-        font-size: 26px;
-        margin: 0 0 8px;
+        font-size: clamp(28px, 4vw, 38px);
+        letter-spacing: -0.03em;
+        line-height: 1.15;
+        margin: 0 0 16px;
+        font-weight: 800;
       }
-      .sub {
-        color: var(--t3);
-        margin: 0 0 18px;
-        line-height: 1.5;
+      .intro {
+        color: var(--muted);
+        max-width: 680px;
+        margin: 0 0 32px;
       }
       figure {
         margin: 0;
@@ -114,111 +349,353 @@
         display: block;
         width: 100%;
         height: auto;
-        border-radius: 14px;
+        border-radius: 16px;
         border: 1px solid var(--line);
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
       }
       figcaption {
-        color: var(--t3);
+        margin-top: 14px;
         font-size: 14px;
-        margin-top: 10px;
+        color: var(--muted);
       }
-      .grid {
+      figcaption code {
+        color: var(--lime);
+      }
+      .soon {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--lime);
+        background: var(--lime-soft);
+        border-radius: 6px;
+        padding: 2px 8px;
+        vertical-align: 6px;
+        margin-left: 8px;
+      }
+
+      .projects {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        grid-template-columns: repeat(3, 1fr);
         gap: 12px;
       }
-      .card {
-        display: block;
-        padding: 16px;
-        border-radius: 14px;
-        background: var(--ink);
+      .project {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        background: var(--panel);
         border: 1px solid var(--line);
-        text-decoration: none;
-        color: var(--t1);
+        border-radius: 14px;
+        padding: 18px 18px 16px;
+        transition:
+          border-color 0.15s ease,
+          transform 0.15s ease,
+          background 0.15s ease;
       }
-      .card:hover {
-        border-color: rgba(94, 230, 176, 0.5);
+      .project:hover {
+        border-color: rgba(42, 165, 161, 0.6);
+        transform: translateY(-2px);
+        background: var(--panel-2);
       }
-      .card b {
-        display: block;
-        margin-bottom: 4px;
-      }
-      .card span {
-        color: var(--t3);
+      .project .name {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-family: 'JetBrains Mono', monospace;
         font-size: 14px;
+        font-weight: 500;
       }
-      ol {
-        line-height: 1.7;
-        color: var(--t2);
-        padding-left: 20px;
+      .project .name::before {
+        content: '';
+        flex: none;
+        width: 8px;
+        height: 8px;
+        background: var(--teal);
+      }
+      .project.concept .name::before {
+        background: var(--lime);
+        transform: rotate(29deg);
+      }
+      .project .desc {
+        font-size: 13.5px;
+        color: var(--muted);
+      }
+
+      .steps {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 26px;
+      }
+      .card h3 {
+        margin: 0 0 8px;
+        font-size: 18px;
+        letter-spacing: -0.01em;
+      }
+      .card p {
+        margin: 0 0 12px;
+        font-size: 14.5px;
+        color: var(--muted);
+      }
+      .card .num {
+        font-family: 'JetBrains Mono', monospace;
+        color: var(--lime);
+        font-size: 13px;
+        margin-bottom: 10px;
+        display: block;
       }
       pre {
-        background: var(--ink2);
+        margin: 0;
+        padding: 12px 14px;
+        background: #16161e;
         border: 1px solid var(--line);
         border-radius: 10px;
-        padding: 12px 14px;
+        font-size: 13px;
         overflow-x: auto;
-        font:
-          14px 'JetBrains Mono',
-          Consolas,
-          monospace;
-        color: var(--t1);
+        color: #c6cad3;
       }
-      code {
-        font-family: 'JetBrains Mono', Consolas, monospace;
+      pre .p {
+        user-select: none;
       }
+      .card a {
+        color: var(--teal);
+        font-weight: 600;
+      }
+
+      .stack {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .stack span {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 13px;
+        padding: 7px 12px;
+        border-radius: 8px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        color: #c6cad3;
+      }
+
+      .cta {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 32px;
+        align-items: center;
+        background: linear-gradient(135deg, rgba(42, 165, 161, 0.16), rgba(36, 94, 113, 0.12));
+        border: 1px solid rgba(42, 165, 161, 0.3);
+        border-radius: 20px;
+        padding: 40px;
+      }
+      .cta h2 {
+        margin: 0 0 8px;
+      }
+      .cta p {
+        margin: 0;
+        color: var(--muted);
+      }
+
       footer {
-        padding: 36px 0 48px;
-        color: var(--t3);
-        font-size: 14px;
-        border-top: 1px solid var(--line);
-        margin-top: 24px;
+        padding: 28px 0 40px;
+        font-size: 12.5px;
+        color: var(--dim);
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+
+      @media (max-width: 900px) {
+        .hero {
+          grid-template-columns: 1fr;
+          gap: 48px;
+          padding: 40px 0 72px;
+        }
+        .projects {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+      @media (max-width: 600px) {
+        .wrap {
+          padding: 0 16px;
+        }
+        .projects,
+        .steps {
+          grid-template-columns: 1fr;
+        }
+        .cta {
+          grid-template-columns: 1fr;
+          padding: 28px;
+        }
+        section {
+          padding: 60px 0;
+        }
+        .brand svg {
+          height: 24px;
+        }
+        .brand .who {
+          display: none;
+        }
+        .pill {
+          font-size: 10px;
+        }
+        .term-body {
+          font-size: 12.5px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .cursor {
+          animation: none;
+        }
+        .btn,
+        .project {
+          transition: none;
+        }
       }
     </style>
   </head>
   <body>
     <div class="wrap">
-      <header>
-        <div class="brand">
-          <span
-            ><svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.5"
-              stroke-linecap="round"
-              aria-hidden="true"
+      <header class="top">
+        <a
+          class="brand"
+          href="https://stefaneicher.github.io/"
+          aria-label="Stefan Eicher · Disroop AG"
+        >
+          <svg viewBox="10 8 650 180" role="img" aria-hidden="true">
+            <text
+              x="15"
+              y="143.7"
+              font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
+              font-weight="700"
+              font-size="176.4"
+              fill="#edf6f3"
             >
-              <rect x="9" y="2" width="6" height="12" rx="3" />
-              <path d="M5 10a7 7 0 0 0 14 0" />
-              <path d="M12 17v4" /></svg></span
-          >Voice-Bridge
-        </div>
-        <h1>Sprechen statt tippen. <em>Überall auf dem PC.</em></h1>
-        <p class="lead">
-          Taste halten, sprechen, loslassen. Schweizerdeutsch rein, Hochdeutsch raus: der Text
-          erscheint am Cursor oder geht als Prompt direkt an deine Copilot- oder Claude-Session,
-          ohne Fensterwechsel.
-        </p>
-        <div class="cta">
-          <a class="btn primary" href="#installation">Installieren</a>
-          <a class="btn" href="https://github.com/stefaneicher/voice-bridge">Code auf GitHub</a>
-          <a class="btn" href="mockups/index.html">Alle Mockups</a>
-        </div>
+              d
+              <tspan fill-opacity="0">i</tspan>
+              sroop
+            </text>
+            <rect x="123.3" y="64.1" width="34.7" height="34.7" fill="#2aa5a1" />
+            <rect x="123.3" y="108.9" width="34.7" height="34.7" fill="#245e71" />
+            <rect
+              x="136"
+              y="-65.9"
+              width="34.7"
+              height="34.7"
+              fill="#a3d858"
+              transform="rotate(29.3)"
+            />
+          </svg>
+          <span class="who">Voice-Bridge</span>
+        </a>
+        <span class="pill">Projekt · Spracheingabe</span>
       </header>
 
-      <section>
-        <h2>So läuft eine Spracheingabe</h2>
-        <p class="sub">
-          Eine KI (OpenAI) macht aus dem Ton Text, Voice-Bridge bringt den Text ans gewählte Ziel.
+      <div class="hero">
+        <div>
+          <h1>Sprechen statt tippen. <em>Direkt in deine KI-Session.</em></h1>
+          <p class="lead">
+            Taste halten, sprechen, loslassen. Schweizerdeutsch rein, Hochdeutsch raus: Der Text
+            erscheint am Cursor oder geht als Prompt an Copilot oder Claude Code, ohne
+            Fensterwechsel.
+          </p>
+          <ul class="points">
+            <li>
+              <span class="ibox"
+                ><svg viewBox="0 0 24 24">
+                  <rect x="9" y="2" width="6" height="12" rx="3" />
+                  <path d="M5 10a7 7 0 0 0 14 0M12 17v4" /></svg
+              ></span>
+              <div>
+                <b>Push-to-Talk mit der Maus</b
+                ><span>Maus 4 diktiert am Cursor, Maus 5 spricht mit der Agent-Session</span>
+              </div>
+            </li>
+            <li>
+              <span class="ibox"
+                ><svg viewBox="0 0 24 24">
+                  <rect x="3" y="4" width="18" height="16" rx="2" />
+                  <path d="M7 9l3 3-3 3M13 15h4" /></svg
+              ></span>
+              <div>
+                <b>Mehrere Sessions, ein Popup</b
+                ><span>Mausrad wählt das Ziel, die Aufnahme läuft weiter</span>
+              </div>
+            </li>
+            <li>
+              <span class="ibox"
+                ><svg viewBox="0 0 24 24">
+                  <path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6z" />
+                  <path d="M9 12l2 2 4-4" /></svg
+              ></span>
+              <div>
+                <b>Kein Datenverlust</b
+                ><span>Audio nur im Arbeitsspeicher, Text bleibt bei jedem Fehler erhalten</span>
+              </div>
+            </li>
+          </ul>
+          <div class="btns">
+            <a class="btn primary" href="#installation">Installieren</a>
+            <a class="btn" href="https://github.com/stefaneicher/voice-bridge">
+              <svg viewBox="0 0 16 16" aria-hidden="true">
+                <path
+                  d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"
+                />
+              </svg>
+              GitHub
+            </a>
+          </div>
+        </div>
+
+        <div>
+          <div class="term mono" aria-hidden="true">
+            <div class="term-bar">
+              <span class="dots"><i></i><i></i><i></i></span>
+              <span class="tab">billing-service</span>
+              <span class="path">~/dev/billing-service</span>
+            </div>
+            <div class="term-body">
+              <p><span class="p">$</span> vb run -- copilot</p>
+              <p><span class="c">copilot › Rechnungslauf in drei Schritte aufgeteilt.</span></p>
+              <p><span class="c">Warte auf Eingabe.</span></p>
+              <div class="hl">
+                › Bitte zuerst die Rundungsfehler bei Teilzahlungen beheben und einen Test mit drei
+                Raten schreiben.<small>gesprochen · Maus 5 · via Voice-Bridge</small>
+              </div>
+              <p>
+                <span class="c"
+                  >copilot › Verstanden. Ich schaue mir zuerst RateCalculator an …</span
+                >
+              </p>
+              <p><span class="p">$</span> <span class="cursor"></span></p>
+            </div>
+          </div>
+          <p class="caption">
+            <b>Gesprochen, nicht getippt.</b> Das Terminal muss nicht aktiv sein, die Session wird
+            per ID angesprochen.
+          </p>
+        </div>
+      </div>
+
+      <section id="ablauf">
+        <p class="eyebrow">Ablauf</p>
+        <h2>Vom Mikrofon <em>zur Session.</em></h2>
+        <p class="intro">
+          Voice-Bridge nimmt auf, eine KI (OpenAI) macht aus dem Ton Text, der Selektor bringt den
+          Text ans gewählte Ziel.
         </p>
         <figure>
           <img
             src="ablauf.png"
             width="3520"
             height="1062"
+            loading="lazy"
             alt="Ablauf: Mikrofon, Voice-Bridge, Spracherkennung mit OpenAI, Text, dann Cursor oder Agent-Session"
           />
           <figcaption>
@@ -227,86 +704,135 @@
         </figure>
       </section>
 
-      <section>
-        <h2>Bald: das Handy als Mikrofon</h2>
-        <p class="sub">Konzept, noch nicht umgesetzt.</p>
+      <section id="handy">
+        <p class="eyebrow">Ausblick</p>
+        <h2>Das Handy als <em>Mikrofon.</em><span class="soon">Konzept</span></h2>
+        <p class="intro">
+          QR-Code scannen, auf dem Handy sprechen, der Text landet auf dem PC. Noch nicht umgesetzt.
+        </p>
         <figure>
           <img
             src="handy-mikrofon.png"
             width="3200"
             height="1800"
+            loading="lazy"
             alt="Konzept: Handy mit Sprechknopf schickt Text an eine Copilot-Session auf dem PC"
           />
         </figure>
       </section>
 
-      <section>
-        <h2>Mockups</h2>
-        <p class="sub">Klickbare Entwürfe aller Abläufe.</p>
-        <div class="grid">
-          <a class="card" href="mockups/1a-diktat-aufnahme.html"
-            ><b>1a · Diktat</b><span>Aufnahme läuft</span></a
+      <section id="mockups">
+        <p class="eyebrow">Mockups</p>
+        <h2>Alle Abläufe <em>zum Durchklicken.</em></h2>
+        <div class="projects">
+          <a class="project" href="mockups/1a-diktat-aufnahme.html"
+            ><span class="name">1a · Diktat</span><span class="desc">Aufnahme läuft</span></a
           >
-          <a class="card" href="mockups/1b-diktat-eingefuegt.html"
-            ><b>1b · Diktat</b><span>Text eingefügt</span></a
+          <a class="project" href="mockups/1b-diktat-eingefuegt.html"
+            ><span class="name">1b · Diktat</span><span class="desc">Text eingefügt</span></a
           >
-          <a class="card" href="mockups/2a-agent-session-popup.html"
-            ><b>2a · Agent</b><span>Session wählen</span></a
+          <a class="project" href="mockups/2a-agent-session-popup.html"
+            ><span class="name">2a · Agent</span><span class="desc">Session wählen</span></a
           >
-          <a class="card" href="mockups/2b-agent-gesendet.html"
-            ><b>2b · Agent</b><span>Prompt gesendet</span></a
+          <a class="project" href="mockups/2b-agent-gesendet.html"
+            ><span class="name">2b · Agent</span><span class="desc">Prompt gesendet</span></a
           >
-          <a class="card" href="mockups/3a-fehlerfaelle.html"
-            ><b>3a · Fehlerfälle</b><span>Text bleibt erhalten</span></a
+          <a class="project" href="mockups/3a-fehlerfaelle.html"
+            ><span class="name">3a · Fehlerfälle</span
+            ><span class="desc">Text bleibt erhalten</span></a
           >
-          <a class="card" href="mockups/3b-tray-menue.html"
-            ><b>3b · Tray-Menü</b><span>Profil, Verlauf</span></a
+          <a class="project" href="mockups/3b-tray-menue.html"
+            ><span class="name">3b · Tray-Menü</span><span class="desc">Profil, Verlauf</span></a
           >
-          <a class="card" href="mockups/3c-einstellungen.html"
-            ><b>3c · Einstellungen</b><span>Spracherkennung</span></a
+          <a class="project" href="mockups/3c-einstellungen.html"
+            ><span class="name">3c · Einstellungen</span
+            ><span class="desc">Spracherkennung</span></a
           >
-          <a class="card" href="mockups/4-ablauf.html"
-            ><b>4 · Ablauf</b><span>Mikrofon → KI → Ziel</span></a
+          <a class="project" href="mockups/4-ablauf.html"
+            ><span class="name">4 · Ablauf</span><span class="desc">Mikrofon → KI → Ziel</span></a
           >
-          <a class="card" href="mockups/5-handy-mikrofon.html"
-            ><b>5 · Handy als Mikrofon</b><span>Konzept</span></a
+          <a class="project concept" href="mockups/5-handy-mikrofon.html"
+            ><span class="name">5 · Handy</span><span class="desc">Konzept</span></a
           >
         </div>
       </section>
 
       <section id="installation">
-        <h2>Installation</h2>
-        <p class="sub">Voraussetzung: Node.js 22 oder neuer.</p>
-        <ol>
-          <li>
-            Auf der
-            <a href="https://github.com/stefaneicher/voice-bridge/releases/latest">Release-Seite</a>
-            die Datei <code>stefaneicher-voice-bridge-&lt;version&gt;.tgz</code> herunterladen.
-          </li>
-          <li>Installieren und starten:</li>
-        </ol>
-        <pre>
-npm install -g ./stefaneicher-voice-bridge-&lt;version&gt;.tgz
-voice-bridge</pre>
-        <ol start="3">
-          <li>
-            Im Tray-Menü unter <b>Einstellungen → Spracherkennung</b> den OpenAI-API-Key eintragen.
-          </li>
-          <li>Agents über Voice-Bridge starten:</li>
-        </ol>
-        <pre>
-vb run -- copilot
-vb run -- claude</pre>
-        <p class="sub">
-          Maus 4 halten = Diktat am Cursor. Maus 5 halten = Prompt an die gewählte Session. Beide
-          Tasten sind frei belegbar.
-        </p>
+        <p class="eyebrow">Installation</p>
+        <h2>In zwei Minuten <em>startklar.</em></h2>
+        <div class="steps">
+          <div class="card">
+            <span class="num">01</span>
+            <h3>Paket installieren</h3>
+            <p>
+              Node.js 22 oder neuer. Datei
+              <code>stefaneicher-voice-bridge-&lt;version&gt;.tgz</code> von der
+              <a href="https://github.com/stefaneicher/voice-bridge/releases/latest"
+                >Release-Seite</a
+              >
+              laden.
+            </p>
+            <pre><span class="p">$</span> npm install -g ./stefaneicher-voice-bridge-&lt;version&gt;.tgz</pre>
+          </div>
+          <div class="card">
+            <span class="num">02</span>
+            <h3>Starten und Key eintragen</h3>
+            <p>
+              Im Tray-Menü unter Einstellungen → Spracherkennung den OpenAI-API-Key hinterlegen.
+            </p>
+            <pre><span class="p">$</span> voice-bridge</pre>
+          </div>
+          <div class="card">
+            <span class="num">03</span>
+            <h3>Agents verbinden</h3>
+            <p>Copilot oder Claude Code über Voice-Bridge starten, dann erscheinen sie im Popup.</p>
+            <pre><span class="p">$</span> vb run -- copilot
+<span class="p">$</span> vb run -- claude</pre>
+          </div>
+          <div class="card">
+            <span class="num">04</span>
+            <h3>Sprechen</h3>
+            <p>
+              Maus 4 halten = Diktat am Cursor. Maus 5 halten = Prompt an die gewählte Session.
+              Beide Tasten sind frei belegbar.
+            </p>
+            <pre><span class="p">$</span> voice-bridge --profile citrix</pre>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <p class="eyebrow">Technik</p>
+        <h2>Womit es <em>gebaut ist.</em></h2>
+        <div class="stack">
+          <span>Electron</span><span>TypeScript</span><span>Svelte 5</span><span>electron-vite</span
+          ><span>Vitest</span><span>node-pty</span><span>koffi</span><span>OpenAI STT</span
+          ><span>GitHub Actions</span>
+        </div>
+      </section>
+
+      <section id="kontakt">
+        <div class="cta">
+          <div>
+            <h2>Feedback <em>willkommen.</em></h2>
+            <p>Ideen, Fehler oder Wünsche: einfach ein Issue auf GitHub eröffnen.</p>
+          </div>
+          <div class="btns">
+            <a class="btn primary" href="https://github.com/stefaneicher/voice-bridge/issues"
+              >Issue eröffnen</a
+            >
+            <a class="btn" href="https://stefaneicher.github.io/">Stefan Eicher</a>
+          </div>
+        </div>
       </section>
 
       <footer>
-        Voice-Bridge · Audio nur im Arbeitsspeicher, API-Keys in der sicheren Ablage des Systems,
-        kein Tracking.
+        <span>© <span id="y">2026</span> Stefan Eicher · Disroop AG</span>
+        <span class="mono">Audio nur im Arbeitsspeicher · kein Tracking</span>
       </footer>
     </div>
+    <script>
+      document.getElementById('y').textContent = new Date().getFullYear();
+    </script>
   </body>
 </html>
