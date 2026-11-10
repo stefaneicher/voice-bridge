@@ -2,13 +2,15 @@
   import { bindingLabel } from '../../core/bindings';
   import type { HotkeyAction, HotkeyBinding } from '../../core/types';
   import { STT_MODELS, type AppConfig } from '../../shared/config';
-  import type { SettingsData } from '../../shared/ipc';
+  import QRCode from 'qrcode';
+  import type { RemoteData, SettingsData } from '../../shared/ipc';
 
   const SECTIONS = [
     ['general', 'Allgemein'],
     ['hotkeys', 'Hotkeys'],
     ['stt', 'Spracherkennung'],
     ['agents', 'Agents & Sessions'],
+    ['phone', 'Handy'],
     ['privacy', 'Datenschutz'],
     ['citrix', 'Citrix'],
   ] as const;
@@ -22,6 +24,19 @@
   let capturing = $state<HotkeyAction | null>(null);
   let notice = $state<{ ok: boolean; text: string } | null>(null);
   let saving = $state(false);
+  let remote = $state<RemoteData | null>(null);
+  let qr = $state<string | null>(null);
+
+  async function showRemote(next: RemoteData) {
+    remote = next;
+    qr = next.pairingUri
+      ? await QRCode.toDataURL(next.pairingUri, { margin: 1, width: 240 })
+      : null;
+  }
+
+  $effect(() => {
+    if (section === 'phone') void window.vb.getRemote().then(showRemote);
+  });
 
   async function load() {
     data = await window.vb.getSettings();
@@ -44,6 +59,7 @@
         .map((t) => t.trim())
         .filter(Boolean);
       data = await window.vb.saveSettings($state.snapshot(config));
+      if (section === 'phone') await showRemote(await window.vb.getRemote());
       config = $state.snapshot(data.config);
       flash(true, 'Gespeichert');
     } catch (err) {
@@ -228,6 +244,73 @@
           <input id="bp" type="checkbox" bind:checked={config.agents.bracketedPaste} />
         </div>
         <p class="hint">Diese beiden Einstellungen gelten nach einem Neustart von Voice-Bridge.</p>
+      {:else if section === 'phone'}
+        <h1>Handy als Mikrofon</h1>
+        <p class="lead">
+          Mit der Voice-Bridge-App für Android sprichst du ins Handy, der Text erscheint auf diesem
+          PC: am Cursor oder in der gewählten Session. Handy und PC müssen im selben WLAN sein.
+        </p>
+        <div class="field">
+          <label class="label" for="remote">Verbindungen vom Handy erlauben</label>
+          <input id="remote" type="checkbox" bind:checked={config.remote.enabled} />
+        </div>
+        <div class="field">
+          <label class="label" for="rport">Port</label>
+          <input id="rport" type="number" min="1024" max="65535" bind:value={config.remote.port} />
+        </div>
+        {#if remote}
+          {#if remote.error}
+            <p class="hint bad">{remote.error}</p>
+          {:else if remote.running}
+            <div class="field column">
+              <div class="label">Handy koppeln</div>
+              <div class="hint">
+                In der App «QR-Code scannen» wählen. Der Code gilt 10 Minuten und nur für ein Gerät.
+              </div>
+              {#if qr}
+                <img class="qr" src={qr} alt="QR-Code zum Koppeln" width="240" height="240" />
+                <div class="hint">
+                  Erreichbar unter {remote.hosts.join(', ')} · Port {remote.port}
+                </div>
+              {:else if !remote.hosts.length}
+                <p class="hint bad">Kein Netzwerk gefunden. Ist der PC mit dem WLAN verbunden?</p>
+              {/if}
+              <div class="row">
+                <button class="btn" onclick={() => window.vb.newPairingCode().then(showRemote)}>
+                  {qr ? 'Neuen Code erzeugen' : 'QR-Code anzeigen'}
+                </button>
+              </div>
+            </div>
+            <div class="field column">
+              <div class="label">Gekoppelte Geräte</div>
+              {#each remote.devices as d (d.id)}
+                <div class="row">
+                  <span>{d.name}</span>
+                  <span class="hint">
+                    {d.lastSeen
+                      ? `zuletzt ${new Date(d.lastSeen).toLocaleString('de-CH')}`
+                      : 'noch nie verbunden'}
+                  </span>
+                  <button
+                    class="btn ghost"
+                    onclick={() => window.vb.removeDevice(d.id).then(showRemote)}
+                  >
+                    Entfernen
+                  </button>
+                </div>
+              {:else}
+                <div class="hint">Noch kein Handy gekoppelt.</div>
+              {/each}
+            </div>
+          {:else}
+            <p class="hint">Einschalten und speichern, dann erscheint hier der QR-Code.</p>
+          {/if}
+        {/if}
+        <p class="hint">
+          Windows fragt beim ersten Start, ob Voice-Bridge Verbindungen im privaten Netzwerk
+          annehmen darf: mit «Zulassen» bestätigen. Die Verbindung ist verschlüsselt; die App
+          vertraut nur diesem PC.
+        </p>
       {:else if section === 'privacy'}
         <h1>Datenschutz</h1>
         <div class="field">
@@ -416,6 +499,16 @@
   .notice {
     font-size: 13px;
     color: var(--vb-light-accent);
+  }
+  .hint.bad {
+    color: #b42318;
+  }
+  .qr {
+    display: block;
+    margin: 12px 0;
+    border-radius: 8px;
+    border: 1px solid #e6e6e1;
+    image-rendering: pixelated;
   }
   .notice.bad {
     color: #b42318;

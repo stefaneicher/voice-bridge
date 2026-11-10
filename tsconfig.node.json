@@ -16,6 +16,7 @@
     "src/output/**/*",
     "src/main/**/*",
     "src/preload/**/*",
+    "src/remote/**/*",
     "src/cli/**/*",
     "src/shared/**/*",
     "test/**/*.ts"

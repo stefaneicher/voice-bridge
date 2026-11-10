@@ -15,6 +15,8 @@ import {
   type SpeechToText,
 } from '../core';
 import { createPlatformInput, type PlatformInput } from '../input';
+import { MergedInput } from '../input/merged';
+import { SwitchingRecorder } from '../remote/remote-recorder';
 import { ClipboardPasteInserter } from '../output/inserter';
 import { ElectronClipboard, clipboardOnlyKeys } from '../output/electron-clipboard';
 import { Win32Keys } from '../output/win32';
@@ -22,6 +24,7 @@ import { OpenAiTranscriber, SttError } from '../stt/openai';
 import { normalizeConfig, type AppConfig } from '../shared/config';
 import { IPC, type OverlayAnchor, type SettingsData } from '../shared/ipc';
 import { History } from './history';
+import { RemoteManager } from './remote';
 import { ElectronRecorder } from './recorder';
 import { SecretStore } from './secrets';
 import { readJson, writeJson } from './store';
@@ -55,6 +58,7 @@ export class VoiceBridgeApp {
   private controller!: SessionController;
   private tray!: AppTray;
   private settingsWindow: BrowserWindow | null = null;
+  private remote!: RemoteManager;
   private lastPhase: ControllerState['phase']['name'] = 'idle';
   private knownFailures = new Set<string>();
 
@@ -113,9 +117,12 @@ export class VoiceBridgeApp {
       this.notify('Globale Tasten nicht verfügbar', String(err));
     }
 
+    // The phone feeds the same controller: merged input events and a switchable audio source.
+    const mergedInput = new MergedInput(input);
+    const switchingRecorder = new SwitchingRecorder(this.recorder);
     this.controller = new SessionController({
-      input,
-      recorder: this.recorder,
+      input: mergedInput,
+      recorder: switchingRecorder,
       stt: this.createStt(),
       inserter: this.createInserter(),
       agents: this.agents,
@@ -133,6 +140,17 @@ export class VoiceBridgeApp {
       quit: () => app.quit(),
     });
 
+    this.remote = new RemoteManager({
+      dataDir: this.dataDir,
+      profile: this.profile,
+      controller: this.controller,
+      agents: this.agents,
+      recorder: switchingRecorder,
+      emit: (e) => mergedInput.emit(e),
+      log,
+    });
+    await this.remote.apply(this.config.remote);
+
     this.registerIpc();
     this.controller.subscribe((s) => this.onState(s));
     this.onState(this.controller.getState());
@@ -141,6 +159,7 @@ export class VoiceBridgeApp {
   }
 
   async stop(): Promise<void> {
+    await this.remote?.stop();
     this.input?.stop();
     this.controller?.dispose();
     await this.bridge?.stop();
@@ -319,6 +338,17 @@ export class VoiceBridgeApp {
       if (!fromSettings(e)) return null;
       return this.testConnection();
     });
+    ipcMain.handle(IPC.getRemote, (e) => (fromSettings(e) ? this.remote.data() : null));
+    ipcMain.handle(IPC.newPairingCode, (e) => {
+      if (!fromSettings(e)) return null;
+      this.remote.newCode();
+      return this.remote.data();
+    });
+    ipcMain.handle(IPC.removeDevice, (e, id: unknown) => {
+      if (!fromSettings(e) || typeof id !== 'string') return null;
+      this.remote.removeDevice(id);
+      return this.remote.data();
+    });
     ipcMain.handle(IPC.clearHistory, (e) => {
       if (fromSettings(e)) this.history.clear();
     });
@@ -335,6 +365,7 @@ export class VoiceBridgeApp {
       maxRecordingMs: next.hotkeys.maxRecordingSec * 1000,
     });
     this.history.setLimit(next.privacy.historyEntries);
+    void this.remote.apply(next.remote);
     if (prewarmChanged) void this.recorder.warm(next.audio.prewarm).catch(() => {});
     this.onState(this.controller.getState());
   }
