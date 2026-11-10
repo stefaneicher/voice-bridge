@@ -62,10 +62,23 @@ Alle Mockups im Browser: [Übersicht](https://raw.githack.com/stefaneicher/voice
 | [3b](https://raw.githack.com/stefaneicher/voice-bridge/main/docs/mockups/3b-tray-menue.html) | Tray-Menü |
 | [3c](https://raw.githack.com/stefaneicher/voice-bridge/main/docs/mockups/3c-einstellungen.html) | Einstellungen |
 
+## Lokal testen (ohne Release)
+
+```bash
+git clone https://github.com/stefaneicher/voice-bridge.git
+cd voice-bridge
+git checkout claude/repo-access-61t4xd   # bis der Stand in main ist
+npm install
+npm run build
+npm link        # stellt die Befehle voice-bridge und vb global bereit
+voice-bridge    # App starten (Tray-Icon erscheint)
+```
+
+In einem zweiten Terminal: `vb run -- copilot`. Rückgängig machen mit `npm unlink -g @stefaneicher/voice-bridge`.
+
 ## Entwicklung und Release
 
 ```bash
-npm install
 npm run dev      # App mit Hot Reload
 npm test         # Tests
 npm run lint

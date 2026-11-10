@@ -7,6 +7,7 @@ export interface PlatformInput extends InputPort {
   stop(): void;
   setBindings(bindings: Bindings): void;
   captureNext(): Promise<RawInput>;
+  cancelCapture(): void;
 }
 
 export function createPlatformInput(bindings: Bindings): PlatformInput {

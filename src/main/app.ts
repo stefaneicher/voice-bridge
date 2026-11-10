@@ -8,6 +8,7 @@ import {
   AgentRegistry,
   SessionController,
   bindingLabel,
+  windowsKeyLabel,
   type Clock,
   type ControllerState,
   type FailureAction,
@@ -297,12 +298,22 @@ export class VoiceBridgeApp {
     });
     ipcMain.handle(IPC.captureHotkey, async (e) => {
       if (!fromSettings(e) || !this.input) return null;
-      const timeout = new Promise<null>((r) => setTimeout(() => r(null), 10_000));
-      const raw = await Promise.race([this.input.captureNext(), timeout]);
-      if (!raw) return null;
-      return raw.device === 'mouse'
-        ? { device: 'mouse', button: raw.button }
-        : { device: 'keyboard', keycode: raw.keycode };
+      const input = this.input;
+      let timer: NodeJS.Timeout | undefined;
+      const timeout = new Promise<null>((r) => (timer = setTimeout(() => r(null), 10_000)));
+      const raw = await Promise.race([input.captureNext(), timeout]);
+      clearTimeout(timer);
+      if (!raw) {
+        input.cancelCapture(); // otherwise the next key press would still be swallowed
+        return null;
+      }
+      if (raw.device === 'mouse') return { device: 'mouse', button: raw.button };
+      // Keycodes are Win32 virtual keys on Windows; elsewhere uiohook codes without names.
+      return {
+        device: 'keyboard',
+        keycode: raw.keycode,
+        ...(process.platform === 'win32' ? { label: windowsKeyLabel(raw.keycode) } : {}),
+      };
     });
     ipcMain.handle(IPC.testConnection, async (e) => {
       if (!fromSettings(e)) return null;

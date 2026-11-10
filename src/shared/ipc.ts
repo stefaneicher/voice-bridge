@@ -79,7 +79,9 @@ export interface VoiceBridgeApi {
   setApiKey(key: string | null): Promise<SettingsData>;
   setOpenAtLogin(enabled: boolean): Promise<SettingsData>;
   captureHotkey(): Promise<
-    { device: 'mouse'; button: string } | { device: 'keyboard'; keycode: number }
+    | { device: 'mouse'; button: string }
+    | { device: 'keyboard'; keycode: number; label?: string }
+    | null
   >;
   testConnection(): Promise<{ ok: boolean; message: string }>;
   clearHistory(): Promise<void>;

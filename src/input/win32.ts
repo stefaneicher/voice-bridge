@@ -135,6 +135,10 @@ export class Win32HookInput implements InputPort {
     return new Promise((resolve) => (this.state.captureNext = resolve));
   }
 
+  cancelCapture(): void {
+    this.state.captureNext = null;
+  }
+
   private dispatch(event: InputEvent): void {
     // Leave the hook callback immediately; handle the event on the next tick.
     setImmediate(() => {

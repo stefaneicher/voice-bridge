@@ -82,6 +82,10 @@ export class UiohookInput implements InputPort {
     return new Promise((resolve) => (this.state.captureNext = resolve));
   }
 
+  cancelCapture(): void {
+    this.state.captureNext = null;
+  }
+
   private dispatch(event: InputEvent): void {
     setImmediate(() => {
       for (const l of this.listeners) l(event);
