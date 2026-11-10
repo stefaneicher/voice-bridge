@@ -115,6 +115,19 @@ Legende: ☐ offen · ◐ in Arbeit · ☑ erledigt
 
 ---
 
+## Idee · Handy als Mikrofon
+
+### ☐ T-030 Mikrofon-Auswahl in den Einstellungen
+- Liste der Audio-Eingänge (Recorder-Fenster, `enumerateDevices`), Auswahl pro Profil in `audio.deviceId`.
+- Damit funktionieren Handy-Mikrofon-Apps (z. B. WO Mic), die unter Windows als Mikrofon erscheinen.
+
+### ☐ T-031 Handy als Push-to-Talk-Mikrofon (Konzept, Mockup 5)
+- Voice-Bridge startet pro Profil einen HTTPS-Server im lokalen Netz und zeigt einen QR-Code (URL + Einmal-Token).
+- Handy-Browser: grosser Halten-Knopf, Session-Auswahl, Ziel «Am Cursor». Audio geht per WebSocket an den PC, ab dort gleicher Ablauf wie mit der Maustaste.
+- HTTPS ist Pflicht, weil Handy-Browser das Mikrofon sonst nicht freigeben: eigenes Zertifikat, einmalige Warnung auf dem Handy.
+- Risiken: Firmen-Firewall und Citrix blockieren eingehende Verbindungen wahrscheinlich. Vor dem Bau Spike: privat und im Firmennetz testen.
+- Vor der Umsetzung ADR schreiben (Netzwerk, Pairing, Sicherheit).
+
 ## Phase 4 · M3–M6
 
 - **M3** Einstellungen (Mockup 3c), Profile, safeStorage, Verlauf, Hotkey-Erfassung («Taste drücken …»).

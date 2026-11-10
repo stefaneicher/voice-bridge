@@ -68,6 +68,7 @@ Alle Mockups im Browser: [Übersicht](https://raw.githack.com/stefaneicher/voice
 | [3b](https://raw.githack.com/stefaneicher/voice-bridge/main/docs/mockups/3b-tray-menue.html) | Tray-Menü |
 | [3c](https://raw.githack.com/stefaneicher/voice-bridge/main/docs/mockups/3c-einstellungen.html) | Einstellungen |
 | [4](https://raw.githack.com/stefaneicher/voice-bridge/main/docs/mockups/4-ablauf.html) | Ablauf: Mikrofon → KI → Ziel |
+| [5](https://raw.githack.com/stefaneicher/voice-bridge/main/docs/mockups/5-handy-mikrofon.html) | Konzept: Handy als Mikrofon |
 
 ## Lokal testen (ohne Release)
 
