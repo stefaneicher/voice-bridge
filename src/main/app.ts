@@ -320,18 +320,21 @@ export class VoiceBridgeApp {
       const input = this.input;
       let timer: NodeJS.Timeout | undefined;
       const timeout = new Promise<null>((r) => (timer = setTimeout(() => r(null), 10_000)));
-      const raw = await Promise.race([input.captureNext(), timeout]);
+      const captured = await Promise.race([input.captureNext(), timeout]);
       clearTimeout(timer);
-      if (!raw) {
+      if (!captured) {
         input.cancelCapture(); // otherwise the next key press would still be swallowed
         return null;
       }
-      if (raw.device === 'mouse') return { device: 'mouse', button: raw.button };
+      const { raw, modifiers } = captured;
+      const mods = modifiers.length ? { modifiers } : {};
+      if (raw.device === 'mouse') return { device: 'mouse', button: raw.button, ...mods };
       // Keycodes are Win32 virtual keys on Windows; elsewhere uiohook codes without names.
       return {
         device: 'keyboard',
         keycode: raw.keycode,
         ...(process.platform === 'win32' ? { label: windowsKeyLabel(raw.keycode) } : {}),
+        ...mods,
       };
     });
     ipcMain.handle(IPC.testConnection, async (e) => {

@@ -1,4 +1,4 @@
-import type { HotkeyAction, HotkeyBinding, MouseButton } from './types';
+import type { HotkeyAction, HotkeyBinding, Modifier, MouseButton } from './types';
 
 /** A raw button or key event as seen by an OS hook, before it is mapped to a mode. */
 export type RawInput =
@@ -7,16 +7,51 @@ export type RawInput =
 
 export type Bindings = Record<HotkeyAction, HotkeyBinding>;
 
-/** Returns the mode a raw event belongs to, or null if it is not bound. */
-export function matchBinding(raw: RawInput, bindings: Bindings): HotkeyAction | null {
+/** Canonical modifier order, used for comparison and labels. */
+export const MODIFIERS: readonly Modifier[] = ['ctrl', 'alt', 'shift', 'win'];
+
+export const MODIFIER_LABELS: Record<Modifier, string> = {
+  ctrl: 'Strg',
+  alt: 'Alt',
+  shift: 'Umschalt',
+  win: 'Win',
+};
+
+/** Removes duplicates and unknown values and sorts into canonical order. */
+export function normalizeModifiers(mods: Iterable<unknown>): Modifier[] {
+  const set = new Set(mods);
+  return MODIFIERS.filter((m) => set.has(m));
+}
+
+function sameModifiers(a: readonly Modifier[] | undefined, held: ReadonlySet<Modifier>): boolean {
+  const want = a ?? [];
+  return want.length === held.size && want.every((m) => held.has(m));
+}
+
+/**
+ * Returns the mode a raw event belongs to, or null if it is not bound. `held` are the modifiers
+ * pressed besides the event's own key; they must match the binding exactly.
+ */
+export function matchBinding(
+  raw: RawInput,
+  bindings: Bindings,
+  held: ReadonlySet<Modifier> = new Set(),
+): HotkeyAction | null {
   for (const action of ['dictate', 'agent'] as const) {
     const b = bindings[action];
-    if (raw.device === 'mouse' && b.device === 'mouse' && b.button === raw.button) return action;
-    if (raw.device === 'keyboard' && b.device === 'keyboard' && b.keycode === raw.keycode) {
-      return action;
-    }
+    const sameInput =
+      (raw.device === 'mouse' && b.device === 'mouse' && b.button === raw.button) ||
+      (raw.device === 'keyboard' && b.device === 'keyboard' && b.keycode === raw.keycode);
+    if (sameInput && sameModifiers(b.modifiers, held)) return action;
   }
   return null;
+}
+
+export function sameBinding(a: HotkeyBinding, b: HotkeyBinding): boolean {
+  const input =
+    (a.device === 'mouse' && b.device === 'mouse' && a.button === b.button) ||
+    (a.device === 'keyboard' && b.device === 'keyboard' && a.keycode === b.keycode);
+  return input && sameModifiers(a.modifiers, new Set(b.modifiers ?? []));
 }
 
 const MOUSE_LABELS: Record<MouseButton, string> = {
@@ -26,8 +61,52 @@ const MOUSE_LABELS: Record<MouseButton, string> = {
 };
 
 export function bindingLabel(b: HotkeyBinding): string {
-  if (b.device === 'mouse') return MOUSE_LABELS[b.button];
-  return b.label ?? `Taste ${b.keycode}`;
+  const main = b.device === 'mouse' ? MOUSE_LABELS[b.button] : (b.label ?? `Taste ${b.keycode}`);
+  const mods = normalizeModifiers(b.modifiers ?? []).map((m) => MODIFIER_LABELS[m]);
+  return [...mods, main].join(' + ');
+}
+
+/** Modifier group of a Win32 virtual key, or null. */
+export function windowsModifier(vk: number): Modifier | null {
+  switch (vk) {
+    case 0x10:
+    case 0xa0:
+    case 0xa1:
+      return 'shift';
+    case 0x11:
+    case 0xa2:
+    case 0xa3:
+      return 'ctrl';
+    case 0x12:
+    case 0xa4:
+    case 0xa5:
+      return 'alt';
+    case 0x5b:
+    case 0x5c:
+      return 'win';
+    default:
+      return null;
+  }
+}
+
+/** Modifier group of a uiohook keycode (libuiohook VC_* values), or null. */
+export function uiohookModifier(code: number): Modifier | null {
+  switch (code) {
+    case 0x002a:
+    case 0x0036:
+      return 'shift';
+    case 0x001d:
+    case 0x0e1d:
+      return 'ctrl';
+    case 0x0038:
+    case 0x0e38:
+      return 'alt';
+    case 0x0e5b:
+    case 0x0e5c:
+      return 'win';
+    default:
+      return null;
+  }
 }
 
 const VK_NAMES: Record<number, string> = {

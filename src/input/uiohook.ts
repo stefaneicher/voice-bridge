@@ -1,6 +1,7 @@
 import { createRequire } from 'node:module';
 import type { Bindings, InputEvent, InputPort, MouseButton, RawInput, Unsubscribe } from '../core';
-import { HookState } from './hook-logic';
+import { uiohookModifier } from '../core';
+import { HookState, type CapturedInput } from './hook-logic';
 
 const nodeRequire = createRequire(import.meta.url);
 
@@ -28,7 +29,7 @@ export class UiohookInput implements InputPort {
   private hook: UiohookModule['uIOhook'] | null = null;
 
   constructor(bindings: Bindings) {
-    this.state = new HookState(bindings);
+    this.state = new HookState(bindings, uiohookModifier);
   }
 
   start(): void {
@@ -78,12 +79,12 @@ export class UiohookInput implements InputPort {
     this.state.bindings = bindings;
   }
 
-  captureNext(): Promise<RawInput> {
-    return new Promise((resolve) => (this.state.captureNext = resolve));
+  captureNext(): Promise<CapturedInput> {
+    return new Promise((resolve) => this.state.startCapture(resolve));
   }
 
   cancelCapture(): void {
-    this.state.captureNext = null;
+    this.state.cancelCapture();
   }
 
   private dispatch(event: InputEvent): void {

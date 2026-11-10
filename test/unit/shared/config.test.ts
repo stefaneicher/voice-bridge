@@ -38,6 +38,24 @@ describe('normalizeConfig', () => {
     expect(c.hotkeys.maxRecordingSec).toBe(600);
   });
 
+  it('keeps valid modifiers of a combination and drops invalid ones', () => {
+    const c = normalizeConfig(
+      {
+        hotkeys: {
+          dictate: { device: 'keyboard', keycode: 68, modifiers: ['shift', 'evil', 'ctrl'] },
+          agent: { device: 'mouse', button: 'Middle', modifiers: 'ctrl' },
+        },
+      },
+      'p',
+    );
+    expect(c.hotkeys.dictate).toEqual({
+      device: 'keyboard',
+      keycode: 68,
+      modifiers: ['ctrl', 'shift'],
+    });
+    expect(c.hotkeys.agent).toEqual({ device: 'mouse', button: 'Middle' });
+  });
+
   it('reads the documented example', () => {
     const example = JSON.parse(
       readFileSync(join(__dirname, '../../../examples/config.example.json'), 'utf8'),

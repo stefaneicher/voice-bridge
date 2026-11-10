@@ -1,3 +1,4 @@
+import { normalizeModifiers } from '../core/bindings';
 import type { HotkeyBinding, MouseButton } from '../core/types';
 
 /** Per-profile configuration (see examples/config.example.json). API keys are never stored here. */
@@ -94,14 +95,17 @@ const MOUSE_BUTTONS: readonly MouseButton[] = ['XButton1', 'XButton2', 'Middle']
 
 function binding(v: unknown, fallback: HotkeyBinding): HotkeyBinding {
   if (!isObj(v)) return fallback;
+  const modifiers = Array.isArray(v.modifiers) ? normalizeModifiers(v.modifiers) : [];
+  const mods = modifiers.length ? { modifiers } : {};
   if (v.device === 'mouse' && MOUSE_BUTTONS.includes(v.button as MouseButton)) {
-    return { device: 'mouse', button: v.button as MouseButton };
+    return { device: 'mouse', button: v.button as MouseButton, ...mods };
   }
   if (v.device === 'keyboard' && Number.isInteger(v.keycode)) {
     return {
       device: 'keyboard',
       keycode: v.keycode as number,
       ...(typeof v.label === 'string' ? { label: v.label } : {}),
+      ...mods,
     };
   }
   return fallback;

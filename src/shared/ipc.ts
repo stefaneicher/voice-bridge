@@ -1,4 +1,11 @@
-import type { Failure, FailureAction, HotkeyAction, SessionInfo, SessionView } from '../core/types';
+import type {
+  Failure,
+  FailureAction,
+  HotkeyAction,
+  HotkeyBinding,
+  SessionInfo,
+  SessionView,
+} from '../core/types';
 import type { AppConfig } from './config';
 
 export type OverlayAnchor = 'bottom-center' | 'bottom-right' | 'cursor';
@@ -78,11 +85,7 @@ export interface VoiceBridgeApi {
   saveSettings(config: AppConfig): Promise<SettingsData>;
   setApiKey(key: string | null): Promise<SettingsData>;
   setOpenAtLogin(enabled: boolean): Promise<SettingsData>;
-  captureHotkey(): Promise<
-    | { device: 'mouse'; button: string }
-    | { device: 'keyboard'; keycode: number; label?: string }
-    | null
-  >;
+  captureHotkey(): Promise<HotkeyBinding | null>;
   testConnection(): Promise<{ ok: boolean; message: string }>;
   clearHistory(): Promise<void>;
 

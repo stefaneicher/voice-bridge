@@ -5,6 +5,7 @@
       "release-type": "node",
       "package-name": "@stefaneicher/voice-bridge",
       "include-component-in-tag": false,
+      "extra-files": ["README.md"],
       "changelog-sections": [
         { "type": "feat", "section": "Neue Funktionen" },
         { "type": "fix", "section": "Fehlerbehebungen" },

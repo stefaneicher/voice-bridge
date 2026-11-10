@@ -26,12 +26,21 @@ Voraussetzung: [Node.js 22](https://nodejs.org/) oder neuer.
 
 **Aus dem GitHub-Release (empfohlen, keine Anmeldung nötig):**
 
-1. Auf der [Release-Seite](https://github.com/stefaneicher/voice-bridge/releases/latest) die Datei `stefaneicher-voice-bridge-<version>.tgz` herunterladen.
-2. Installieren:
+<!-- x-release-please-start-version -->
 
-   ```bash
-   npm install -g ./stefaneicher-voice-bridge-0.1.0.tgz
-   ```
+Direkt aus dem Release [v0.1.0](https://github.com/stefaneicher/voice-bridge/releases/tag/v0.1.0) installieren:
+
+```bash
+npm install -g https://github.com/stefaneicher/voice-bridge/releases/download/v0.1.0/stefaneicher-voice-bridge-0.1.0.tgz
+```
+
+Oder die Datei [`stefaneicher-voice-bridge-0.1.0.tgz`](https://github.com/stefaneicher/voice-bridge/releases/download/v0.1.0/stefaneicher-voice-bridge-0.1.0.tgz) herunterladen und lokal installieren:
+
+```powershell
+npm install -g "$env:USERPROFILE\Downloads\stefaneicher-voice-bridge-0.1.0.tgz"
+```
+
+<!-- x-release-please-end -->
 
 **Aus GitHub Packages** (braucht einmalig einen GitHub-Token mit `read:packages`):
 
@@ -43,7 +52,11 @@ npm install -g @stefaneicher/voice-bridge
 
 Danach gibt es zwei Befehle: `voice-bridge` (die App) und `vb` (verbindet Agents).
 
-**Ohne npm:** Im Release liegen auch `Voice-Bridge-<version>-setup.exe` und eine portable `.exe`. Für `vb run` braucht es trotzdem das npm-Paket.
+<!-- x-release-please-start-version -->
+
+**Ohne npm:** Im Release liegen auch [`Voice-Bridge-0.1.0-setup.exe`](https://github.com/stefaneicher/voice-bridge/releases/download/v0.1.0/Voice-Bridge-0.1.0-setup.exe) und die portable [`Voice-Bridge-0.1.0-portable.exe`](https://github.com/stefaneicher/voice-bridge/releases/download/v0.1.0/Voice-Bridge-0.1.0-portable.exe). Für `vb run` braucht es trotzdem das npm-Paket.
+
+<!-- x-release-please-end -->
 
 Hinter einem Firmen-Proxy lädt npm Electron von GitHub. Falls das blockiert ist: `ELECTRON_MIRROR` auf einen internen Spiegel setzen.
 

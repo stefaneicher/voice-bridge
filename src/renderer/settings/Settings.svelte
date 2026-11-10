@@ -1,6 +1,12 @@
 <script lang="ts">
-  import { bindingLabel } from '../../core/bindings';
-  import type { HotkeyAction, HotkeyBinding } from '../../core/types';
+  import {
+    MODIFIERS,
+    MODIFIER_LABELS,
+    bindingLabel,
+    normalizeModifiers,
+    sameBinding,
+  } from '../../core/bindings';
+  import type { HotkeyAction, HotkeyBinding, Modifier, MouseButton } from '../../core/types';
   import { STT_MODELS, type AppConfig } from '../../shared/config';
   import QRCode from 'qrcode';
   import type { RemoteData, SettingsData } from '../../shared/ipc';
@@ -82,10 +88,55 @@
   async function capture(action: HotkeyAction) {
     if (!config) return;
     capturing = action;
-    const raw = await window.vb.captureHotkey();
+    const next = await window.vb.captureHotkey();
     capturing = null;
-    if (!raw) return flash(false, 'Keine Taste erkannt');
-    config.hotkeys[action] = raw as HotkeyBinding;
+    if (!next) return flash(false, 'Keine Taste erkannt');
+    setBinding(action, next);
+  }
+
+  function setBinding(action: HotkeyAction, next: HotkeyBinding) {
+    if (!config) return;
+    const other = action === 'dictate' ? 'agent' : 'dictate';
+    if (sameBinding(next, config.hotkeys[other])) {
+      return flash(false, `${bindingLabel(next)} ist schon für den anderen Modus belegt`);
+    }
+    config.hotkeys[action] = next;
+  }
+
+  const MOUSE_OPTIONS: [MouseButton, string][] = [
+    ['XButton1', 'Maus 4'],
+    ['XButton2', 'Maus 5'],
+    ['Middle', 'Mittlere Maustaste'],
+  ];
+
+  function withModifiers(b: HotkeyBinding, mods: Modifier[]): HotkeyBinding {
+    const { modifiers: _old, ...rest } = b;
+    const norm = normalizeModifiers(mods);
+    return norm.length ? { ...rest, modifiers: norm } : rest;
+  }
+
+  function triggerLabel(b: HotkeyBinding): string {
+    return bindingLabel(withModifiers(b, []));
+  }
+
+  function toggleModifier(action: HotkeyAction, m: Modifier) {
+    if (!config) return;
+    const b = config.hotkeys[action];
+    const mods = b.modifiers ?? [];
+    const next = mods.includes(m) ? mods.filter((x) => x !== m) : [...mods, m];
+    setBinding(action, withModifiers(b, next));
+  }
+
+  function pickTrigger(action: HotkeyAction, e: Event & { currentTarget: HTMLSelectElement }) {
+    if (!config) return;
+    const b = config.hotkeys[action];
+    const value = e.currentTarget.value;
+    if (value === 'key') return;
+    setBinding(
+      action,
+      withModifiers({ device: 'mouse', button: value as MouseButton }, b.modifiers ?? []),
+    );
+    e.currentTarget.value = b.device === 'mouse' ? b.button : 'key';
   }
 
   async function test() {
@@ -137,19 +188,58 @@
       {:else if section === 'hotkeys'}
         <h1>Hotkeys</h1>
         <p class="lead">
-          Taste halten zum Sprechen, loslassen zum Senden. Auch Zusatztasten der Maus.
+          Halten zum Sprechen, loslassen zum Senden. Auslöser ist eine Taste oder eine Maustaste,
+          wahlweise zusammen mit Strg, Alt, Umschalt oder Win – z.B. <code>Strg + Maus 4</code>
+          oder <code>Strg + Umschalt + D</code>.
         </p>
         {#each [['dictate', 'Diktat', 'Text erscheint am Cursor, ohne Absenden'], ['agent', 'Agent', 'Prompt geht an die gewählte Session']] as const as [action, label, hint] (action)}
-          <div class="field">
-            <div>
-              <div class="label">{label}</div>
-              <div class="hint">{hint}</div>
+          {@const b = config.hotkeys[action]}
+          <div class="field column hotkey">
+            <div class="hotkey-head">
+              <div>
+                <div class="label">{label}</div>
+                <div class="hint">{hint}</div>
+              </div>
+              <kbd class="current">{bindingLabel(b)}</kbd>
             </div>
-            <button class="key" onclick={() => capture(action)} disabled={capturing !== null}>
-              {capturing === action ? 'Taste drücken …' : bindingLabel(config.hotkeys[action])}
-            </button>
+            <div class="composer">
+              <div class="mods" role="group" aria-label="Zusatztasten für {label}">
+                {#each MODIFIERS as m (m)}
+                  <button
+                    class="chip"
+                    class:on={b.modifiers?.includes(m)}
+                    aria-pressed={b.modifiers?.includes(m) ?? false}
+                    disabled={capturing !== null}
+                    onclick={() => toggleModifier(action, m)}>{MODIFIER_LABELS[m]}</button
+                  >
+                {/each}
+              </div>
+              <span class="plus">+</span>
+              <select
+                class="trigger"
+                aria-label="Auslöser für {label}"
+                value={b.device === 'mouse' ? b.button : 'key'}
+                disabled={capturing !== null}
+                onchange={(e) => pickTrigger(action, e)}
+              >
+                {#if b.device === 'keyboard'}
+                  <option value="key">Taste {triggerLabel(b)}</option>
+                {/if}
+                {#each MOUSE_OPTIONS as [value, text] (value)}
+                  <option {value}>{text}</option>
+                {/each}
+              </select>
+              <button class="key" onclick={() => capture(action)} disabled={capturing !== null}>
+                {capturing === action ? 'Jetzt drücken …' : 'Aufnehmen'}
+              </button>
+            </div>
           </div>
         {/each}
+        <p class="hint">
+          «Aufnehmen» übernimmt, was du drückst: Zusatztasten halten, dann Taste oder Maustaste (4,
+          5, Mitte) drücken. Alt- oder Win-Kombinationen können beim Loslassen ein Menü öffnen; Strg
+          oder Umschalt sind sicherer.
+        </p>
         <div class="field">
           <label class="label" for="minhold">Mindestdauer (ms)</label>
           <input
@@ -207,6 +297,27 @@
             {:else}
               Noch kein Key hinterlegt.
             {/if}
+          </div>
+          <div class="hint">
+            OpenAI:
+            <a href="https://platform.openai.com/api-keys" target="_blank" rel="noreferrer"
+              >API-Keys</a
+            >
+            ·
+            <a
+              href="https://platform.openai.com/settings/organization/billing/overview"
+              target="_blank"
+              rel="noreferrer">Guthaben</a
+            >
+            ·
+            <a href="https://platform.openai.com/usage" target="_blank" rel="noreferrer">Nutzung</a>
+            <br />
+            Claude:
+            <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noreferrer"
+              >API-Keys</a
+            >
+            (Claude bietet keine Sprach-API und dient nur als Agent-Ziel, z. B.
+            <code>vb run -- claude</code>)
           </div>
           <div class="row">
             <input
@@ -467,6 +578,53 @@
     align-items: center;
   }
   .row input {
+    flex: 1;
+  }
+  .hotkey {
+    gap: 10px;
+  }
+  .hotkey-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+  }
+  .current {
+    font: 600 13px var(--font-mono);
+    padding: 6px 12px;
+    border-radius: 8px;
+    background: #f3f3ef;
+    border: 1px solid #d6d6d0;
+    white-space: nowrap;
+  }
+  .composer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+  .mods {
+    display: flex;
+    gap: 4px;
+  }
+  .chip {
+    font: 500 13px var(--font-ui);
+    padding: 6px 10px;
+    border-radius: 16px;
+    border: 1px solid #d6d6d0;
+    background: #fff;
+    cursor: pointer;
+  }
+  .chip.on {
+    background: var(--vb-light-accent);
+    border-color: var(--vb-light-accent);
+    color: #fff;
+  }
+  .plus {
+    color: #6b7280;
+  }
+  select.trigger {
+    min-width: 0;
     flex: 1;
   }
   .key {

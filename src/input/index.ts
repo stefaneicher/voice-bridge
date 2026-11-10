@@ -1,4 +1,5 @@
-import type { Bindings, InputPort, RawInput } from '../core';
+import type { Bindings, InputPort } from '../core';
+import type { CapturedInput } from './hook-logic';
 import { UiohookInput } from './uiohook';
 import { Win32HookInput } from './win32';
 
@@ -6,7 +7,7 @@ export interface PlatformInput extends InputPort {
   start(): void;
   stop(): void;
   setBindings(bindings: Bindings): void;
-  captureNext(): Promise<RawInput>;
+  captureNext(): Promise<CapturedInput>;
   cancelCapture(): void;
 }
 

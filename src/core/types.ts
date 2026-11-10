@@ -3,10 +3,16 @@ export type HotkeyAction = 'dictate' | 'agent';
 
 export type MouseButton = 'XButton1' | 'XButton2' | 'Middle';
 
-/** A physical key or mouse button bound to a mode. Keyboard codes are uiohook/Win32 virtual key codes. */
+/** Modifier groups; left and right keys count as the same modifier. */
+export type Modifier = 'ctrl' | 'alt' | 'shift' | 'win';
+
+/**
+ * A physical key or mouse button bound to a mode, optionally combined with modifiers that must be
+ * held (e.g. Strg + Umschalt + D). Keyboard codes are uiohook/Win32 virtual key codes.
+ */
 export type HotkeyBinding =
-  | { device: 'mouse'; button: MouseButton }
-  | { device: 'keyboard'; keycode: number; label?: string };
+  | { device: 'mouse'; button: MouseButton; modifiers?: Modifier[] }
+  | { device: 'keyboard'; keycode: number; label?: string; modifiers?: Modifier[] };
 
 export type SessionState = 'idle' | 'busy' | 'unknown';
 

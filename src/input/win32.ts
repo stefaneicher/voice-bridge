@@ -1,7 +1,8 @@
 import { createRequire } from 'node:module';
 import type * as KoffiModule from 'koffi';
-import type { Bindings, InputEvent, InputPort, RawInput, Unsubscribe } from '../core';
-import { HookState, decodeKey, decodeMouse } from './hook-logic';
+import type { Bindings, InputEvent, InputPort, Unsubscribe } from '../core';
+import { windowsModifier } from '../core';
+import { HookState, decodeKey, decodeMouse, type CapturedInput } from './hook-logic';
 
 const nodeRequire = createRequire(import.meta.url);
 
@@ -18,7 +19,7 @@ type Koffi = typeof KoffiModule;
  * The callback only decodes, queues the event and returns: it must stay under 1 ms.
  */
 export class Win32HookInput implements InputPort {
-  private readonly state: HookState;
+  private state: HookState;
   private readonly listeners = new Set<(e: InputEvent) => void>();
   private hooks: unknown[] = [];
   private callbacks: unknown[] = [];
@@ -26,7 +27,7 @@ export class Win32HookInput implements InputPort {
   private unhook: ((h: unknown) => boolean) | null = null;
 
   constructor(bindings: Bindings) {
-    this.state = new HookState(bindings);
+    this.state = new HookState(bindings, windowsModifier);
   }
 
   start(): void {
@@ -35,6 +36,12 @@ export class Win32HookInput implements InputPort {
     this.koffi = koffi;
     const user32 = koffi.load('user32.dll');
     const kernel32 = koffi.load('kernel32.dll');
+    const GetAsyncKeyState = user32.func('short __stdcall GetAsyncKeyState(int vKey)');
+    this.state = new HookState(
+      this.state.bindings,
+      windowsModifier,
+      (vk) => ((GetAsyncKeyState(vk) as number) & 0x8000) !== 0,
+    );
 
     const POINT = koffi.struct('VB_POINT', { x: 'long', y: 'long' });
     const MSLL = koffi.struct('VB_MSLLHOOKSTRUCT', {
@@ -131,12 +138,12 @@ export class Win32HookInput implements InputPort {
     this.state.bindings = bindings;
   }
 
-  captureNext(): Promise<RawInput> {
-    return new Promise((resolve) => (this.state.captureNext = resolve));
+  captureNext(): Promise<CapturedInput> {
+    return new Promise((resolve) => this.state.startCapture(resolve));
   }
 
   cancelCapture(): void {
-    this.state.captureNext = null;
+    this.state.cancelCapture();
   }
 
   private dispatch(event: InputEvent): void {
