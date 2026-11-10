@@ -3,6 +3,13 @@ import { app } from 'electron';
 import { VoiceBridgeApp } from './app';
 import { parseProfileArg } from './profile';
 
+// A tray app outlives the terminal that started it; writing to its closed console must not crash.
+for (const stream of [process.stdout, process.stderr]) {
+  stream?.on('error', (err: NodeJS.ErrnoException) => {
+    if (err.code !== 'EPIPE') throw err;
+  });
+}
+
 const profile = parseProfileArg(process.argv);
 const dataDir = join(app.getPath('appData'), 'voice-bridge', profile);
 
