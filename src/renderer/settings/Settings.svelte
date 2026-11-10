@@ -593,8 +593,9 @@
     font: 600 13px var(--font-mono);
     padding: 6px 12px;
     border-radius: 8px;
-    background: #f3f3ef;
-    border: 1px solid #d6d6d0;
+    background: var(--vb-ink-3);
+    border: 1px solid var(--vb-line);
+    color: var(--vb-dictate);
     white-space: nowrap;
   }
   .composer {
@@ -611,17 +612,18 @@
     font: 500 13px var(--font-ui);
     padding: 6px 10px;
     border-radius: 16px;
-    border: 1px solid #d6d6d0;
-    background: #fff;
+    border: 1px solid var(--vb-line);
+    background: var(--vb-ink-2);
+    color: var(--vb-text-2);
     cursor: pointer;
   }
   .chip.on {
-    background: var(--vb-light-accent);
-    border-color: var(--vb-light-accent);
-    color: #fff;
+    background: var(--vb-dictate);
+    border-color: var(--vb-dictate);
+    color: var(--vb-on-accent);
   }
   .plus {
-    color: #6b7280;
+    color: var(--vb-text-3);
   }
   select.trigger {
     min-width: 0;
