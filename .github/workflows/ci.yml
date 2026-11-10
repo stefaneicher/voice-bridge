@@ -13,7 +13,34 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  NODE_VERSION: 22
+
 jobs:
+  quality:
+    name: Lint, Format, Knip, Workflows
+    runs-on: ubuntu-latest
+    env:
+      ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - name: ESLint + Prettier
+        run: npm run lint
+      - name: Unused code and dependencies (knip)
+        run: npm run knip
+      - name: Workflow files (actionlint)
+        uses: raven-actions/actionlint@v2
+      - name: Commit messages (Conventional Commits)
+        if: github.event_name == 'pull_request'
+        run: npx commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose
+
   test:
     name: Test (${{ matrix.os }})
     strategy:
@@ -22,18 +49,58 @@ jobs:
         os: [windows-latest, ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     env:
-      # Tests and the Vite build do not need the Electron binary.
       ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: 22
+          node-version: ${{ env.NODE_VERSION }}
           cache: npm
       - run: npm ci
-      - name: Lint
-        if: matrix.os == 'ubuntu-latest'
-        run: npm run lint
       - run: npm run typecheck
-      - run: npm test
+      - name: Tests with coverage gate (src/core ≥ 90 %)
+        run: npm run test:coverage
+      - name: Upload coverage report
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
       - run: npm run build
+
+  e2e:
+    name: App smoke test (Electron)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Start the app and check windows, pipe and settings
+        run: xvfb-run -a npm run test:e2e
+
+  package:
+    name: npm package smoke test
+    runs-on: ubuntu-latest
+    env:
+      ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - name: Pack
+        id: pack
+        run: echo "tgz=$(node scripts/pack.mjs)" >> "$GITHUB_OUTPUT"
+      - name: Install globally into a clean prefix and run the commands
+        run: |
+          prefix="$RUNNER_TEMP/prefix"
+          npm install -g --prefix "$prefix" "${{ steps.pack.outputs.tgz }}"
+          "$prefix/bin/vb" --version
+          "$prefix/bin/vb" --help
+          "$prefix/bin/voice-bridge" --help
