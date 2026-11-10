@@ -95,6 +95,8 @@ export class SessionController {
   private lastWheelAt = Number.NEGATIVE_INFINITY;
   private preferredTargetId: string | undefined;
   private failureSeq = 0;
+  private sttAbort: AbortController | null = null;
+  private cancelCapture = false;
   private readonly unsubscribeInput: () => void;
 
   constructor(options: ControllerOptions) {
@@ -140,6 +142,23 @@ export class SessionController {
     if (this.state.phase.name === 'recording') this.abortRecording();
   }
 
+  /**
+   * Escape: discards the run while recording or transcribing. The user chose to drop it, so no
+   * failure is kept. Once text is being inserted or delivered it is too late to cancel.
+   */
+  cancel(): void {
+    const name = this.state.phase.name;
+    if (name === 'recording') {
+      this.abortRecording();
+    } else if (name === 'transcribing') {
+      this.run++;
+      this.sttAbort?.abort();
+      this.sttAbort = null;
+      this.o.recorder.cancel();
+      this.setPhase({ name: 'idle' });
+    }
+  }
+
   setPaused(paused: boolean): void {
     if (paused && this.state.phase.name === 'recording') this.abortRecording();
     this.update({ paused });
@@ -155,6 +174,9 @@ export class SessionController {
         break;
       case 'wheel':
         this.onWheel(event.delta);
+        break;
+      case 'cancel':
+        this.cancel();
         break;
     }
   }
@@ -323,6 +345,7 @@ export class SessionController {
       try {
         audio = await this.o.recorder.stop();
       } catch (err) {
+        if (this.run !== runId) return;
         this.setPhase({ name: 'idle' });
         this.addFailure({
           kind: 'recorder',
@@ -331,6 +354,7 @@ export class SessionController {
         });
         return;
       }
+      if (this.run !== runId) return;
       await this.process({
         mode: action,
         audio,
@@ -346,13 +370,18 @@ export class SessionController {
 
   private async process(job: Job): Promise<void> {
     this.setPhase({ name: 'transcribing', mode: job.mode, target: job.target });
+    const runId = this.run;
+    const abort = new AbortController();
+    this.sttAbort = abort;
     let text: string;
     let rawText: string | undefined;
     try {
-      const transcript = await this.o.stt.transcribe(job.audio);
+      const transcript = await this.o.stt.transcribe(job.audio, { signal: abort.signal });
+      if (this.run !== runId) return;
       text = transcript.text.trim();
       rawText = transcript.raw;
     } catch (err) {
+      if (this.run !== runId) return;
       this.setPhase({ name: 'idle' });
       this.addFailure({
         kind: 'stt',
@@ -362,6 +391,8 @@ export class SessionController {
         target: job.target,
       });
       return;
+    } finally {
+      if (this.sttAbort === abort) this.sttAbort = null;
     }
     // From here on the audio is no longer referenced and can be collected.
 
@@ -528,6 +559,11 @@ export class SessionController {
   }
 
   private setPhase(phase: Phase): void {
+    const cancellable = phase.name === 'recording' || phase.name === 'transcribing';
+    if (cancellable !== this.cancelCapture) {
+      this.cancelCapture = cancellable;
+      this.o.input.setCancelCapture(cancellable);
+    }
     this.update({ phase });
   }
 

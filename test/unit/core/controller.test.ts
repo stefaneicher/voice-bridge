@@ -227,4 +227,74 @@ describe('SessionController', () => {
     expect(countWords('  eins zwei\ndrei ')).toBe(3);
     expect(countWords('')).toBe(0);
   });
+
+  describe('Escape cancel', () => {
+    it('captures Escape only while recording or transcribing', async () => {
+      const t = setup();
+      expect(t.input.cancelCapture).toBe(false);
+      let release!: () => void;
+      t.stt.gate = new Promise((r) => (release = r));
+      await t.down('dictate');
+      expect(t.input.cancelCapture).toBe(true);
+      await t.up('dictate');
+      expect(t.controller.getState().phase.name).toBe('transcribing');
+      expect(t.input.cancelCapture).toBe(true);
+      release();
+      await flush();
+      expect(t.inserter.inserted).toEqual(['Hallo Welt']);
+      expect(t.input.cancelCapture).toBe(false);
+    });
+
+    it('drops a recording without failure', async () => {
+      const t = setup();
+      await t.down('agent');
+      t.input.emit({ type: 'cancel' });
+      await flush();
+      expect(t.recorder.cancels).toBe(1);
+      expect(t.controller.getState()).toMatchObject({ phase: { name: 'idle' }, failures: [] });
+      expect(t.input.cancelCapture).toBe(false);
+      await t.up('agent');
+      expect(t.stt.calls).toHaveLength(0);
+      expect(t.adapter.sent).toHaveLength(0);
+    });
+
+    it('aborts a running transcription and discards its result', async () => {
+      const t = setup();
+      let release!: () => void;
+      t.stt.gate = new Promise((r) => (release = r));
+      await t.down('dictate');
+      await t.up('dictate');
+      expect(t.stt.signals[0]?.aborted).toBe(false);
+      t.input.emit({ type: 'cancel' });
+      expect(t.stt.signals[0]?.aborted).toBe(true);
+      expect(t.controller.getState()).toMatchObject({ phase: { name: 'idle' }, failures: [] });
+      release();
+      await flush();
+      expect(t.inserter.inserted).toHaveLength(0);
+      expect(t.controller.getState()).toMatchObject({ phase: { name: 'idle' }, failures: [] });
+    });
+
+    it('discards a transcription error after cancel', async () => {
+      const t = setup();
+      let release!: () => void;
+      t.stt.gate = new Promise((r) => (release = r));
+      t.stt.results.push(new Error('aborted'));
+      await t.down('dictate');
+      await t.up('dictate');
+      t.input.emit({ type: 'cancel' });
+      release();
+      await flush();
+      expect(t.controller.getState()).toMatchObject({ phase: { name: 'idle' }, failures: [] });
+    });
+
+    it('ignores cancel when nothing is running', async () => {
+      const t = setup();
+      await t.down('dictate');
+      await t.up('dictate');
+      expect(t.inserter.inserted).toEqual(['Hallo Welt']);
+      const before = t.controller.getState();
+      t.input.emit({ type: 'cancel' });
+      expect(t.controller.getState()).toEqual(before);
+    });
+  });
 });

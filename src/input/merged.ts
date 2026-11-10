@@ -23,4 +23,8 @@ export class MergedInput implements InputPort {
   setWheelCapture(enabled: boolean): void {
     this.platform.setWheelCapture(enabled);
   }
+
+  setCancelCapture(enabled: boolean): void {
+    this.platform.setCancelCapture(enabled);
+  }
 }

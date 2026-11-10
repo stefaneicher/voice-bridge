@@ -50,6 +50,7 @@ Alle Overlays werden beim Start einmal erzeugt und danach nur ein- und ausgeblen
 3. Erfolg: Text wird eingefügt, Toast «Eingefügt · N Wörter · x,x s» für 2,5 s, dann ausblenden. Hover hält ihn offen.
 4. Rohtranskript nur, wenn in den Einstellungen aktiviert. Dann als Karte über dem Toast.
 5. Unter 300 ms gehalten: als versehentlich werten, nichts senden, keine Meldung.
+6. Esc während Aufnahme oder «Transkribiere …»: Lauf verwerfen, laufende Transkription abbrechen, nichts einfügen, keine Meldung. Esc wird nur in diesen Phasen abgefangen, sonst geht es normal an die App. Beim Einfügen bzw. Senden ist es zu spät.
 
 ### Agent (Mockups 2a, 2b)
 

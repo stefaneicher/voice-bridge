@@ -93,6 +93,7 @@
       <div class="foot">
         <span>Mausrad wechselt</span>
         <span>Klick wählt</span>
+        <span>Esc bricht ab</span>
         <span class="release">
           Loslassen → {selected
             ? selected.gone

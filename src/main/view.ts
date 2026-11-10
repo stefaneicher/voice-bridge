@@ -21,7 +21,7 @@ export function overlayView(state: ControllerState, config: AppConfig): OverlayV
           : {}),
       };
     case 'transcribing':
-      return { kind: 'working', mode: p.mode, label: 'Transkribiere …' };
+      return { kind: 'working', mode: p.mode, label: 'Transkribiere …', cancellable: true };
     case 'inserting':
       return { kind: 'working', mode: 'dictate', label: 'Füge ein …' };
     case 'delivering':

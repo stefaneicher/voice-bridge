@@ -17,7 +17,7 @@
       <Waveform levels={overlay.levels} color="var(--vb-dictate)" />
       <span class="mono timer">{formatTimer(overlay.now - recording.startedAt)}</span>
       <span class="chip" style:background="var(--vb-dictate)">{recording.hotkeyLabel}</span>
-      <span class="hint">Loslassen zum Einfügen · nichts wird automatisch gesendet</span>
+      <span class="hint">Loslassen zum Einfügen · Esc bricht ab</span>
     </div>
   </div>
 {:else if working}
@@ -28,6 +28,9 @@
         style:border-top-color={working.mode === 'agent' ? 'var(--vb-agent)' : 'var(--vb-dictate)'}
       ></span>
       <span class="label">{working.label}</span>
+      {#if working.cancellable}
+        <span class="hint">Esc bricht ab</span>
+      {/if}
     </div>
   </div>
 {/if}

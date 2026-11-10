@@ -23,7 +23,7 @@ export type OverlayView =
       selectedId?: string | null;
       loading?: boolean;
     }
-  | { kind: 'working'; mode: HotkeyAction; label: string }
+  | { kind: 'working'; mode: HotkeyAction; label: string; cancellable?: boolean }
   | {
       kind: 'done';
       mode: HotkeyAction;

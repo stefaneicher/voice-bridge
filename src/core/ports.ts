@@ -14,6 +14,8 @@ export interface InputPort {
   onEvent(cb: (event: InputEvent) => void): Unsubscribe;
   /** While true, wheel events are swallowed and reported as `wheel` events. */
   setWheelCapture(enabled: boolean): void;
+  /** While true, Escape is swallowed and reported as a `cancel` event. */
+  setCancelCapture(enabled: boolean): void;
 }
 
 export interface RecorderPort {

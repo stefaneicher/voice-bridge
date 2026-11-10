@@ -134,6 +134,10 @@ export class Win32HookInput implements InputPort {
     this.state.wheelCapture = enabled;
   }
 
+  setCancelCapture(enabled: boolean): void {
+    this.state.escapeCapture = enabled;
+  }
+
   setBindings(bindings: Bindings): void {
     this.state.bindings = bindings;
   }

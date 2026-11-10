@@ -47,6 +47,7 @@ export class FakeClock implements Clock {
 export class FakeInput implements InputPort {
   private cb: ((e: InputEvent) => void) | null = null;
   wheelCapture = false;
+  cancelCapture = false;
 
   onEvent(cb: (e: InputEvent) => void) {
     this.cb = cb;
@@ -55,6 +56,10 @@ export class FakeInput implements InputPort {
 
   setWheelCapture(enabled: boolean): void {
     this.wheelCapture = enabled;
+  }
+
+  setCancelCapture(enabled: boolean): void {
+    this.cancelCapture = enabled;
   }
 
   emit(e: InputEvent): void {
@@ -97,9 +102,14 @@ export class FakeRecorder implements RecorderPort {
 export class FakeStt implements SpeechToText {
   calls: AudioClip[] = [];
   results: (Transcript | Error)[] = [];
+  signals: (AbortSignal | undefined)[] = [];
+  /** When set, transcribe() waits for this promise before answering. */
+  gate: Promise<void> | null = null;
 
-  async transcribe(clip: AudioClip): Promise<Transcript> {
+  async transcribe(clip: AudioClip, options?: { signal?: AbortSignal }): Promise<Transcript> {
     this.calls.push(clip);
+    this.signals.push(options?.signal);
+    if (this.gate) await this.gate;
     const next = this.results.shift() ?? { text: 'Hallo Welt' };
     if (next instanceof Error) throw next;
     return next;

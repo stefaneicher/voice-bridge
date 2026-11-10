@@ -1,7 +1,7 @@
 import { createRequire } from 'node:module';
 import type { Bindings, InputEvent, InputPort, MouseButton, RawInput, Unsubscribe } from '../core';
 import { uiohookModifier } from '../core';
-import { HookState, type CapturedInput } from './hook-logic';
+import { ESCAPE_KEYCODE, HookState, type CapturedInput } from './hook-logic';
 
 const nodeRequire = createRequire(import.meta.url);
 
@@ -29,7 +29,7 @@ export class UiohookInput implements InputPort {
   private hook: UiohookModule['uIOhook'] | null = null;
 
   constructor(bindings: Bindings) {
-    this.state = new HookState(bindings, uiohookModifier);
+    this.state = new HookState(bindings, uiohookModifier, undefined, ESCAPE_KEYCODE.uiohook);
   }
 
   start(): void {
@@ -73,6 +73,10 @@ export class UiohookInput implements InputPort {
 
   setWheelCapture(enabled: boolean): void {
     this.state.wheelCapture = enabled;
+  }
+
+  setCancelCapture(enabled: boolean): void {
+    this.state.escapeCapture = enabled;
   }
 
   setBindings(bindings: Bindings): void {

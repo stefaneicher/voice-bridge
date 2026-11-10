@@ -59,7 +59,9 @@ export type InputEvent =
   /** `targetId` preselects a session (e.g. chosen on the phone before pressing). */
   | { type: 'down'; action: HotkeyAction; targetId?: string }
   | { type: 'up'; action: HotkeyAction }
-  | { type: 'wheel'; delta: 1 | -1 };
+  | { type: 'wheel'; delta: 1 | -1 }
+  /** Escape while recording or transcribing: discard the run. */
+  | { type: 'cancel' };
 
 export type FailureKind =
   'recorder' | 'stt' | 'session-gone' | 'no-sessions' | 'delivery' | 'no-textfield' | 'insert';

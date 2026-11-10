@@ -51,6 +51,9 @@ export function decodeKey(wParam: number, vkCode: number): RawInput | null {
   return null;
 }
 
+/** Escape key code per hook: Win32 VK_ESCAPE and libuiohook VC_ESCAPE. */
+export const ESCAPE_KEYCODE = { win32: 0x1b, uiohook: 0x0001 } as const;
+
 /** Result of a capture in the settings dialog: the trigger plus the modifiers held with it. */
 export interface CapturedInput {
   raw: RawInput;
@@ -73,12 +76,15 @@ export class HookState {
   private readonly swallowUp = new Set<string>();
   private captureCb: ((c: CapturedInput) => void) | null = null;
   wheelCapture = false;
+  /** While true, Escape is swallowed and reported as `cancel` (set during a run only). */
+  escapeCapture = false;
 
   constructor(
     public bindings: Bindings,
     private readonly modifierOf: (keycode: number) => Modifier | null = () => null,
     /** Optional OS check to drop modifiers whose release the hook never saw (e.g. Win+L). */
     private readonly stillDown: (keycode: number) => boolean = () => true,
+    private readonly escapeKeycode: number = ESCAPE_KEYCODE.win32,
   ) {}
 
   /** One-shot capture for the settings dialog ("Tasten drücken …"). */
@@ -134,6 +140,16 @@ export class HookState {
       }
     }
     if (!raw.down && this.swallowUp.delete(key)) return { event: null, suppress: true };
+
+    if (
+      raw.down &&
+      this.escapeCapture &&
+      raw.device === 'keyboard' &&
+      raw.keycode === this.escapeKeycode
+    ) {
+      this.swallowUp.add(key);
+      return { event: { type: 'cancel' }, suppress: true };
+    }
 
     if (raw.down) {
       if (this.held.has(key)) return { event: null, suppress: true }; // auto-repeat

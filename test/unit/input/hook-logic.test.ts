@@ -30,6 +30,26 @@ describe('Win32 decoding', () => {
 });
 
 describe('HookState', () => {
+  it('turns Escape into cancel only while capture is on', () => {
+    const s = new HookState({ ...bindings });
+    const esc = (down: boolean) => s.onRaw({ device: 'keyboard', keycode: 0x1b, down });
+    expect(esc(true).suppress).toBe(false);
+    expect(esc(false).suppress).toBe(false);
+    s.escapeCapture = true;
+    expect(esc(true)).toEqual({ event: { type: 'cancel' }, suppress: true });
+    s.escapeCapture = false;
+    expect(esc(false).suppress).toBe(true);
+    expect(esc(true).event).toBeNull();
+  });
+
+  it('uses the platform Escape keycode', () => {
+    const s = new HookState({ ...bindings }, undefined, undefined, 0x0001);
+    s.escapeCapture = true;
+    expect(s.onRaw({ device: 'keyboard', keycode: 0x1b, down: true }).event).toBeNull();
+    expect(s.onRaw({ device: 'keyboard', keycode: 0x0001, down: true }).event).toEqual({
+      type: 'cancel',
+    });
+  });
   it('suppresses bound buttons and filters repeats', () => {
     const s = new HookState({ ...bindings });
     expect(s.onRaw({ device: 'mouse', button: 'XButton1', down: true })).toEqual({
