@@ -158,7 +158,10 @@
         border-radius: 10px;
         padding: 12px 14px;
         overflow-x: auto;
-        font: 14px 'JetBrains Mono', Consolas, monospace;
+        font:
+          14px 'JetBrains Mono',
+          Consolas,
+          monospace;
         color: var(--t1);
       }
       code {
@@ -195,9 +198,9 @@
         </div>
         <h1>Sprechen statt tippen. <em>Überall auf dem PC.</em></h1>
         <p class="lead">
-          Taste halten, sprechen, loslassen. Schweizerdeutsch rein, Hochdeutsch raus: der Text erscheint
-          am Cursor oder geht als Prompt direkt an deine Copilot- oder Claude-Session, ohne
-          Fensterwechsel.
+          Taste halten, sprechen, loslassen. Schweizerdeutsch rein, Hochdeutsch raus: der Text
+          erscheint am Cursor oder geht als Prompt direkt an deine Copilot- oder Claude-Session,
+          ohne Fensterwechsel.
         </p>
         <div class="cta">
           <a class="btn primary" href="#installation">Installieren</a>
@@ -277,28 +280,32 @@
         <ol>
           <li>
             Auf der
-            <a href="https://github.com/stefaneicher/voice-bridge/releases/latest">Release-Seite</a> die
-            Datei <code>stefaneicher-voice-bridge-&lt;version&gt;.tgz</code> herunterladen.
+            <a href="https://github.com/stefaneicher/voice-bridge/releases/latest">Release-Seite</a>
+            die Datei <code>stefaneicher-voice-bridge-&lt;version&gt;.tgz</code> herunterladen.
           </li>
           <li>Installieren und starten:</li>
         </ol>
-        <pre>npm install -g ./stefaneicher-voice-bridge-&lt;version&gt;.tgz
+        <pre>
+npm install -g ./stefaneicher-voice-bridge-&lt;version&gt;.tgz
 voice-bridge</pre>
         <ol start="3">
-          <li>Im Tray-Menü unter <b>Einstellungen → Spracherkennung</b> den OpenAI-API-Key eintragen.</li>
+          <li>
+            Im Tray-Menü unter <b>Einstellungen → Spracherkennung</b> den OpenAI-API-Key eintragen.
+          </li>
           <li>Agents über Voice-Bridge starten:</li>
         </ol>
-        <pre>vb run -- copilot
+        <pre>
+vb run -- copilot
 vb run -- claude</pre>
         <p class="sub">
-          Maus 4 halten = Diktat am Cursor. Maus 5 halten = Prompt an die gewählte Session. Beide Tasten
-          sind frei belegbar.
+          Maus 4 halten = Diktat am Cursor. Maus 5 halten = Prompt an die gewählte Session. Beide
+          Tasten sind frei belegbar.
         </p>
       </section>
 
       <footer>
-        Voice-Bridge · Audio nur im Arbeitsspeicher, API-Keys in der sicheren Ablage des Systems, kein
-        Tracking.
+        Voice-Bridge · Audio nur im Arbeitsspeicher, API-Keys in der sicheren Ablage des Systems,
+        kein Tracking.
       </footer>
     </div>
   </body>
