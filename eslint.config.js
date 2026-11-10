@@ -5,7 +5,17 @@ import ts from 'typescript-eslint';
 import svelteConfig from './svelte.config.js';
 
 export default ts.config(
-  { ignores: ['out/', 'dist/', 'node_modules/', 'docs/mockups/', 'coverage/'] },
+  {
+    ignores: [
+      'out/',
+      'dist/',
+      'dist-npm/',
+      'node_modules/',
+      'docs/mockups/',
+      'coverage/',
+      'android/',
+    ],
+  },
   js.configs.recommended,
   ...ts.configs.recommended,
   ...svelte.configs.recommended,
