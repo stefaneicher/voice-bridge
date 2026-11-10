@@ -72,6 +72,8 @@ Kurzform: Kontext → Entscheid → Folgen. Neue Einträge unten anhängen, alte
 
 **Folgen:** Mehr Latenz und Kosten, wenn Stufe 2 aktiv ist. Messung in S4 entscheidet den Default.
 
+**Nachtrag:** Stufe 2 ist standardmässig aus. Im Alltag formulierte sie Eingaben zu oft um und kostete pro Diktat spürbar Zeit; der Rohtext von Stufe 1 ist bereits Hochdeutsch.
+
 ---
 
 ## ADR-006 · Profile als getrennte Instanzen

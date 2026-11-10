@@ -100,8 +100,9 @@ describe('voice prompt → agent session (end-to-end)', () => {
     await handle.registered;
     await waitFor(() => stdout.text.includes('bereit'));
 
+    const sttConfig = defaultConfig('e2e').stt;
     const stt = new OpenAiTranscriber({
-      config: () => defaultConfig('e2e').stt,
+      config: () => ({ ...sttConfig, polish: { ...sttConfig.polish, enabled: true } }),
       apiKey: async () => 'sk-test',
       baseUrl: api.baseUrl,
     });

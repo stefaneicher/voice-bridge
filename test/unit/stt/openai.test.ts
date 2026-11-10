@@ -11,7 +11,8 @@ import { defaultConfig } from '../../../src/shared/config';
 const clip = { data: new Uint8Array([1, 2, 3]), mimeType: 'audio/wav', durationMs: 900 };
 
 function config(over: Partial<OpenAiSttConfig> = {}): OpenAiSttConfig {
-  return { ...defaultConfig('test').stt, ...over };
+  const stt = defaultConfig('test').stt;
+  return { ...stt, polish: { ...stt.polish, enabled: true }, ...over };
 }
 
 type Call = { url: string; init: RequestInit };

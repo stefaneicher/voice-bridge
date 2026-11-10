@@ -68,7 +68,7 @@ export function defaultConfig(profile: string): AppConfig {
       glossary: ['Copilot', 'Citrix', 'Pull Request', 'Deployment'],
       baseUrl: 'https://api.openai.com/v1',
       polish: {
-        enabled: true,
+        enabled: false,
         model: 'gpt-4o-mini',
         instruction:
           'Schreibe in gut lesbarem Schweizer Hochdeutsch (ss statt ß). Inhalt nicht verändern, Füllwörter entfernen.',
