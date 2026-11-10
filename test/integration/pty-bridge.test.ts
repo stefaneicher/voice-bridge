@@ -2,14 +2,13 @@ import { PassThrough, Writable } from 'node:stream';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { createRequire } from 'node:module';
 import { afterEach, describe, expect, it } from 'vitest';
 import { PtyBridgeAdapter } from '../../src/agents/pty-bridge';
-import { runWrapped, type SpawnPty } from '../../src/cli/run';
+import { loadNodePty } from '../../src/cli/pty';
+import { runWrapped } from '../../src/cli/run';
 import { AgentRegistry } from '../../src/core';
 
-const require = createRequire(import.meta.url);
-const pty = require('node-pty') as { spawn: SpawnPty };
+const pty = loadNodePty();
 const fixture = join(__dirname, '../fixtures/echo-agent.mjs');
 
 function tempPipe(): string {

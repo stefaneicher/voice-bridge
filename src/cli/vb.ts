@@ -1,11 +1,9 @@
-import { createRequire } from 'node:module';
 import { pipePath } from '../agents/pipe';
 import { USAGE, parseCliArgs } from './args';
-import { runWrapped, type SpawnPty } from './run';
+import { loadNodePty } from './pty';
+import { runWrapped } from './run';
 
 declare const __APP_VERSION__: string;
-
-const nodeRequire = createRequire(import.meta.url);
 
 async function main(): Promise<number> {
   const cmd = parseCliArgs(process.argv.slice(2));
@@ -20,7 +18,7 @@ async function main(): Promise<number> {
       process.stderr.write(`vb: ${cmd.message}\n\n${USAGE}`);
       return 2;
     case 'run': {
-      const pty = nodeRequire('node-pty') as { spawn: SpawnPty };
+      const pty = loadNodePty();
       const handle = runWrapped({
         command: cmd.command,
         args: cmd.args,
