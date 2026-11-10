@@ -11,10 +11,15 @@ export interface PtyBridgeOptions {
   bracketedPaste?: boolean;
   pressEnter?: boolean;
   log?: (msg: string) => void;
+  /** Resolves display titles by PTY PID, e.g. Copilot session names (ADR-015). Errors are ignored. */
+  titleLookup?: (pids: number[]) => Promise<Map<number, string>>;
+  titleRefreshMs?: number;
 }
 
 interface Entry {
   info: SessionInfo;
+  /** Title sent by `vb run --title`; it wins over looked-up titles. */
+  ownTitle?: string;
   socket: net.Socket;
   lastBeat: number;
 }
@@ -36,6 +41,8 @@ export class PtyBridgeAdapter implements AgentAdapter {
   private readonly listeners = new Set<(s: SessionInfo[]) => void>();
   private server: net.Server | null = null;
   private sweeper: NodeJS.Timeout | null = null;
+  private titleTimer: NodeJS.Timeout | null = null;
+  private titlesRunning = false;
   private readonly heartbeatTimeoutMs: number;
   private readonly injectTimeoutMs: number;
 
@@ -63,11 +70,18 @@ export class PtyBridgeAdapter implements AgentAdapter {
     this.server = server;
     this.sweeper = setInterval(() => this.sweep(), Math.min(1000, this.heartbeatTimeoutMs / 2));
     this.sweeper.unref();
+    if (this.o.titleLookup) {
+      // Copilot names a session only after a few turns, so titles are refreshed periodically.
+      this.titleTimer = setInterval(() => void this.refreshTitles(), this.o.titleRefreshMs ?? 5000);
+      this.titleTimer.unref();
+    }
   }
 
   async stop(): Promise<void> {
     if (this.sweeper) clearInterval(this.sweeper);
     this.sweeper = null;
+    if (this.titleTimer) clearInterval(this.titleTimer);
+    this.titleTimer = null;
     for (const e of this.sessions.values()) e.socket.destroy();
     this.sessions.clear();
     for (const [id, p] of this.pending) {
@@ -139,6 +153,7 @@ export class PtyBridgeAdapter implements AgentAdapter {
         this.sessions.set(m.sessionId, {
           socket,
           lastBeat: Date.now(),
+          ownTitle: m.title,
           info: {
             id: m.sessionId,
             adapterId: this.id,
@@ -153,6 +168,7 @@ export class PtyBridgeAdapter implements AgentAdapter {
         });
         this.o.log?.(`pty-bridge: session ${m.sessionId} registered (${m.name})`);
         this.emit();
+        void this.refreshTitles();
         return;
       }
       case 'heartbeat': {
@@ -201,6 +217,34 @@ export class PtyBridgeAdapter implements AgentAdapter {
         this.removeSession(id);
       }
     }
+  }
+
+  private async refreshTitles(): Promise<void> {
+    const lookup = this.o.titleLookup;
+    if (!lookup || this.titlesRunning) return;
+    const pids = [...this.sessions.values()]
+      .filter((e) => e.ownTitle === undefined && e.info.pid !== undefined)
+      .map((e) => e.info.pid!);
+    if (pids.length === 0) return;
+    this.titlesRunning = true;
+    let titles: Map<number, string>;
+    try {
+      titles = await lookup(pids);
+    } catch (err) {
+      this.o.log?.(`pty-bridge: title lookup failed (${String(err)})`);
+      return;
+    } finally {
+      this.titlesRunning = false;
+    }
+    let changed = false;
+    for (const e of this.sessions.values()) {
+      if (e.ownTitle !== undefined || e.info.pid === undefined) continue;
+      const title = titles.get(e.info.pid);
+      if (title === e.info.title) continue;
+      e.info = { ...e.info, title };
+      changed = true;
+    }
+    if (changed) this.emit();
   }
 
   private snapshot(): SessionInfo[] {

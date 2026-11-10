@@ -28,6 +28,15 @@
     const ago = formatAgo(s.lastActivity, overlay.now);
     return ago ? `wartet · ${ago}` : 'wartet';
   }
+
+  /** A looked-up title (e.g. the Copilot session name) replaces the terminal name. */
+  const label = (s: SessionView): string => s.title ?? s.name;
+
+  function detail(s: SessionView): string {
+    if (!s.title) return s.cwd ?? s.command ?? '';
+    const folder = s.cwd?.split(/[\\/]/).filter(Boolean).at(-1);
+    return folder ? `${folder} · ${s.name}` : s.name;
+  }
 </script>
 
 {#if rec}
@@ -77,8 +86,8 @@
                     : 'var(--vb-dictate)'}
               ></span>
               <span class="text">
-                <span class="name mono">{s.name}</span>
-                <span class="task">{s.title ?? s.cwd ?? s.command ?? ''}</span>
+                <span class="name" class:mono={!s.title}>{label(s)}</span>
+                <span class="task">{detail(s)}</span>
               </span>
               {#if isSel && !s.gone}
                 <span class="target">Ziel</span>
@@ -97,8 +106,8 @@
         <span class="release">
           Loslassen → {selected
             ? selected.gone
-              ? `${selected.name} (beendet)`
-              : selected.name
+              ? `${label(selected)} (beendet)`
+              : label(selected)
             : 'kein Ziel'}
         </span>
       </div>

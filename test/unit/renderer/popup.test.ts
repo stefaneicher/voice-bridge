@@ -45,7 +45,10 @@ describe('Session popup', () => {
       loading: false,
       selectedId: 's2',
       sessions: [
-        session('s1', 'voice-bridge', { title: 'Hotkeys' }),
+        session('s1', 'copilot', {
+          title: 'Write Message Function',
+          cwd: 'C:\\Users\\me\\voice-bridge',
+        }),
         session('s2', 'billing-service', { state: 'busy' }),
         session('s3', 'infra-scripts', { gone: true }),
       ],
@@ -58,6 +61,8 @@ describe('Session popup', () => {
     expect(screen.getByText('Ziel')).toBeTruthy();
     expect(screen.getByText('beendet')).toBeTruthy();
     expect(screen.getByText(/Loslassen → billing-service/)).toBeTruthy();
+    expect(screen.getByText('Write Message Function')).toBeTruthy();
+    expect(screen.getByText('voice-bridge · copilot')).toBeTruthy();
     expect((options[2] as HTMLButtonElement).disabled).toBe(true);
 
     await fireEvent.click(options[0]!);

@@ -111,6 +111,43 @@ describe('PtyBridgeAdapter', () => {
     expect(await adapter.send('pty:a', 'z')).toEqual({ ok: false, reason: 'gone' });
   });
 
+  it('fills titles from the lookup, refreshes them and keeps an explicit --title', async () => {
+    const path = tempPipe();
+    let titles = new Map<number, string>([[11, 'Write Message Function']]);
+    const logs: string[] = [];
+    let fail = false;
+    adapter = new PtyBridgeAdapter({
+      pipePath: path,
+      titleRefreshMs: 30,
+      log: (m) => logs.push(m),
+      titleLookup: async (pids) => {
+        if (fail) throw new Error('boom');
+        return new Map([...titles].filter(([p]) => pids.includes(p)));
+      },
+    });
+    await adapter.start();
+    const c = await client(path);
+    c.send({ ...register('pty:a'), pid: 11 });
+    c.send({ ...register('pty:b'), pid: 22, title: 'Mine' });
+    c.send(register('pty:c'));
+    const title = async (id: string) =>
+      (await adapter.listSessions()).find((s) => s.id === id)?.title;
+    await until(() => adapter['sessions'].get('pty:a')?.info.title === 'Write Message Function');
+
+    titles = new Map([
+      [11, 'Renamed'],
+      [22, 'Ignored'],
+    ]);
+    await until(() => adapter['sessions'].get('pty:a')?.info.title === 'Renamed');
+    expect(await title('pty:b')).toBe('Mine');
+    expect(await title('pty:c')).toBeUndefined();
+
+    fail = true;
+    await until(() => logs.some((l) => l.includes('title lookup failed')));
+    expect(await title('pty:a')).toBe('Renamed');
+    c.socket.destroy();
+  });
+
   it('refuses to start when the pipe is in use', async () => {
     const path = tempPipe();
     adapter = new PtyBridgeAdapter({ pipePath: path });

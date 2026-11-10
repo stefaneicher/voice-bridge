@@ -2,6 +2,7 @@ import { spawn } from 'node:child_process';
 import { join } from 'node:path';
 import type { BrowserWindow } from 'electron';
 import { Notification, app, clipboard, ipcMain, session } from 'electron';
+import { copilotTitleLookup } from '../agents/copilot-sessions';
 import { PtyBridgeAdapter } from '../agents/pty-bridge';
 import { pipePath } from '../agents/pipe';
 import {
@@ -97,6 +98,7 @@ export class VoiceBridgeApp {
       heartbeatTimeoutMs: this.config.agents.heartbeatTimeoutMs,
       bracketedPaste: this.config.agents.bracketedPaste,
       pressEnter: this.config.agents.pressEnter,
+      titleLookup: copilotTitleLookup(),
       log,
     });
     try {

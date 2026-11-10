@@ -113,7 +113,7 @@ Legende: ☐ offen · ◐ in Arbeit · ☑ erledigt
 
 **M2 fertig, wenn** fünf parallele `vb run -- copilot`-Sessions per Mausrad und per Klick erreichbar sind und eine während der Aufnahme beendete Session korrekt als Fehler endet.
 
-### ☐ T-023 Copilot-Titel für verbundene Terminals (ADR-015)
+### ☑ T-023 Copilot-Titel für verbundene Terminals (ADR-015)
 - `vb run` meldet die PID seines Kindprozesses (`register`/`heartbeat`).
 - Leser für `~/.copilot/session-state` (nur lesend, eigener Adapter); Zuordnung über `inuse.<PID>.lock`.
 - **Fertig, wenn** das Popup «Write Message Function» statt «copilot» zeigt, mit Ordner; ohne Session-Ordner oder bei unbekanntem Format bleibt es beim heutigen Namen. Unit-Tests mit Beispieldateien.
