@@ -25,6 +25,8 @@ Electron · TypeScript (strict) · Svelte 5 (Runes) · electron-vite · Vitest �
 - **Hook-Callbacks** kehren in unter 1 ms zurück: nur Event in die Queue, keine Logik.
 - **Overlays** werden einmal erzeugt, danach nur `showInactive()` / `hide()`. Nie `focus()` auf ein Overlay.
 - **Sprache:** Code, Bezeichner und Commits auf Englisch. UI-Texte und Doku auf Deutsch (Schweizer Schreibweise, ss statt ß).
+- **Commits:** [Conventional Commits](https://www.conventionalcommits.org/) (Angular-Stil): `feat:`, `fix:`, `docs:`, `test:`, `refactor:`, `ci:`, `build:`, `chore:`. commitlint prüft das im `commit-msg`-Hook und in der CI; release-please leitet daraus Version und Changelog ab.
+- **Quality Gates:** vor dem Push müssen `npm run lint`, `npm run knip`, `npm run typecheck` und `npm run test:coverage` grün sein (`src/core` ≥ 90 % Abdeckung).
 - **Spikes** landen in `spikes/<name>/`, Ergebnis als Eintrag in `docs/decisions.md`.
 - Bei einer Abweichung vom Plan: ADR ergänzen, nicht still ändern.
 - **HTML-Links** (z. B. Mockups) in README und Doku über githack setzen, damit sie gerendert werden: `https://raw.githack.com/stefaneicher/voice-bridge/main/<pfad>.html`.
@@ -35,6 +37,9 @@ Electron · TypeScript (strict) · Svelte 5 (Runes) · electron-vite · Vitest �
 npm install
 npm run dev        # Electron mit Hot Reload
 npm test           # Vitest
+npm run test:coverage   # mit Abdeckungs-Gate für src/core
+npm run test:e2e   # App-Starttest (nach npm run build; unter Linux mit xvfb-run)
+npm run knip       # ungenutzter Code und Abhängigkeiten
 npm run lint
 npm run build      # Paket für das aktuelle Betriebssystem
 ```

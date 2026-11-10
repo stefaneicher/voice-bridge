@@ -90,14 +90,29 @@ In einem zweiten Terminal: `vb run -- copilot`. Rückgängig machen mit `npm unl
 ## Entwicklung und Release
 
 ```bash
-npm run dev      # App mit Hot Reload
-npm test         # Tests
-npm run lint
+npm run dev             # App mit Hot Reload
+npm test                # Tests
+npm run test:coverage   # Tests mit Abdeckungs-Gate (src/core ≥ 90 %)
+npm run test:e2e        # App-Starttest (vorher npm run build)
+npm run lint            # ESLint + Prettier
+npm run knip            # ungenutzter Code und Abhängigkeiten
 ```
 
-Release: Version erhöhen und Tag pushen, den Rest macht GitHub Actions (Tests, Windows-Installer, npm-Paket, GitHub-Release, GitHub Packages; npmjs.com nur mit Secret `NPM_TOKEN`):
+Commits folgen [Conventional Commits](https://www.conventionalcommits.org/), z. B. `feat: Mikrofon-Auswahl` oder `fix: Popup-Position bei zwei Monitoren`. Ein Git-Hook formatiert geänderte Dateien und prüft die Commit-Nachricht.
 
-```bash
-npm version patch
-git push --follow-tags
-```
+**Release:** release-please hält auf `main` einen Release-PR mit neuer Version und Changelog aktuell. Wird er gemergt, entstehen Tag und GitHub-Release, und GitHub Actions baut npm-Paket, Windows-Installer und portable `.exe` (npmjs.com nur mit Secret `NPM_TOKEN`).
+
+### Quality Gates
+
+| Gate | Wo |
+|---|---|
+| ESLint (inkl. Schichtregel für `src/core`), Prettier | Pre-Commit-Hook, CI |
+| Conventional Commits (commitlint) | Commit-Hook, CI bei Pull Requests |
+| Typprüfung (`tsc`, `svelte-check`) | CI auf Windows, Linux, macOS |
+| Tests mit Abdeckung `src/core` ≥ 90 % | CI auf Windows, Linux, macOS |
+| App-Starttest (Electron, Playwright) | CI |
+| npm-Paket bauen, installieren, starten | CI |
+| knip, actionlint | CI |
+| CodeQL | CI und wöchentlich |
+| Dependabot (npm, GitHub Actions) | wöchentlich |
+| `npm audit` (Laufzeit-Abhängigkeiten) | Release |

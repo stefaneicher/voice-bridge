@@ -1,14 +1,28 @@
 name: Release
 
-# Publishes a release when a tag like v0.1.0 is pushed:
-#   npm version patch && git push --follow-tags
+# Builds and publishes a release. Normally called by release-please.yml after a release PR is
+# merged. Can also be started by hand (workflow_dispatch) or by pushing a tag v*.
 on:
+  workflow_call:
+    inputs:
+      tag:
+        description: Release tag, e.g. v0.2.0
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag, e.g. v0.2.0
+        required: true
+        type: string
   push:
     tags: ['v*']
-  workflow_dispatch:
 
 permissions:
   contents: read
+
+env:
+  TAG: ${{ inputs.tag || github.ref_name }}
 
 jobs:
   verify:
@@ -16,30 +30,35 @@ jobs:
     env:
       ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ env.TAG }}
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
       - name: Tag matches package.json
-        if: startsWith(github.ref, 'refs/tags/v')
         run: |
           version="$(node -p "require('./package.json').version")"
-          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
-            echo "::error::Tag $GITHUB_REF_NAME passt nicht zu package.json ($version)"
+          if [ "v$version" != "$TAG" ]; then
+            echo "::error::Tag $TAG passt nicht zu package.json ($version)"
             exit 1
           fi
       - run: npm ci
+      - name: No known high or critical vulnerabilities in runtime dependencies
+        run: npm audit --omit=dev --audit-level=high
       - run: npm run lint
       - run: npm run typecheck
-      - run: npm test
+      - run: npm run test:coverage
 
   windows:
     needs: verify
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ env.TAG }}
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -49,8 +68,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: windows
-          path: |
-            dist/*.exe
+          path: dist/*.exe
           if-no-files-found: error
 
   npm-package:
@@ -59,51 +77,49 @@ jobs:
     env:
       ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ env.TAG }}
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Make Electron a runtime dependency of the npm package
-        # In the repo Electron is a devDependency (electron-builder requires that). The npm
-        # package launches the app with Electron, so it must be installed with it.
-        run: |
-          electron="$(node -p "require('./package.json').devDependencies.electron")"
-          npm pkg delete devDependencies.electron
-          npm pkg set "dependencies.electron=$electron"
-      - name: Pack
-        run: npm pack
+      - name: Pack (Electron becomes a runtime dependency)
+        run: node scripts/pack.mjs dist-npm
       - uses: actions/upload-artifact@v4
         with:
           name: npm
-          path: '*.tgz'
+          path: dist-npm/*.tgz
           if-no-files-found: error
 
   publish:
     needs: [windows, npm-package]
-    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     permissions:
       contents: write
       packages: write
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ env.TAG }}
       - uses: actions/download-artifact@v4
         with:
           path: artifacts
           merge-multiple: true
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
-      - name: GitHub Release
+      - name: GitHub Release (create, or attach to the one release-please made)
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" artifacts/* \
-            --title "Voice-Bridge $GITHUB_REF_NAME" \
-            --generate-notes
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" artifacts/* --clobber
+          else
+            gh release create "$TAG" artifacts/* --title "Voice-Bridge $TAG" --generate-notes
+          fi
       - name: Publish to GitHub Packages
         env:
           NODE_AUTH_TOKEN: ${{ github.token }}
