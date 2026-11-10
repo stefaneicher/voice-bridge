@@ -13,5 +13,3 @@ export interface PlatformInput extends InputPort {
 export function createPlatformInput(bindings: Bindings): PlatformInput {
   return process.platform === 'win32' ? new Win32HookInput(bindings) : new UiohookInput(bindings);
 }
-
-export { HookState, decodeKey, decodeMouse } from './hook-logic';
