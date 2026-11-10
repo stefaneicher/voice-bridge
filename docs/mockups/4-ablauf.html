@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="de-CH">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ablauf Voice-Bridge</title>
+<style>
+:root{--ink:#0E1014;--ink2:#15181E;--ink3:#181B22;--line:rgba(255,255,255,.09);--t1:#F2F4F7;--t2:#C5CBD6;--t3:#9AA3B2;--mint:#5EE6B0;--amber:#FFB547;--rec:#FF5A5F}
+*{box-sizing:border-box}
+html{background:#0B0D11}
+body{margin:0;font-family:Inter,"Segoe UI",system-ui,sans-serif;color:var(--t1);-webkit-font-smoothing:antialiased}
+.page{width:1760px;padding:40px 48px 44px;margin:0 auto}
+h1{font:600 30px "Space Grotesk",Inter,sans-serif;margin:0 0 6px;letter-spacing:-.01em}
+.sub{color:var(--t3);font-size:15px;margin:0 0 34px}
+.flow{display:grid;grid-template-columns:200px 34px 230px 34px 330px 34px 240px 34px 1fr;align-items:center}
+.card{background:var(--ink);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 24px 70px rgba(0,0,0,.45)}
+.step{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:10px}
+.title{font-weight:600;font-size:17px;margin-bottom:6px}
+.txt{font-size:13px;color:var(--t2);line-height:1.45}
+.arrow{height:2px;background:linear-gradient(90deg,rgba(255,255,255,.15),rgba(255,255,255,.45));position:relative;margin:0 4px}
+.arrow:after{content:"";position:absolute;right:-2px;top:-5px;border:6px solid transparent;border-left:8px solid rgba(255,255,255,.55)}
+.big{display:grid;place-items:center;width:58px;height:58px;border-radius:50%;margin-bottom:12px}
+.rec{width:10px;height:10px;border-radius:50%;background:var(--rec);display:inline-block}
+.keys{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
+.chip{font-size:12px;font-weight:500;color:var(--ink);padding:4px 9px;border-radius:12px;display:inline-flex;align-items:center;gap:5px}
+.opt{display:flex;gap:12px;align-items:flex-start;padding:12px;border-radius:12px;background:var(--ink3);border:1px solid var(--line)}
+.opt + .opt{margin-top:10px}
+.opt .ic{width:44px;height:44px;border-radius:10px;display:grid;place-items:center;flex:none}
+.opt.on{box-shadow:inset 0 0 0 1px rgba(94,230,176,.55);background:rgba(94,230,176,.07)}
+.opt.off{opacity:.6}
+.badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;margin-left:6px;vertical-align:2px}
+.mono{font-family:"JetBrains Mono",Consolas,monospace}
+.quote{margin-top:10px;padding:10px 12px;border-radius:10px;background:var(--ink3);font-size:13px;line-height:1.45}
+.quote.raw{color:var(--t3);font-style:italic}
+.targets{display:flex;flex-direction:column;gap:14px}
+.branch{display:grid;grid-template-columns:96px 30px 1fr;align-items:center}
+.sel{font-size:12px;font-weight:600;border-radius:12px;padding:8px 10px;text-align:center;color:var(--ink)}
+.row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;font-size:13px}
+.row + .row{margin-top:4px}
+.row.selected{background:rgba(255,181,71,.14);box-shadow:inset 0 0 0 1px rgba(255,181,71,.55)}
+.row .ic{width:34px;height:34px;border-radius:8px;display:grid;place-items:center;background:#fff;flex:none;color:#000}
+.row .ic.dark{background:#24292F;color:#fff}
+.row .name{font-family:"JetBrains Mono",Consolas,monospace;font-size:13px}
+.row .cmd{font-size:11.5px;color:var(--t3)}
+.ziel{margin-left:auto;font-size:11px;font-weight:600;color:var(--ink);background:var(--amber);padding:3px 8px;border-radius:10px}
+.legend{display:flex;gap:28px;margin-top:30px;color:var(--t3);font-size:13px}
+.legend b{color:var(--t2);font-weight:600}
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Voice-Bridge · So läuft eine Spracheingabe</h1>
+  <p class="sub">Taste halten, sprechen, loslassen. Eine KI macht aus dem Ton Text, Voice-Bridge bringt den Text ans gewählte Ziel.</p>
+
+  <div class="flow">
+    <div class="card">
+      <div class="step">1 · Mikrofon</div>
+      <div class="big" style="background:rgba(255,90,95,.14);color:var(--rec)"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 17v4"/></svg></div>
+      <div class="title">Taste halten, sprechen</div>
+      <div class="txt">Schweizerdeutsch oder Hochdeutsch.</div>
+      <div class="keys">
+        <span class="chip" style="background:var(--mint)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="6"/><path d="M12 6v4"/></svg> Maus 4</span>
+        <span class="chip" style="background:var(--amber)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="6"/><path d="M12 6v4"/></svg> Maus 5</span>
+      </div>
+    </div>
+    <div class="arrow"></div>
+
+    <div class="card">
+      <div class="step">2 · Voice-Bridge-App</div>
+      <div class="title"><span class="rec"></span>&nbsp; Nimmt auf</div>
+      <div class="txt">Tray-App auf deinem PC. Aufnahme nur im Arbeitsspeicher, nichts auf der Festplatte.</div>
+      <div class="txt" style="margin-top:10px">Beim Loslassen geht die Aufnahme an die Spracherkennung.</div>
+    </div>
+    <div class="arrow"></div>
+
+    <div class="card">
+      <div class="step">3 · Sprache → Text (KI in der Cloud)</div>
+      <div class="opt on">
+        <div class="ic" style="background:#fff;color:#000"><svg fill="currentColor" fill-rule="evenodd" height="30" style="flex:none" aria-hidden="true" viewBox="0 0 24 24" width="30" xmlns="http://www.w3.org/2000/svg"><title>OpenAI</title><path d="M9.205 8.658v-2.26c0-.19.072-.333.238-.428l4.543-2.616c.619-.357 1.356-.523 2.117-.523 2.854 0 4.662 2.212 4.662 4.566 0 .167 0 .357-.024.547l-4.71-2.759a.797.797 0 00-.856 0l-5.97 3.473zm10.609 8.8V12.06c0-.333-.143-.57-.429-.737l-5.97-3.473 1.95-1.118a.433.433 0 01.476 0l4.543 2.617c1.309.76 2.189 2.378 2.189 3.948 0 1.808-1.07 3.473-2.76 4.163zM7.802 12.703l-1.95-1.142c-.167-.095-.239-.238-.239-.428V5.899c0-2.545 1.95-4.472 4.591-4.472 1 0 1.927.333 2.712.928L8.23 5.067c-.285.166-.428.404-.428.737v6.898zM12 15.128l-2.795-1.57v-3.33L12 8.658l2.795 1.57v3.33L12 15.128zm1.796 7.23c-1 0-1.927-.332-2.712-.927l4.686-2.712c.285-.166.428-.404.428-.737v-6.898l1.974 1.142c.167.095.238.238.238.428v5.233c0 2.545-1.974 4.472-4.614 4.472zm-5.637-5.303l-4.544-2.617c-1.308-.761-2.188-2.378-2.188-3.948A4.482 4.482 0 014.21 6.327v5.423c0 .333.143.571.428.738l5.947 3.449-1.95 1.118a.432.432 0 01-.476 0zm-.262 3.9c-2.688 0-4.662-2.021-4.662-4.519 0-.19.024-.38.047-.57l4.686 2.71c.286.167.571.167.856 0l5.97-3.448v2.26c0 .19-.07.333-.237.428l-4.543 2.616c-.619.357-1.356.523-2.117.523zm5.899 2.83a5.947 5.947 0 005.827-4.756C22.287 18.339 24 15.84 24 13.296c0-1.665-.713-3.282-1.998-4.448.119-.5.19-.999.19-1.498 0-3.401-2.759-5.947-5.946-5.947-.642 0-1.26.095-1.88.31A5.962 5.962 0 0010.205 0a5.947 5.947 0 00-5.827 4.757C1.713 5.447 0 7.945 0 10.49c0 1.666.713 3.283 1.998 4.448-.119.5-.19 1-.19 1.499 0 3.401 2.759 5.946 5.946 5.946.642 0 1.26-.095 1.88-.309a5.96 5.96 0 004.162 1.713z"></path></svg></div>
+        <div>
+          <div class="title" style="font-size:15px">OpenAI / ChatGPT <span class="badge" style="background:var(--mint);color:var(--ink)">aktiv</span></div>
+          <div class="txt"><span class="mono">gpt-4o-transcribe</span> macht Text aus dem Ton, <span class="mono">gpt-4o-mini</span> glättet ins Hochdeutsch.</div>
+        </div>
+      </div>
+      <div class="opt off">
+        <div class="ic" style="background:#F5EFE6"><svg height="30" style="flex:none" aria-hidden="true" viewBox="0 0 24 24" width="30" xmlns="http://www.w3.org/2000/svg"><title>Claude</title><path d="M4.709 15.955l4.72-2.647.08-.23-.08-.128H9.2l-.79-.048-2.698-.073-2.339-.097-2.266-.122-.571-.121L0 11.784l.055-.352.48-.321.686.06 1.52.103 2.278.158 1.652.097 2.449.255h.389l.055-.157-.134-.098-.103-.097-2.358-1.596-2.552-1.688-1.336-.972-.724-.491-.364-.462-.158-1.008.656-.722.881.06.225.061.893.686 1.908 1.476 2.491 1.833.365.304.145-.103.019-.073-.164-.274-1.355-2.446-1.446-2.49-.644-1.032-.17-.619a2.97 2.97 0 01-.104-.729L6.283.134 6.696 0l.996.134.42.364.62 1.414 1.002 2.229 1.555 3.03.456.898.243.832.091.255h.158V9.01l.128-1.706.237-2.095.23-2.695.08-.76.376-.91.747-.492.584.28.48.685-.067.444-.286 1.851-.559 2.903-.364 1.942h.212l.243-.242.985-1.306 1.652-2.064.73-.82.85-.904.547-.431h1.033l.76 1.129-.34 1.166-1.064 1.347-.881 1.142-1.264 1.7-.79 1.36.073.11.188-.02 2.856-.606 1.543-.28 1.841-.315.833.388.091.395-.328.807-1.969.486-2.309.462-3.439.813-.042.03.049.061 1.549.146.662.036h1.622l3.02.225.79.522.474.638-.079.485-1.215.62-1.64-.389-3.829-.91-1.312-.329h-.182v.11l1.093 1.068 2.006 1.81 2.509 2.33.127.578-.322.455-.34-.049-2.205-1.657-.851-.747-1.926-1.62h-.128v.17l.444.649 2.345 3.521.122 1.08-.17.353-.608.213-.668-.122-1.374-1.925-1.415-2.167-1.143-1.943-.14.08-.674 7.254-.316.37-.729.28-.607-.461-.322-.747.322-1.476.389-1.924.315-1.53.286-1.9.17-.632-.012-.042-.14.018-1.434 1.967-2.18 2.945-1.726 1.845-.414.164-.717-.37.067-.662.401-.589 2.388-3.036 1.44-1.882.93-1.086-.006-.158h-.055L4.132 18.56l-1.13.146-.487-.456.061-.746.231-.243 1.908-1.312-.006.006z" fill="#D97757" fill-rule="nonzero"></path></svg></div>
+        <div>
+          <div class="title" style="font-size:15px">Claude <span class="badge" style="background:#3A3F4A;color:var(--t2)">nicht möglich</span></div>
+          <div class="txt">Die Claude-API nimmt kein Audio an. Diktieren gibt es nur in der Claude-App.</div>
+        </div>
+      </div>
+    </div>
+    <div class="arrow"></div>
+
+    <div class="card">
+      <div class="step">4 · Text</div>
+      <div class="quote raw">«I mäude mi morn mit em definitive Termin.»</div>
+      <div class="txt" style="margin:8px 0 0;text-align:center;color:var(--t3)">↓ geglättet</div>
+      <div class="quote">«Ich melde mich morgen mit dem definitiven Termin.»</div>
+    </div>
+    <div class="arrow"></div>
+
+    <div class="targets">
+      <div class="step" style="margin:0 0 -4px">5 · Selektor: wohin geht der Text?</div>
+      <div class="branch">
+        <div class="sel" style="background:var(--mint)">Maus 4<br>Diktat</div>
+        <div class="arrow"></div>
+        <div class="card" style="padding:14px 16px;display:flex;gap:14px;align-items:center">
+          <div class="big" style="background:rgba(94,230,176,.14);color:var(--mint);margin:0;width:50px;height:50px"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 22h-1a4 4 0 0 1-4-4V6a4 4 0 0 1 4-4h1"/><path d="M7 22h1a4 4 0 0 0 4-4v-1"/><path d="M7 2h1a4 4 0 0 1 4 4v1"/></svg></div>
+          <div>
+            <div class="title" style="font-size:15px;margin-bottom:2px">Aktives Fenster, am Cursor</div>
+            <div class="txt">Outlook, Browser, Teams, Notepad … ohne automatisches Absenden.</div>
+          </div>
+        </div>
+      </div>
+      <div class="branch">
+        <div class="sel" style="background:var(--amber)">Maus 5<br>Agent</div>
+        <div class="arrow"></div>
+        <div class="card" style="padding:12px 12px 10px">
+          <div class="txt" style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--t3);padding:0 4px 8px">Session-Popup · Mausrad wechselt, Klick wählt</div>
+          <div class="row selected">
+            <div class="ic dark"><svg fill="currentColor" fill-rule="evenodd" height="26" style="flex:none" aria-hidden="true" viewBox="0 0 24 24" width="26" xmlns="http://www.w3.org/2000/svg"><title>GithubCopilot</title><path d="M19.245 5.364c1.322 1.36 1.877 3.216 2.11 5.817.622 0 1.2.135 1.592.654l.73.964c.21.278.323.61.323.955v2.62c0 .339-.173.669-.453.868C20.239 19.602 16.157 21.5 12 21.5c-4.6 0-9.205-2.583-11.547-4.258-.28-.2-.452-.53-.453-.868v-2.62c0-.345.113-.679.321-.956l.73-.963c.392-.517.974-.654 1.593-.654l.029-.297c.25-2.446.81-4.213 2.082-5.52 2.461-2.54 5.71-2.851 7.146-2.864h.198c1.436.013 4.685.323 7.146 2.864zm-7.244 4.328c-.284 0-.613.016-.962.05-.123.447-.305.85-.57 1.108-1.05 1.023-2.316 1.18-2.994 1.18-.638 0-1.306-.13-1.851-.464-.516.165-1.012.403-1.044.996a65.882 65.882 0 00-.063 2.884l-.002.48c-.002.563-.005 1.126-.013 1.69.002.326.204.63.51.765 2.482 1.102 4.83 1.657 6.99 1.657 2.156 0 4.504-.555 6.985-1.657a.854.854 0 00.51-.766c.03-1.682.006-3.372-.076-5.053-.031-.596-.528-.83-1.046-.996-.546.333-1.212.464-1.85.464-.677 0-1.942-.157-2.993-1.18-.266-.258-.447-.661-.57-1.108-.32-.032-.64-.049-.96-.05zm-2.525 4.013c.539 0 .976.426.976.95v1.753c0 .525-.437.95-.976.95a.964.964 0 01-.976-.95v-1.752c0-.525.437-.951.976-.951zm5 0c.539 0 .976.426.976.95v1.753c0 .525-.437.95-.976.95a.964.964 0 01-.976-.95v-1.752c0-.525.437-.951.976-.951zM7.635 5.087c-1.05.102-1.935.438-2.385.906-.975 1.037-.765 3.668-.21 4.224.405.394 1.17.657 1.995.657h.09c.649-.013 1.785-.176 2.73-1.11.435-.41.705-1.433.675-2.47-.03-.834-.27-1.52-.63-1.813-.39-.336-1.275-.482-2.265-.394zm6.465.394c-.36.292-.6.98-.63 1.813-.03 1.037.24 2.06.675 2.47.968.957 2.136 1.104 2.776 1.11h.044c.825 0 1.59-.263 1.995-.657.555-.556.765-3.187-.21-4.224-.45-.468-1.335-.804-2.385-.906-.99-.088-1.875.058-2.265.394zM12 7.615c-.24 0-.525.015-.84.044.03.16.045.336.06.526l-.001.159a2.94 2.94 0 01-.014.25c.225-.022.425-.027.612-.028h.366c.187 0 .387.006.612.028-.015-.146-.015-.277-.015-.409.015-.19.03-.365.06-.526a9.29 9.29 0 00-.84-.044z"></path></svg></div>
+            <div><div class="name">billing-service</div><div class="cmd">GitHub Copilot · vb run -- copilot</div></div>
+            <span class="ziel">Ziel</span>
+          </div>
+          <div class="row">
+            <div class="ic" style="background:#F5EFE6"><svg height="26" style="flex:none" aria-hidden="true" viewBox="0 0 24 24" width="26" xmlns="http://www.w3.org/2000/svg"><title>Claude Code</title><path clip-rule="evenodd" d="M20.998 10.949H24v3.102h-3v3.028h-1.487V20H18v-2.921h-1.487V20H15v-2.921H9V20H7.488v-2.921H6V20H4.487v-2.921H3V14.05H0V10.95h3V5h17.998v5.949zM6 10.949h1.488V8.102H6v2.847zm10.51 0H18V8.102h-1.49v2.847z" fill="#D97757" fill-rule="evenodd"></path></svg></div>
+            <div><div class="name">voice-bridge</div><div class="cmd">Claude Code · vb run -- claude</div></div>
+          </div>
+          <div class="txt" style="padding:8px 4px 0;color:#FFCB80">Loslassen → Text wird ins Terminal getippt und abgeschickt</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><b>Fokus bleibt:</b> das Agent-Terminal muss nicht aktiv sein.</span>
+    <span><b>Nie still umleiten:</b> ist die Session weg, bleibt der Text erhalten.</span>
+    <span><b>Claude</b> kann Ziel sein (Claude Code), aber nicht die Spracherkennung.</span>
+  </div>
+</div>
+</body>
+</html>

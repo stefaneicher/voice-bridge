@@ -48,6 +48,12 @@ Beide Tasten sind in den Einstellungen frei belegbar (auch Tastaturtasten). Für
 
 Geht etwas schief (Session beendet, Transkription fehlgeschlagen), bleibt der Text bzw. die Aufnahme erhalten, bis du entscheidest: erneut versuchen, andere Session wählen, kopieren oder verwerfen.
 
+## Ablauf
+
+![Ablauf: Mikrofon → Voice-Bridge → Spracherkennung (OpenAI) → Text → Cursor oder Agent-Session](docs/ablauf.png)
+
+Die Spracherkennung läuft über OpenAI. Claude bietet keine Sprach-API an, kann aber Ziel sein (`vb run -- claude`).
+
 ## Mockups
 
 Alle Mockups im Browser: [Übersicht](https://raw.githack.com/stefaneicher/voice-bridge/main/docs/mockups/index.html)
@@ -61,6 +67,7 @@ Alle Mockups im Browser: [Übersicht](https://raw.githack.com/stefaneicher/voice
 | [3a](https://raw.githack.com/stefaneicher/voice-bridge/main/docs/mockups/3a-fehlerfaelle.html) | Fehlerfälle |
 | [3b](https://raw.githack.com/stefaneicher/voice-bridge/main/docs/mockups/3b-tray-menue.html) | Tray-Menü |
 | [3c](https://raw.githack.com/stefaneicher/voice-bridge/main/docs/mockups/3c-einstellungen.html) | Einstellungen |
+| [4](https://raw.githack.com/stefaneicher/voice-bridge/main/docs/mockups/4-ablauf.html) | Ablauf: Mikrofon → KI → Ziel |
 
 ## Lokal testen (ohne Release)
 
