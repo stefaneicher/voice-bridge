@@ -1,7 +1,8 @@
 name: Release
 
 # Builds and publishes a release. Normally called by release-please.yml after a release PR is
-# merged. Can also be started by hand (workflow_dispatch) or by pushing a tag v*.
+# merged. Can also be started by hand (workflow_dispatch on main: builds that commit and creates
+# the tag) or by pushing a tag v*.
 on:
   workflow_call:
     inputs:
@@ -23,6 +24,8 @@ permissions:
 
 env:
   TAG: ${{ inputs.tag || github.ref_name }}
+  # Started by hand, the tag may not exist yet: build the dispatched commit, tag it on publish.
+  REF: ${{ github.event_name == 'workflow_dispatch' && github.sha || inputs.tag || github.ref_name }}
 
 jobs:
   verify:
@@ -32,7 +35,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          ref: ${{ env.TAG }}
+          ref: ${{ env.REF }}
       - uses: actions/setup-node@v5
         with:
           node-version: 22
@@ -57,7 +60,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          ref: ${{ env.TAG }}
+          ref: ${{ env.REF }}
       - uses: actions/setup-node@v5
         with:
           node-version: 22
@@ -79,7 +82,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          ref: ${{ env.TAG }}
+          ref: ${{ env.REF }}
       - uses: actions/setup-node@v5
         with:
           node-version: 22
@@ -99,7 +102,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          ref: ${{ env.TAG }}
+          ref: ${{ env.REF }}
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -144,7 +147,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          ref: ${{ env.TAG }}
+          ref: ${{ env.REF }}
       - uses: actions/download-artifact@v4
         with:
           path: artifacts
@@ -159,7 +162,8 @@ jobs:
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" artifacts/* --clobber
           else
-            gh release create "$TAG" artifacts/* --title "Voice-Bridge $TAG" --generate-notes
+            gh release create "$TAG" artifacts/* --title "Voice-Bridge $TAG" --generate-notes \
+              --target "$(git rev-parse HEAD)"
           fi
       - name: Publish to GitHub Packages
         env:
