@@ -365,8 +365,11 @@
 <style>
   :global(html[data-view='settings']),
   :global(html[data-view='settings'] body) {
-    background: var(--vb-light-bg);
-    color: #1d2128;
+    background:
+      radial-gradient(900px 600px at 85% 5%, rgba(42, 165, 161, 0.14), transparent 60%),
+      radial-gradient(700px 500px at 0% 60%, rgba(36, 94, 113, 0.18), transparent 60%),
+      var(--vb-ink);
+    color: var(--vb-text);
     height: 100%;
   }
   .settings {
@@ -379,11 +382,12 @@
     flex-direction: column;
     gap: 2px;
     padding: 20px 12px;
-    border-right: 1px solid #e6e6e1;
-    background: #f3f3ef;
+    border-right: 1px solid var(--vb-line);
+    background: rgba(29, 29, 39, 0.7);
   }
   .brand {
-    font: 600 18px var(--font-title);
+    font: 800 18px var(--font-ui);
+    letter-spacing: -0.02em;
     padding: 0 10px 16px;
   }
   nav button {
@@ -393,30 +397,31 @@
     border-radius: 8px;
     background: transparent;
     font: 500 14px var(--font-ui);
-    color: #3b414c;
+    color: var(--vb-text-2);
     cursor: pointer;
   }
   nav button.active {
-    background: #fff;
-    color: var(--vb-light-accent);
-    box-shadow: 0 0 0 1px #e6e6e1;
+    background: var(--vb-ink-3);
+    color: var(--vb-dictate);
+    box-shadow: 0 0 0 1px var(--vb-line);
   }
   .version {
     margin-top: auto;
     padding: 10px;
     font-size: 12px;
-    color: #6b7280;
+    color: var(--vb-dim);
   }
   main {
     padding: 32px 40px;
     max-width: 760px;
   }
   h1 {
-    font: 600 24px var(--font-title);
+    font: 800 28px var(--font-ui);
+    letter-spacing: -0.03em;
     margin: 0 0 6px;
   }
   .lead {
-    color: #4b5260;
+    color: var(--vb-text-2);
     margin: 0 0 24px;
     line-height: 1.5;
   }
@@ -426,7 +431,7 @@
     justify-content: space-between;
     gap: 16px;
     padding: 14px 0;
-    border-bottom: 1px solid #ecece7;
+    border-bottom: 1px solid var(--vb-line);
   }
   .field.column {
     flex-direction: column;
@@ -438,22 +443,23 @@
   }
   .hint {
     font-size: 13px;
-    color: #6b7280;
+    color: var(--vb-text-3);
   }
   input:not([type='checkbox']),
   select,
   textarea {
     font: 14px var(--font-ui);
     padding: 8px 10px;
-    border: 1px solid #d6d6d0;
-    border-radius: 8px;
-    background: #fff;
+    border: 1px solid var(--vb-line);
+    border-radius: 10px;
+    background: var(--vb-ink-2);
+    color: var(--vb-text);
     min-width: 240px;
   }
   input[type='checkbox'] {
     width: 18px;
     height: 18px;
-    accent-color: var(--vb-light-accent);
+    accent-color: var(--vb-dictate);
   }
   .row {
     display: flex;
@@ -467,23 +473,26 @@
     font: 500 13px var(--font-mono);
     padding: 8px 14px;
     border-radius: 8px;
-    border: 1px solid #d6d6d0;
-    background: #fff;
+    border: 1px solid var(--vb-line);
+    background: var(--vb-ink-2);
+    color: var(--vb-text);
     cursor: pointer;
     min-width: 160px;
   }
   .btn {
     font: 500 14px var(--font-ui);
     padding: 9px 16px;
-    border-radius: 18px;
-    border: 1px solid var(--vb-light-accent);
-    background: var(--vb-light-accent);
-    color: #fff;
+    border-radius: 12px;
+    border: 1px solid var(--vb-dictate);
+    background: var(--vb-dictate);
+    color: var(--vb-on-accent);
+    font-weight: 600;
     cursor: pointer;
   }
   .btn.ghost {
-    background: transparent;
-    color: var(--vb-light-accent);
+    background: var(--vb-ink-2);
+    border-color: var(--vb-line);
+    color: var(--vb-text);
   }
   .btn:disabled {
     opacity: 0.5;
@@ -498,25 +507,26 @@
   }
   .notice {
     font-size: 13px;
-    color: var(--vb-light-accent);
+    color: var(--vb-dictate);
   }
   .hint.bad {
-    color: #b42318;
+    color: #ff8a8e;
   }
   .qr {
     display: block;
     margin: 12px 0;
     border-radius: 8px;
-    border: 1px solid #e6e6e1;
+    border: 1px solid var(--vb-line);
     image-rendering: pixelated;
   }
   .notice.bad {
-    color: #b42318;
+    color: #ff8a8e;
   }
   code {
     font-family: var(--font-mono);
     font-size: 13px;
-    background: #efefea;
+    background: var(--vb-ink-3);
+    color: var(--vb-agent);
     padding: 1px 5px;
     border-radius: 4px;
   }
@@ -526,7 +536,7 @@
     gap: 10px;
   }
   dt {
-    color: #6b7280;
+    color: var(--vb-text-3);
   }
   dd {
     margin: 0;

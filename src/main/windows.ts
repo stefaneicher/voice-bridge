@@ -145,7 +145,7 @@ export function createSettingsWindow(): BrowserWindow {
     minHeight: 520,
     show: false,
     title: 'Voice-Bridge – Einstellungen',
-    backgroundColor: '#FAFAF8',
+    backgroundColor: '#15151c',
     autoHideMenuBar: true,
     webPreferences: secureWebPreferences,
   });

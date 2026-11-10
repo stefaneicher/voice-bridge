@@ -233,7 +233,7 @@
     height: 20px;
     border-radius: 50%;
     font-size: 12px;
-    color: var(--vb-ink);
+    color: var(--vb-on-accent);
     flex: none;
   }
   .badge {
