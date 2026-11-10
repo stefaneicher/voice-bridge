@@ -190,6 +190,27 @@ Kurzform: Kontext → Entscheid → Folgen. Neue Einträge unten anhängen, alte
 
 ---
 
+## ADR-015 · Copilot-Sessions im Popup über die Session-Dateien von Copilot
+
+**Status:** angenommen (10.11.2026)
+
+**Kontext:** Das Popup zeigt nur laufende `vb run`-Terminals, alle heissen «copilot». Der Nutzer denkt aber in den Sessions, die Copilot CLI im Tab «Sessions» bzw. bei `/resume` zeigt (Titel, Ordner, «In use»). Copilot CLI 1.0.109 hat dafür keinen dokumentierten Listen-Befehl (`copilot sessions` kennt nur `import`). Dokumentiert sind nur `--resume=<id|name>` und `--session-id`.
+
+**Entscheid:**
+- Voice-Bridge **liest** `~/.copilot/session-state/*/workspace.yaml` (`id`, `name`, `cwd`, `updated_at`) und `inuse.<PID>.lock`. Es **schreibt nie** dort hinein.
+- `vb run` meldet die PID seines Kindprozesses. Passt sie zu einem `inuse.<PID>.lock`, ist die Session **verbunden** und trägt deren Titel.
+- Session ohne Lock = **ruhend**. Wählen und Loslassen öffnet ein neues Terminal (`wt new-tab -d <cwd> vb run --session <id> -- copilot --resume=<id>`). Der Text wird erst zugestellt, wenn sich genau dieses Terminal mit dieser Session-ID anmeldet; sonst nach 20 s Fehler mit erhaltenem Text.
+- Lock mit fremder PID = **fremd belegt**: sichtbar, grau, nicht wählbar. Kein Zugang ohne Tastatursimulation, und Copilot sperrt die Session.
+- Fehlt der Ordner oder ist das Format unbekannt, fällt das Popup ohne Fehler auf die heutigen `vb run`-Terminals zurück.
+
+**Folgen:**
+- Abhängigkeit von einem undokumentierten Format. Der Leser ist isoliert (eigener Adapter, Tests mit Beispieldateien) und toleriert fehlende Felder.
+- Ruhende Sessions starten einige Sekunden; das Overlay zeigt «Starte ‹Titel› …».
+- Windows Terminal (`wt`) wird für ruhende Sessions vorausgesetzt; fehlt es, ist die Zeile nicht wählbar.
+- Umsetzung: T-023 bis T-025.
+
+---
+
 ## Offen
 
 | # | Frage | Wer/Wann |

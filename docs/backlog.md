@@ -113,6 +113,21 @@ Legende: ☐ offen · ◐ in Arbeit · ☑ erledigt
 
 **M2 fertig, wenn** fünf parallele `vb run -- copilot`-Sessions per Mausrad und per Klick erreichbar sind und eine während der Aufnahme beendete Session korrekt als Fehler endet.
 
+### ☐ T-023 Copilot-Titel für verbundene Terminals (ADR-015)
+- `vb run` meldet die PID seines Kindprozesses (`register`/`heartbeat`).
+- Leser für `~/.copilot/session-state` (nur lesend, eigener Adapter); Zuordnung über `inuse.<PID>.lock`.
+- **Fertig, wenn** das Popup «Write Message Function» statt «copilot» zeigt, mit Ordner; ohne Session-Ordner oder bei unbekanntem Format bleibt es beim heutigen Namen. Unit-Tests mit Beispieldateien.
+
+### ☐ T-024 Ruhende Copilot-Sessions per Resume starten (ADR-015)
+- Popup listet zusätzlich Sessions ohne Lock (Standard: letzte 7 Tage, einstellbar), sortiert: verbundene zuerst, dann nach `updated_at`.
+- Loslassen öffnet `wt new-tab -d <cwd> vb run --session <id> -- copilot --resume=<id>`; Ziel ist die Session-ID.
+- Zustellung erst, wenn sich ein Terminal mit genau dieser Session-ID anmeldet. Overlay «Starte ‹Titel› …».
+- **Fertig, wenn** der Text in der neu geöffneten Session ankommt; nach 20 s ohne Anmeldung Fehler-Dialog mit «Kopieren», keine Umleitung. Integrationstest mit Fake-Starter.
+
+### ☐ T-025 Fremd belegte Sessions anzeigen (ADR-015)
+- Lock mit einer PID, die keinem `vb run` gehört: grau, «anderswo offen», nicht wählbar (Mausrad überspringt sie).
+- **Fertig, wenn** eine in IntelliJ offene Session sichtbar, aber nicht wählbar ist.
+
 ---
 
 ## Idee · Handy als Mikrofon
