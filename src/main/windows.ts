@@ -138,9 +138,12 @@ export function createRecorderWindow(): BrowserWindow {
 }
 
 export function createSettingsWindow(): BrowserWindow {
+  // Tall enough that the longest page (Spracherkennung) fits without scrolling, but never
+  // taller than the screen.
+  const { height: screenHeight } = screen.getPrimaryDisplay().workAreaSize;
   const win = new BrowserWindow({
     width: 1100,
-    height: 760,
+    height: Math.min(900, screenHeight),
     minWidth: 760,
     minHeight: 520,
     show: false,
