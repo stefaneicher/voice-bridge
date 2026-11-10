@@ -8,6 +8,7 @@ import { mount, type Component } from 'svelte';
 
 const view = location.hash.slice(1);
 document.documentElement.dataset.view = view;
+if (view === 'settings') document.title = 'Voice-Bridge – Einstellungen';
 
 // Each window loads only its own view, so overlay listeners never run in other windows.
 const views: Record<string, () => Promise<{ default: Component }>> = {
