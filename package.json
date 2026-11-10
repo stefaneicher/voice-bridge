@@ -1,0 +1,72 @@
+{
+  "name": "@stefaneicher/voice-bridge",
+  "version": "0.1.0",
+  "description": "Systemweite Push-to-Talk-Spracheingabe: Diktat am Cursor und Voice-Prompts an Agent-Sessions.",
+  "license": "UNLICENSED",
+  "author": "Stefan Eicher",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stefaneicher/voice-bridge.git"
+  },
+  "type": "module",
+  "main": "./out/main/index.js",
+  "bin": {
+    "voice-bridge": "bin/voice-bridge.js",
+    "vb": "bin/vb.js"
+  },
+  "files": [
+    "bin/",
+    "out/",
+    "resources/",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "dev": "electron-vite dev",
+    "start": "electron-vite preview",
+    "build": "electron-vite build",
+    "typecheck": "tsc --noEmit -p tsconfig.node.json && svelte-check --tsconfig tsconfig.web.json --fail-on-warnings",
+    "lint": "eslint . && prettier --check .",
+    "format": "prettier --write .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "dist:win": "npm run build && electron-builder --win --publish never",
+    "dist:mac": "npm run build && electron-builder --mac --publish never",
+    "dist:linux": "npm run build && electron-builder --linux --publish never",
+    "prepack": "npm run build"
+  },
+  "dependencies": {
+    "koffi": "^3.3.7",
+    "node-pty": "^1.1.0",
+    "uiohook-napi": "^1.5.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@fontsource/inter": "^5.3.0",
+    "@fontsource/jetbrains-mono": "^5.3.0",
+    "@fontsource/space-grotesk": "^5.3.0",
+    "@sveltejs/vite-plugin-svelte": "^7.3.1",
+    "@testing-library/svelte": "^5.4.2",
+    "@types/node": "^22.20.5",
+    "electron": "^45.2.3",
+    "electron-builder": "^26.18.0",
+    "electron-vite": "^6.0.0",
+    "eslint": "^10.14.0",
+    "eslint-plugin-svelte": "^3.24.1",
+    "globals": "^17.14.0",
+    "jsdom": "^31.0.0",
+    "prettier": "^3.9.10",
+    "prettier-plugin-svelte": "^4.1.1",
+    "svelte": "^5.57.3",
+    "svelte-check": "^4.7.8",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.72.2",
+    "vite": "^8.3.7",
+    "vitest": "^5.1.0"
+  }
+}

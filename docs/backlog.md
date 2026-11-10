@@ -4,11 +4,13 @@ Reihenfolge = Priorität. Jede Aufgabe hat Abnahmekriterien. Ein Spike endet mit
 
 Legende: ☐ offen · ◐ in Arbeit · ☑ erledigt
 
+**Stand 10.11.2026:** Code für M1 und M2 ist umgesetzt und unter Linux getestet (Unit- und PTY-Integrationstests, App-Start). ◐ heisst: umgesetzt, aber noch nicht auf einem echten Windows-Rechner abgenommen. Offen sind die Messungen und Abnahmen, die Hardware brauchen: S0 (Firmen-npm), S1/S2 (Hook und Fokus unter Windows), S4 (STT-Vergleich mit eigenen Aufnahmen), T-010 (Startlatenz), T-012 (Einfügen in Notepad, Outlook, Browser), M4 (Citrix). Das Tray-Flyout aus Mockup 3b ist vorerst ein natives Menü (ADR-010).
+
 ---
 
 ## Phase 0 · Grundgerüst
 
-### ☐ T-001 Projekt aufsetzen
+### ☑ T-001 Projekt aufsetzen
 - electron-vite mit Svelte-5-Template, TypeScript `strict`, ESLint + Prettier, Vitest.
 - Ordner gemäss [`PLAN.md`](PLAN.md#8-repo-struktur-ziel), leere `index.ts` je Modul.
 - `npm run dev`, `npm test`, `npm run build` funktionieren.
@@ -16,7 +18,7 @@ Legende: ☐ offen · ◐ in Arbeit · ☑ erledigt
 
 **Fertig, wenn** ein leeres Tray-Icon unter Windows erscheint und die CI grün ist.
 
-### ☐ T-002 Core-Typen und State Machine (ohne I/O)
+### ☑ T-002 Core-Typen und State Machine (ohne I/O)
 - `src/core/`: Typen `HotkeyBinding`, `SessionInfo`, `DeliveryResult`, `Failure`, State Machine gemäss PLAN §2.
 - Ports als Interfaces: `InputPort`, `RecorderPort`, `SpeechToText`, `AgentAdapter`, `TextInserter`, `Clock`.
 - Fakes in `test/fakes/`.
@@ -34,7 +36,7 @@ Legende: ☐ offen · ◐ in Arbeit · ☑ erledigt
 
 **Ergebnis:** Ja/Nein pro Paket in `decisions.md`.
 
-### ☐ S1 Globaler Hook mit Unterdrückung (Windows)
+### ◐ S1 Globaler Hook mit Unterdrückung (Windows)
 - `WH_MOUSE_LL` über koffi im Electron-Main-Prozess.
 - XButton1/2 down/up loggen **und verschlucken**: Der Browser darf nicht zurückblättern.
 - Zusätzlich das Mausrad verschlucken, solange XButton2 gehalten ist.
@@ -42,14 +44,14 @@ Legende: ☐ offen · ◐ in Arbeit · ☑ erledigt
 
 **Fertig, wenn** ein Demo-Log Down/Up/Wheel zeigt und Chrome nicht navigiert.
 
-### ☐ S2 Overlay ohne Fokusdiebstahl
+### ◐ S2 Overlay ohne Fokusdiebstahl
 - Transparentes, rahmenloses Fenster, `focusable:false`, `showInactive()`, `alwaysOnTop:'screen-saver'`.
 - In Notepad tippen, Overlay ein- und ausblenden: Der Cursor bleibt, Tippen geht weiter.
 - Popup-Variante: Klick auf eine Zeile wird erkannt, Notepad behält den Fokus (sonst `WS_EX_NOACTIVATE` per koffi setzen).
 
 **Fertig, wenn** beide Varianten nachweislich den Fokus nicht stehlen.
 
-### ☐ S3 PTY-Wrapper
+### ◐ S3 PTY-Wrapper
 - `vb run -- copilot` (zum Testen auch `-- node test/echo-agent.js`) mit node-pty.
 - Ein Test-Client schreibt per Named Pipe Text in die Session, während ein anderes Fenster aktiv ist.
 - Multi-line per Bracketed Paste (`ESC[200~ … ESC[201~`), danach `\r`.
@@ -67,27 +69,27 @@ Legende: ☐ offen · ◐ in Arbeit · ☑ erledigt
 
 ## Phase 2 · M1 Diktat (Windows)
 
-### ☐ T-010 Audio-Recorder
+### ◐ T-010 Audio-Recorder
 - Mikrofon vorwärmen, Start unter 50 ms nach Tastendruck.
 - 16 kHz mono PCM, WAV im RAM, Pegel-Events 30×/s.
 - Kein Schreiben auf Disk.
 
-### ☐ T-011 OpenAiTranscriber
+### ☑ T-011 OpenAiTranscriber
 - `POST /v1/audio/transcriptions`, Timeout 15 s, Abbruch möglich.
 - Glossar aus den Einstellungen als `prompt`.
 - Optional Stufe 2.
 - Fehler als `Failure{kind:'stt'}` mit Audio-Referenz.
 
-### ☐ T-012 TextInserter (Windows)
+### ◐ T-012 TextInserter (Windows)
 - Zwischenablage sichern, Text setzen, `SendInput` Ctrl+V, nach 300 ms wiederherstellen.
 - Kein Enter.
 - Kein fokussiertes Textfeld (wo erkennbar): Text in der Zwischenablage lassen und Fehler «Kein Textfeld» melden.
 
-### ☐ T-013 Pill und Toast (Svelte)
+### ☑ T-013 Pill und Toast (Svelte)
 - Gemäss Mockups 1a/1b und [`ui-spec.md`](ui-spec.md).
 - Zustände per IPC vom Main-Prozess.
 
-### ☐ T-014 Tray
+### ◐ T-014 Tray
 - Icon-Zustände, Menü gemäss Mockup 3b (Profil anzeigen, Pausieren, Einstellungen, Beenden, Verlauf).
 
 **M1 fertig, wenn** Diktat in Notepad, Outlook und Browser funktioniert, inklusive Fehlerfälle.
@@ -96,16 +98,16 @@ Legende: ☐ offen · ◐ in Arbeit · ☑ erledigt
 
 ## Phase 3 · M2 Agent
 
-### ☐ T-020 Session-Registry und PtyBridgeAdapter
+### ☑ T-020 Session-Registry und PtyBridgeAdapter
 - Named-Pipe-Server pro Profil.
 - Protokoll NDJSON: `register`, `heartbeat`, `bye` vom Wrapper; `inject` von Voice-Bridge.
 - Session weg bei `bye`, geschlossener Pipe oder Heartbeat über 5 s.
 
-### ☐ T-021 Session-Popup
+### ☑ T-021 Session-Popup
 - Gemäss Mockup 2a: Mausrad über den Hook (nicht über DOM-Events, da kein Fokus), Klick über das Fenster.
 - Auswahl per ID, Live-Update der Liste.
 
-### ☐ T-022 Zustellung und Fehlerfälle
+### ☑ T-022 Zustellung und Fehlerfälle
 - Toast 2b.
 - Dialoge 3a für Session weg, Senden fehlgeschlagen, keine Sessions.
 

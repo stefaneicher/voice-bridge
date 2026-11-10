@@ -1,0 +1,98 @@
+:root {
+  --vb-ink: #0e1014;
+  --vb-ink-2: #15181e;
+  --vb-ink-3: #181b22;
+  --vb-line: rgba(255, 255, 255, 0.09);
+  --vb-text: #f2f4f7;
+  --vb-text-2: #c5cbd6;
+  --vb-text-3: #9aa3b2;
+  --vb-dictate: #5ee6b0;
+  --vb-agent: #ffb547;
+  --vb-rec: #ff5a5f;
+  --vb-light-bg: #fafaf8;
+  --vb-light-accent: #0f7a57;
+  --vb-shadow: 0 24px 70px rgba(0, 0, 0, 0.6);
+  --font-ui: 'Inter', system-ui, sans-serif;
+  --font-title: 'Space Grotesk', 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+}
+
+html:not([data-view='settings']),
+html:not([data-view='settings']) body {
+  background: transparent;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* Overlays leave room for the drop shadow inside the transparent window. */
+.overlay-frame {
+  display: inline-block;
+  padding: 16px 16px 28px;
+}
+
+.rec-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--vb-rec);
+  animation: vb-pulse 1.2s ease-in-out infinite;
+  flex: none;
+}
+
+@keyframes vb-pulse {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.chip {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--vb-ink);
+  padding: 5px 9px;
+  border-radius: 14px;
+  white-space: nowrap;
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+button.vb-btn {
+  font: 500 13px var(--font-ui);
+  border-radius: 18px;
+  padding: 8px 14px;
+  border: 1px solid var(--vb-line);
+  background: transparent;
+  color: var(--vb-text);
+  cursor: pointer;
+}
+
+button.vb-btn.primary {
+  border-color: transparent;
+  color: var(--vb-ink);
+}
+
+button.vb-btn:hover {
+  filter: brightness(1.1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rec-dot {
+    animation: none;
+  }
+  * {
+    transition: none !important;
+  }
+}
