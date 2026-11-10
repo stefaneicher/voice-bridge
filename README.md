@@ -1,30 +1,31 @@
 # Voice-Bridge
 
-Systemweite Push-to-Talk-Spracheingabe für Windows (später macOS/Linux).
+Systemweite Push-to-Talk-Spracheingabe für Windows. Schweizerdeutsch rein, Hochdeutsch raus.
 
-- **Diktat:** Taste halten, sprechen, loslassen. Der Text erscheint am Cursor, ohne automatisches Absenden.
-- **Agent:** Taste halten. Ein Session-Popup erscheint, Mausrad oder Klick wählt die Session. Beim Loslassen geht der Prompt an die gewählte Agent-Session (z. B. GitHub Copilot CLI), ohne Fokuswechsel.
+## Benutzung
 
-Schweizerdeutsch rein, Hochdeutsch raus. Getrennte Profile für privat und Citrix.
+**Diktat:** Diktat-Taste halten, sprechen, loslassen. Der Text erscheint am Cursor, ohne automatisches Absenden.
 
-## Status
+**Agent:** Agent-Taste halten und sprechen. Beim Zeiger erscheint ein Popup mit den laufenden Agent-Sessions. Mit dem Mausrad oder per Klick die Session wählen. Beim Loslassen geht der Prompt an die markierte Session, ohne Fokuswechsel.
 
-Planung abgeschlossen, Umsetzung startet mit [Backlog](docs/backlog.md) T-001.
+Damit eine Session in der Liste erscheint, den Agent über Voice-Bridge starten:
 
-## Dokumentation
+```bash
+vb run -- copilot
+```
 
-| Dokument | Inhalt |
+Beide Tasten sind frei belegbar (auch Zusatztasten der Maus). Einstellungen über das Tray-Icon.
+
+## Mockups
+
+Alle Mockups im Browser öffnen: [docs/mockups/index.html](docs/mockups/index.html)
+
+| Mockup | Inhalt |
 |---|---|
-| [docs/requirements.md](docs/requirements.md) | Anforderungen |
-| [docs/PLAN.md](docs/PLAN.md) | Architektur, Technik, Meilensteine |
-| [docs/decisions.md](docs/decisions.md) | Entscheide (ADR) und offene Fragen |
-| [docs/backlog.md](docs/backlog.md) | Aufgaben mit Abnahmekriterien |
-| [docs/ui-spec.md](docs/ui-spec.md) | Design-Tokens, Fenster, Verhalten |
-| [docs/mockups/](docs/mockups/index.html) | HTML-Mockups aller Use Cases (im Browser öffnen) |
-| [docs/citrix.md](docs/citrix.md) | Citrix-Testprotokoll |
-| [examples/](examples/) | Beispiel-Konfiguration, Adapter, Sessions, Pipe-Protokoll |
-| [AGENTS.md](AGENTS.md) | Regeln für Code-Agents |
-
-## Stack
-
-Electron · TypeScript · Svelte 5 · electron-vite · Vitest · npm
+| [1a](docs/mockups/1a-diktat-aufnahme.html) | Diktat: Aufnahme läuft |
+| [1b](docs/mockups/1b-diktat-eingefuegt.html) | Diktat: Text eingefügt |
+| [2a](docs/mockups/2a-agent-session-popup.html) | Agent: Session-Popup |
+| [2b](docs/mockups/2b-agent-gesendet.html) | Agent: Prompt gesendet |
+| [3a](docs/mockups/3a-fehlerfaelle.html) | Fehlerfälle |
+| [3b](docs/mockups/3b-tray-menue.html) | Tray-Menü |
+| [3c](docs/mockups/3c-einstellungen.html) | Einstellungen |
