@@ -3,17 +3,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Handy als Mikrofon</title>
 <style>
-:root{--ink:#0E1014;--ink2:#15181E;--ink3:#181B22;--line:rgba(255,255,255,.09);--t1:#F2F4F7;--t2:#C5CBD6;--t3:#9AA3B2;--mint:#5EE6B0;--amber:#FFB547;--rec:#FF5A5F}
+:root{--ink:#15151C;--ink2:#1D1D27;--ink3:#24242F;--line:rgba(255,255,255,.09);--t1:#EDF6F3;--t2:#C6CAD3;--t3:#9A9CAB;--mint:#2AA5A1;--amber:#A3D858;--rec:#FF5A5F}
 *{box-sizing:border-box}
-html{background:#07080B}
+html{background:#111117}
 body{margin:0;font-family:Inter,"Segoe UI",system-ui,sans-serif;color:var(--t1);-webkit-font-smoothing:antialiased}
 .stage{position:relative;width:1600px;height:900px;margin:0 auto;overflow:hidden;
-  background:radial-gradient(900px 600px at 78% 40%,rgba(94,230,176,.16),transparent 60%),radial-gradient(700px 500px at 20% 90%,rgba(255,181,71,.10),transparent 60%),#0B0D11}
-.badge{position:absolute;top:36px;right:44px;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--amber);border:1px solid rgba(255,181,71,.5);padding:6px 12px;border-radius:14px}
-.brand{position:absolute;top:36px;left:72px;display:flex;align-items:center;gap:10px;font:600 18px "Space Grotesk",Inter,sans-serif;color:var(--t2)}
+  background:radial-gradient(900px 600px at 78% 40%,rgba(42,165,161,.16),transparent 60%),radial-gradient(700px 500px at 20% 90%,rgba(163,216,88,.10),transparent 60%),#15151C}
+.badge{position:absolute;top:36px;right:44px;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--amber);border:1px solid rgba(163,216,88,.5);padding:6px 12px;border-radius:14px}
+.brand{position:absolute;top:36px;left:72px;display:flex;align-items:center;gap:10px;font:600 18px Inter,sans-serif;color:var(--t2)}
 .brand .dot{width:28px;height:28px;border-radius:8px;background:var(--mint);display:grid;place-items:center;color:var(--ink)}
 .copy{position:absolute;left:72px;top:150px;width:560px}
-h1{font:700 64px/1.04 "Space Grotesk",Inter,sans-serif;letter-spacing:-.02em;margin:0 0 22px}
+h1{font:700 64px/1.04 Inter,sans-serif;letter-spacing:-.02em;margin:0 0 22px}
 h1 em{font-style:normal;color:var(--mint)}
 .lead{font-size:21px;line-height:1.5;color:var(--t2);margin:0 0 36px}
 .feat{display:flex;flex-direction:column;gap:16px}
@@ -26,18 +26,18 @@ h1 em{font-style:normal;color:var(--mint)}
 .notch{position:absolute;top:14px;left:50%;transform:translateX(-50%);width:110px;height:30px;border-radius:16px;background:#000}
 .conn{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--t2)}
 .conn i{width:8px;height:8px;border-radius:50%;background:var(--mint);box-shadow:0 0 10px var(--mint)}
-.pc{font:600 20px "Space Grotesk",Inter,sans-serif;margin:6px 0 18px}
+.pc{font:600 20px Inter,sans-serif;margin:6px 0 18px}
 .lbl{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--t3);margin-bottom:8px}
 .sess{display:flex;flex-direction:column;gap:6px;margin-bottom:24px}
 .s{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;font-size:13px;background:var(--ink3)}
 .s .ic{width:28px;height:28px;border-radius:7px;display:grid;place-items:center;flex:none}
-.s.sel{background:rgba(255,181,71,.14);box-shadow:inset 0 0 0 1px rgba(255,181,71,.6)}
+.s.sel{background:rgba(163,216,88,.14);box-shadow:inset 0 0 0 1px rgba(163,216,88,.6)}
 .s .n{font-family:"JetBrains Mono",Consolas,monospace}
 .s .z{margin-left:auto;font-size:10px;font-weight:700;color:var(--ink);background:var(--amber);padding:2px 7px;border-radius:9px}
 .wave{display:flex;align-items:center;justify-content:center;gap:3px;height:44px;margin-bottom:18px}
 .wave i{display:block;width:4px;border-radius:3px;background:var(--mint)}
 .ptt{width:170px;height:170px;margin:0 auto;border-radius:50%;display:grid;place-items:center;color:var(--ink);
-  background:radial-gradient(circle at 35% 30%,#8FF2CB,var(--mint));box-shadow:0 0 0 14px rgba(94,230,176,.16),0 0 0 30px rgba(94,230,176,.07),0 20px 50px rgba(94,230,176,.35)}
+  background:radial-gradient(circle at 35% 30%,#5FC9C5,var(--mint));box-shadow:0 0 0 14px rgba(42,165,161,.16),0 0 0 30px rgba(42,165,161,.07),0 20px 50px rgba(42,165,161,.35)}
 .hint{text-align:center;font-size:13px;color:var(--t2);margin-top:22px}
 .hint b{color:var(--t1)}
 /* signal */
@@ -50,7 +50,7 @@ h1 em{font-style:normal;color:var(--mint)}
 .bar{display:flex;align-items:center;gap:8px;color:var(--t3);font-size:11.5px;margin-bottom:10px;font-family:Inter,sans-serif}
 .bar .tab{display:flex;align-items:center;gap:6px;background:#1A1D24;color:var(--t1);padding:4px 10px;border-radius:6px}
 .term .p{color:var(--t3)}
-.typed{color:var(--t1);background:rgba(94,230,176,.10);border-left:2px solid var(--mint);padding:4px 8px;margin:8px 0;border-radius:0 6px 6px 0}
+.typed{color:var(--t1);background:rgba(42,165,161,.10);border-left:2px solid var(--mint);padding:4px 8px;margin:8px 0;border-radius:0 6px 6px 0}
 .via{font-family:Inter,sans-serif;font-size:10.5px;color:var(--mint);font-weight:600}
 .base{height:18px;margin:0 -26px;background:linear-gradient(#2A2E37,#1A1D23);border-radius:0 0 18px 18px}
 .caption{position:absolute;left:1120px;top:600px;width:440px;font-size:15px;color:var(--t2);line-height:1.5}
@@ -59,13 +59,13 @@ h1 em{font-style:normal;color:var(--mint)}
 </style></head>
 <body><div class="stage">
   <div class="brand"><span class="dot"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 17v4"/></svg></span>Voice-Bridge</div>
-  <div class="badge">Konzept · in Planung</div>
+  <div class="badge">Android-App</div>
 
   <div class="copy">
     <h1>Dein Handy ist <em>das Mikrofon.</em></h1>
     <p class="lead">Halten, sprechen, loslassen. Der Text erscheint auf deinem Computer: am Cursor oder direkt in deiner Copilot- oder Claude-Session.</p>
     <div class="feat">
-      <div class="f"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3"/></svg></span><div>Einmal QR-Code scannen<small>Keine App, läuft im Handy-Browser</small></div></div>
+      <div class="f"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3"/></svg></span><div>Einmal QR-Code scannen<small>Android-App koppeln, Verbindung verschlüsselt</small></div></div>
       <div class="f"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.55a11 11 0 0 1 14 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><path d="M12 20h.01"/></svg></span><div>Kein Headset, kein Kabel<small>Übers WLAN, vom Sofa oder vom Stehpult</small></div></div>
       <div class="f"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span><div>Schweizerdeutsch rein, Hochdeutsch raus<small>Audio nur im Arbeitsspeicher, nie gespeichert</small></div></div>
     </div>
@@ -78,7 +78,7 @@ h1 em{font-style:normal;color:var(--mint)}
     <div class="sess">
       <div class="s sel"><span class="ic" style="background:#24292F;color:#fff"><svg fill="currentColor" fill-rule="evenodd" height="18" style="flex:none" aria-hidden="true" viewBox="0 0 24 24" width="18" xmlns="http://www.w3.org/2000/svg"><title>GithubCopilot</title><path d="M19.245 5.364c1.322 1.36 1.877 3.216 2.11 5.817.622 0 1.2.135 1.592.654l.73.964c.21.278.323.61.323.955v2.62c0 .339-.173.669-.453.868C20.239 19.602 16.157 21.5 12 21.5c-4.6 0-9.205-2.583-11.547-4.258-.28-.2-.452-.53-.453-.868v-2.62c0-.345.113-.679.321-.956l.73-.963c.392-.517.974-.654 1.593-.654l.029-.297c.25-2.446.81-4.213 2.082-5.52 2.461-2.54 5.71-2.851 7.146-2.864h.198c1.436.013 4.685.323 7.146 2.864zm-7.244 4.328c-.284 0-.613.016-.962.05-.123.447-.305.85-.57 1.108-1.05 1.023-2.316 1.18-2.994 1.18-.638 0-1.306-.13-1.851-.464-.516.165-1.012.403-1.044.996a65.882 65.882 0 00-.063 2.884l-.002.48c-.002.563-.005 1.126-.013 1.69.002.326.204.63.51.765 2.482 1.102 4.83 1.657 6.99 1.657 2.156 0 4.504-.555 6.985-1.657a.854.854 0 00.51-.766c.03-1.682.006-3.372-.076-5.053-.031-.596-.528-.83-1.046-.996-.546.333-1.212.464-1.85.464-.677 0-1.942-.157-2.993-1.18-.266-.258-.447-.661-.57-1.108-.32-.032-.64-.049-.96-.05zm-2.525 4.013c.539 0 .976.426.976.95v1.753c0 .525-.437.95-.976.95a.964.964 0 01-.976-.95v-1.752c0-.525.437-.951.976-.951zm5 0c.539 0 .976.426.976.95v1.753c0 .525-.437.95-.976.95a.964.964 0 01-.976-.95v-1.752c0-.525.437-.951.976-.951zM7.635 5.087c-1.05.102-1.935.438-2.385.906-.975 1.037-.765 3.668-.21 4.224.405.394 1.17.657 1.995.657h.09c.649-.013 1.785-.176 2.73-1.11.435-.41.705-1.433.675-2.47-.03-.834-.27-1.52-.63-1.813-.39-.336-1.275-.482-2.265-.394zm6.465.394c-.36.292-.6.98-.63 1.813-.03 1.037.24 2.06.675 2.47.968.957 2.136 1.104 2.776 1.11h.044c.825 0 1.59-.263 1.995-.657.555-.556.765-3.187-.21-4.224-.45-.468-1.335-.804-2.385-.906-.99-.088-1.875.058-2.265.394zM12 7.615c-.24 0-.525.015-.84.044.03.16.045.336.06.526l-.001.159a2.94 2.94 0 01-.014.25c.225-.022.425-.027.612-.028h.366c.187 0 .387.006.612.028-.015-.146-.015-.277-.015-.409.015-.19.03-.365.06-.526a9.29 9.29 0 00-.84-.044z"></path></svg></span><span class="n">billing-service</span><span class="z">ZIEL</span></div>
       <div class="s"><span class="ic" style="background:#F5EFE6"><svg height="18" style="flex:none" aria-hidden="true" viewBox="0 0 24 24" width="18" xmlns="http://www.w3.org/2000/svg"><title>Claude Code</title><path clip-rule="evenodd" d="M20.998 10.949H24v3.102h-3v3.028h-1.487V20H18v-2.921h-1.487V20H15v-2.921H9V20H7.488v-2.921H6V20H4.487v-2.921H3V14.05H0V10.95h3V5h17.998v5.949zM6 10.949h1.488V8.102H6v2.847zm10.51 0H18V8.102h-1.49v2.847z" fill="#D97757" fill-rule="evenodd"></path></svg></span><span class="n">voice-bridge</span></div>
-      <div class="s"><span class="ic" style="background:rgba(94,230,176,.15);color:var(--mint)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M17 22h-1a4 4 0 0 1-4-4V6a4 4 0 0 1 4-4h1"/><path d="M7 22h1a4 4 0 0 0 4-4v-1"/><path d="M7 2h1a4 4 0 0 1 4 4v1"/></svg></span>Am Cursor einfügen</div>
+      <div class="s"><span class="ic" style="background:rgba(42,165,161,.15);color:var(--mint)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M17 22h-1a4 4 0 0 1-4-4V6a4 4 0 0 1 4-4h1"/><path d="M7 22h1a4 4 0 0 0 4-4v-1"/><path d="M7 2h1a4 4 0 0 1 4 4v1"/></svg></span>Am Cursor einfügen</div>
     </div>
     <div class="wave"><i style="height:8px"></i><i style="height:18px"></i><i style="height:30px"></i><i style="height:14px"></i><i style="height:36px"></i><i style="height:24px"></i><i style="height:10px"></i><i style="height:28px"></i><i style="height:40px"></i><i style="height:20px"></i><i style="height:12px"></i><i style="height:32px"></i><i style="height:22px"></i><i style="height:9px"></i><i style="height:26px"></i><i style="height:16px"></i></div>
     <div class="ptt"><svg width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 17v4"/></svg></div>
@@ -103,5 +103,5 @@ h1 em{font-style:normal;color:var(--mint)}
   </div>
   <div class="caption"><b>Gesprochen auf dem Handy, getippt am PC.</b> Das Terminal muss nicht aktiv sein. Ist die Session weg, bleibt der Text erhalten.</div>
 
-  <div class="foot">Voraussetzung: Handy und PC im selben Netz. Im Firmennetz und unter Citrix noch zu prüfen.</div>
+  <div class="foot">Voraussetzung: Handy und PC im selben WLAN. Im Firmennetz und unter Citrix noch zu prüfen.</div>
 </div></body></html>

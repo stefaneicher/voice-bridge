@@ -44,6 +44,17 @@ npm run lint
 npm run build      # Paket für das aktuelle Betriebssystem
 ```
 
+## Android-App (`android/`)
+
+Kotlin + Jetpack Compose, Gradle-Wrapper, braucht das Android-SDK (`ANDROID_HOME`). Protokoll und Sicherheit: ADR-013.
+
+```bash
+cd android
+./gradlew testDebugUnitTest lintDebug assembleRelease
+```
+
+Das Protokoll in `android/.../Protocol.kt` muss zu `src/remote/protocol.ts` passen; beide Seiten haben Tests dafür.
+
 ## Profile
 
 `--profile privat` bzw. `--profile citrix`: getrennte Konfiguration, Secrets, Pipe-Namen und Instanz-Locks (ADR-006).

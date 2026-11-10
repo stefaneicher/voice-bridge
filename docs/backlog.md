@@ -121,7 +121,8 @@ Legende: ☐ offen · ◐ in Arbeit · ☑ erledigt
 - Liste der Audio-Eingänge (Recorder-Fenster, `enumerateDevices`), Auswahl pro Profil in `audio.deviceId`.
 - Damit funktionieren Handy-Mikrofon-Apps (z. B. WO Mic), die unter Windows als Mikrofon erscheinen.
 
-### ☐ T-031 Handy als Push-to-Talk-Mikrofon (Konzept, Mockup 5)
+### ◐ T-031 Handy als Push-to-Talk-Mikrofon (Android-App, ADR-013, Mockup 5)
+- **Umgesetzt:** Server mit TLS-Pinning und Kopplung (PC), Android-App mit QR-Scan, Ziel-Auswahl, Halten-Knopf, Rückmeldung; Unit-, Integrations- und App-Tests. **Offen:** Test auf einem echten Handy, im Firmennetz und unter Citrix.
 - Voice-Bridge startet pro Profil einen HTTPS-Server im lokalen Netz und zeigt einen QR-Code (URL + Einmal-Token).
 - Handy-Browser: grosser Halten-Knopf, Session-Auswahl, Ziel «Am Cursor». Audio geht per WebSocket an den PC, ab dort gleicher Ablauf wie mit der Maustaste.
 - HTTPS ist Pflicht, weil Handy-Browser das Mikrofon sonst nicht freigeben: eigenes Zertifikat, einmalige Warnung auf dem Handy.

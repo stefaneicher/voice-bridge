@@ -4,24 +4,27 @@ Abgeleitet aus den Mockups in [`mockups/`](mockups/index.html). Die Mockups sind
 
 ## Design-Tokens
 
+Seit ADR-014 im Stil von [stefaneicher.github.io](https://stefaneicher.github.io/) (Disroop). Gilt für Desktop-App, Android-App, Webseite und Grafiken.
+
 | Token | Wert | Verwendung |
 |---|---|---|
-| `--vb-ink` | `#0E1014` | Hintergrund aller Overlays (Pill, Popup, Toast, Tray) |
-| `--vb-ink-2` | `#15181E` | Footer und Sekundärflächen in Overlays |
-| `--vb-ink-3` | `#181B22` | Eingebettete Boxen (Transkript, Kacheln) |
-| `--vb-line` | `rgba(255,255,255,.09)` | 1-px-Rahmen der Overlays |
-| `--vb-text` | `#F2F4F7` | Primärtext auf dunkel |
-| `--vb-text-2` | `#C5CBD6` | Sekundärtext |
-| `--vb-text-3` | `#9AA3B2` | Labels, Metadaten (Kontrast ≥ 4.5:1 auf `--vb-ink`) |
-| `--vb-dictate` | `#5EE6B0` | Akzent Diktat (Mint) |
-| `--vb-agent` | `#FFB547` | Akzent Agent (Amber) |
+| `--vb-ink` | `#15151C` | Hintergrund aller Overlays, Einstellungen, Android-App |
+| `--vb-ink-2` | `#1D1D27` | Flächen (Panel), Footer, Eingabefelder |
+| `--vb-ink-3` | `#24242F` | Eingebettete Boxen (Transkript, Zeilen) |
+| `--vb-line` | `#2E2E3B` | 1-px-Rahmen |
+| `--vb-text` | `#EDF6F3` | Primärtext |
+| `--vb-text-2` | `#C6CAD3` | Sekundärtext |
+| `--vb-text-3` | `#9A9CAB` | Labels, Metadaten |
+| `--vb-dim` | `#686A7A` | Sehr dezente Texte (Version, Fusszeile) |
+| `--vb-dictate` | `#2AA5A1` | Akzent Diktat (Teal) |
+| `--vb-agent` | `#A3D858` | Akzent Agent (Lime) |
+| `--vb-blue` | `#245E71` | Ergänzungsfarbe (Verläufe, Logo) |
+| `--vb-on-accent` | `#0D1716` | Text auf Teal oder Lime |
 | `--vb-rec` | `#FF5A5F` | Aufnahmepunkt, Fehler |
-| `--vb-light-bg` | `#FAFAF8` | Einstellungsfenster |
-| `--vb-light-accent` | `#0F7A57` | Primärfarbe im hellen Fenster |
 
-Schriften: **Inter** (UI), **Space Grotesk** (Titel), **JetBrains Mono** (Session-Namen, Timer, Terminal). Mit der App ausliefern, nicht von Google Fonts laden (offline und Citrix).
+Schriften: **Inter** (UI, Titel in 800), **JetBrains Mono** (Session-Namen, Timer, Terminal, Labels). Mit der App ausliefern, nicht von Google Fonts laden (offline und Citrix).
 
-Radien: Pill 30 px (halbe Höhe), Popup und Toast 16 px, Buttons 18 px, Zeilen 10 px. Schatten: `0 24px 70px rgba(0,0,0,.6)`.
+Radien: Pill 30 px (halbe Höhe), Popup und Toast 16 px, Buttons 12 px, Zeilen 10 px. Schatten: `0 24px 70px rgba(0,0,0,.6)`.
 
 Icons: Inline-SVG mit Strich (Lucide-Stil, 2 px), keine Emojis.
 

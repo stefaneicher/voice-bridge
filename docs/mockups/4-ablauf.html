@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Ablauf Voice-Bridge</title>
 <style>
-:root{--ink:#0E1014;--ink2:#15181E;--ink3:#181B22;--line:rgba(255,255,255,.09);--t1:#F2F4F7;--t2:#C5CBD6;--t3:#9AA3B2;--mint:#5EE6B0;--amber:#FFB547;--rec:#FF5A5F}
+:root{--ink:#15151C;--ink2:#1D1D27;--ink3:#24242F;--line:rgba(255,255,255,.09);--t1:#EDF6F3;--t2:#C6CAD3;--t3:#9A9CAB;--mint:#2AA5A1;--amber:#A3D858;--rec:#FF5A5F}
 *{box-sizing:border-box}
-html{background:#0B0D11}
+html{background:#15151C}
 body{margin:0;font-family:Inter,"Segoe UI",system-ui,sans-serif;color:var(--t1);-webkit-font-smoothing:antialiased}
 .page{width:1760px;padding:40px 48px 44px;margin:0 auto}
-h1{font:600 30px "Space Grotesk",Inter,sans-serif;margin:0 0 6px;letter-spacing:-.01em}
+h1{font:600 30px Inter,sans-serif;margin:0 0 6px;letter-spacing:-.01em}
 .sub{color:var(--t3);font-size:15px;margin:0 0 34px}
 .flow{display:grid;grid-template-columns:200px 34px 230px 34px 330px 34px 240px 34px 1fr;align-items:center}
 .card{background:var(--ink);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 24px 70px rgba(0,0,0,.45)}
@@ -26,7 +26,7 @@ h1{font:600 30px "Space Grotesk",Inter,sans-serif;margin:0 0 6px;letter-spacing:
 .opt{display:flex;gap:12px;align-items:flex-start;padding:12px;border-radius:12px;background:var(--ink3);border:1px solid var(--line)}
 .opt + .opt{margin-top:10px}
 .opt .ic{width:44px;height:44px;border-radius:10px;display:grid;place-items:center;flex:none}
-.opt.on{box-shadow:inset 0 0 0 1px rgba(94,230,176,.55);background:rgba(94,230,176,.07)}
+.opt.on{box-shadow:inset 0 0 0 1px rgba(42,165,161,.55);background:rgba(42,165,161,.07)}
 .opt.off{opacity:.6}
 .badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;margin-left:6px;vertical-align:2px}
 .mono{font-family:"JetBrains Mono",Consolas,monospace}
@@ -37,7 +37,7 @@ h1{font:600 30px "Space Grotesk",Inter,sans-serif;margin:0 0 6px;letter-spacing:
 .sel{font-size:12px;font-weight:600;border-radius:12px;padding:8px 10px;text-align:center;color:var(--ink)}
 .row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;font-size:13px}
 .row + .row{margin-top:4px}
-.row.selected{background:rgba(255,181,71,.14);box-shadow:inset 0 0 0 1px rgba(255,181,71,.55)}
+.row.selected{background:rgba(163,216,88,.14);box-shadow:inset 0 0 0 1px rgba(163,216,88,.55)}
 .row .ic{width:34px;height:34px;border-radius:8px;display:grid;place-items:center;background:#fff;flex:none;color:#000}
 .row .ic.dark{background:#24292F;color:#fff}
 .row .name{font-family:"JetBrains Mono",Consolas,monospace;font-size:13px}
@@ -106,7 +106,7 @@ h1{font:600 30px "Space Grotesk",Inter,sans-serif;margin:0 0 6px;letter-spacing:
         <div class="sel" style="background:var(--mint)">Maus 4<br>Diktat</div>
         <div class="arrow"></div>
         <div class="card" style="padding:14px 16px;display:flex;gap:14px;align-items:center">
-          <div class="big" style="background:rgba(94,230,176,.14);color:var(--mint);margin:0;width:50px;height:50px"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 22h-1a4 4 0 0 1-4-4V6a4 4 0 0 1 4-4h1"/><path d="M7 22h1a4 4 0 0 0 4-4v-1"/><path d="M7 2h1a4 4 0 0 1 4 4v1"/></svg></div>
+          <div class="big" style="background:rgba(42,165,161,.14);color:var(--mint);margin:0;width:50px;height:50px"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 22h-1a4 4 0 0 1-4-4V6a4 4 0 0 1 4-4h1"/><path d="M7 22h1a4 4 0 0 0 4-4v-1"/><path d="M7 2h1a4 4 0 0 1 4 4v1"/></svg></div>
           <div>
             <div class="title" style="font-size:15px;margin-bottom:2px">Aktives Fenster, am Cursor</div>
             <div class="txt">Outlook, Browser, Teams, Notepad … ohne automatisches Absenden.</div>
@@ -127,7 +127,7 @@ h1{font:600 30px "Space Grotesk",Inter,sans-serif;margin:0 0 6px;letter-spacing:
             <div class="ic" style="background:#F5EFE6"><svg height="26" style="flex:none" aria-hidden="true" viewBox="0 0 24 24" width="26" xmlns="http://www.w3.org/2000/svg"><title>Claude Code</title><path clip-rule="evenodd" d="M20.998 10.949H24v3.102h-3v3.028h-1.487V20H18v-2.921h-1.487V20H15v-2.921H9V20H7.488v-2.921H6V20H4.487v-2.921H3V14.05H0V10.95h3V5h17.998v5.949zM6 10.949h1.488V8.102H6v2.847zm10.51 0H18V8.102h-1.49v2.847z" fill="#D97757" fill-rule="evenodd"></path></svg></div>
             <div><div class="name">voice-bridge</div><div class="cmd">Claude Code · vb run -- claude</div></div>
           </div>
-          <div class="txt" style="padding:8px 4px 0;color:#FFCB80">Loslassen → Text wird ins Terminal getippt und abgeschickt</div>
+          <div class="txt" style="padding:8px 4px 0;color:#C4E58F">Loslassen → Text wird ins Terminal getippt und abgeschickt</div>
         </div>
       </div>
     </div>
