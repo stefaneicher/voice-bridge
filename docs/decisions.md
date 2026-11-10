@@ -84,12 +84,71 @@ Kurzform: Kontext → Entscheid → Folgen. Neue Einträge unten anhängen, alte
 
 ---
 
+## ADR-007 · Audio über Web Audio im versteckten Renderer
+
+**Status:** angenommen (10.11.2026), löst O-2
+
+**Kontext:** Für die Aufnahme braucht es entweder ein natives Modul (`naudiodon`) oder Web Audio im Renderer. Ein natives Audio-Modul bringt wieder Compiler- oder Prebuild-Risiken.
+
+**Entscheid:** Ein verstecktes Recorder-Fenster nimmt mit `getUserMedia` auf (ScriptProcessor, kein Worklet-Modul unter der strikten CSP), rechnet auf 16 kHz mono herunter und schickt beim Loslassen einmal ein WAV per IPC. Nur dieses Fenster darf das Mikrofon nutzen. «Mikrofon offen halten» (Standard an) ist in den Einstellungen abschaltbar.
+
+**Folgen:** Kein natives Audio-Modul. Startlatenz mit offen gehaltenem Mikrofon klein; Messung unter Windows steht noch aus (T-010).
+
+---
+
+## ADR-008 · Pipe-Name enthält Benutzer und Profil
+
+**Status:** angenommen (10.11.2026), ergänzt ADR-006
+
+**Kontext:** Windows-Named-Pipes sind maschinenweit sichtbar. Auf einem Citrix-Server teilen sich viele Benutzer denselben Namensraum.
+
+**Entscheid:** `\\.\pipe\voice-bridge-<benutzer>-<profil>` (Unix: Socket in `$XDG_RUNTIME_DIR` bzw. tmp). Eine Session-ID kann nur von der Verbindung genutzt werden, die sie registriert hat.
+
+**Folgen:** Zwei Benutzer auf demselben Server stören sich nicht. Die Standard-DACL von Windows verhindert Schreibzugriff anderer Benutzer.
+
+---
+
+## ADR-009 · Verteilung als npm-Paket plus Windows-Installer
+
+**Status:** angenommen (10.11.2026)
+
+**Kontext:** In der Firma ist npm verfügbar. Der Name `voice-bridge` ist auf npmjs.com vergeben.
+
+**Entscheid:**
+- Paketname `@stefaneicher/voice-bridge` mit den Befehlen `voice-bridge` (startet die App über Electron) und `vb`.
+- Im Repo ist Electron eine devDependency (verlangt electron-builder). Der Release-Workflow macht Electron vor `npm pack` zur Laufzeit-Abhängigkeit.
+- Ein Tag `v*` baut: `.tgz` (npm), NSIS-Installer und portable `.exe`, hängt alles an ein GitHub-Release und veröffentlicht in GitHub Packages. npmjs.com nur, wenn das Secret `NPM_TOKEN` gesetzt ist.
+
+**Folgen:** Installation mit `npm install -g <tgz>` ohne Compiler unter Windows (node-pty, koffi und uiohook-napi haben Prebuilds). Electron wird beim Installieren von GitHub geladen; hinter einem Proxy ggf. `ELECTRON_MIRROR` setzen.
+
+---
+
+## ADR-010 · Natives Tray-Menü statt eigenem Flyout (MVP)
+
+**Status:** angenommen (10.11.2026)
+
+**Kontext:** Mockup 3b zeigt ein gestaltetes Flyout. Ein natives Menü ist schneller umgesetzt, barrierefrei und verhält sich überall erwartbar.
+
+**Entscheid:** Für den MVP ein natives Kontextmenü mit denselben Inhalten (Status, Profil, Modell, Tasten, Verlauf, Pausieren, Einstellungen, Beenden). Das Flyout bleibt im Backlog.
+
+---
+
+## ADR-011 · Electron 45: asynchrone Zwischenablage
+
+**Status:** angenommen (10.11.2026)
+
+**Kontext:** Ab Electron 45 ist `clipboard` asynchron und arbeitet mit `ClipboardItem` (wie die Web-API).
+
+**Entscheid:** `ClipboardPort` ist asynchron. Der Snapshot liest alle Formate sofort aus, damit er nach dem Einfügen zurückgeschrieben werden kann.
+
+---
+
 ## Offen
 
 | # | Frage | Wer/Wann |
 |---|---|---|
 | O-1 | Was ist Firstmate, hat es eine Schnittstelle? | Stefan |
-| O-2 | Audio: Web Audio im versteckten Renderer oder natives Modul? | Spike S1/M1 |
-| O-3 | PTY-Senden: mit Enter (Default) oder als Entwurf? | M2, konfigurierbar |
+| O-2 | ~~Audio: Web Audio oder natives Modul?~~ Entschieden in ADR-007 | – |
+| O-3 | PTY-Senden: mit Enter (Default) oder als Entwurf? Umgesetzt als Einstellung, Default Enter | M2 |
 | O-4 | Lizenz / Sichtbarkeit des Repos | Stefan |
 | O-5 | Konfiguration zwischen Profilen exportierbar? | M3 |

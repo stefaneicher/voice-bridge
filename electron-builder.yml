@@ -1,0 +1,40 @@
+appId: ch.voice-bridge.app
+productName: Voice-Bridge
+copyright: Copyright © 2026 Stefan Eicher
+directories:
+  output: dist
+  buildResources: resources
+files:
+  - out/**
+  - resources/**
+  - package.json
+# Native modules ship N-API prebuilds; nothing is compiled.
+npmRebuild: false
+asarUnpack:
+  - '**/node_modules/koffi/**'
+  - '**/node_modules/@koromix/**'
+  - '**/node_modules/node-pty/**'
+  - '**/node_modules/uiohook-napi/**'
+win:
+  icon: resources/icon.png
+  target:
+    - target: nsis
+      arch: [x64]
+    - target: portable
+      arch: [x64]
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  artifactName: ${productName}-${version}-setup.${ext}
+portable:
+  artifactName: ${productName}-${version}-portable.${ext}
+mac:
+  icon: resources/icon.png
+  target: [dmg]
+  category: public.app-category.productivity
+linux:
+  icon: resources/icon.png
+  target: [AppImage]
+  category: Utility
+publish: null

@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "types": ["svelte", "vite/client"]
+  },
+  "include": [
+    "src/renderer/**/*.ts",
+    "src/renderer/**/*.svelte",
+    "src/renderer/**/*.d.ts",
+    "src/audio/wav.ts",
+    "src/shared/**/*",
+    "src/core/**/*",
+    "test/unit/renderer/**/*"
+  ]
+}

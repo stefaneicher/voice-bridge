@@ -27,6 +27,7 @@ Electron · TypeScript (strict) · Svelte 5 (Runes) · electron-vite · Vitest �
 - **Sprache:** Code, Bezeichner und Commits auf Englisch. UI-Texte und Doku auf Deutsch (Schweizer Schreibweise, ss statt ß).
 - **Spikes** landen in `spikes/<name>/`, Ergebnis als Eintrag in `docs/decisions.md`.
 - Bei einer Abweichung vom Plan: ADR ergänzen, nicht still ändern.
+- **HTML-Links** (z. B. Mockups) in README und Doku über githack setzen, damit sie gerendert werden: `https://raw.githack.com/stefaneicher/voice-bridge/main/<pfad>.html`.
 
 ## Befehle (nach T-001)
 
