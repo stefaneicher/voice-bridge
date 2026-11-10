@@ -143,6 +143,23 @@ Kurzform: Kontext → Entscheid → Folgen. Neue Einträge unten anhängen, alte
 
 ---
 
+## ADR-012 · Quality Gates und Release-Ablauf
+
+**Status:** angenommen (10.11.2026)
+
+**Kontext:** Bisher prüfte die CI Lint, Typen, Tests und Build. Ein falsch formatierter Commit und ein macOS-Fehler zeigten, dass Prüfungen früher und breiter greifen sollen.
+
+**Entscheid:**
+- Lokal: husky mit lint-staged (ESLint, Prettier auf geänderten Dateien) und commitlint.
+- Commits nach Conventional Commits (Angular-Stil). release-please erzeugt daraus Release-PR, Version, Changelog und Tag und ruft den Release-Workflow direkt auf (Tags des Standard-Tokens starten keine Workflows).
+- CI: Abdeckungs-Gate `src/core` ≥ 90 % (Zeilen, Zweige, Funktionen, Anweisungen), knip, actionlint, Electron-Starttest mit Playwright, npm-Paket-Test, CodeQL, Dependabot, `npm audit` im Release.
+- AI-Review über GitHub Copilot Code Review (Repo-Einstellung), nur beratend, kein Merge-Blocker.
+- Bewusst nicht: externe Dienste wie SonarCloud, Pinnen der Actions auf SHAs (vorerst).
+
+**Folgen:** Branch-Schutz für `main` mit den CI-Jobs als Pflichtprüfungen ist eine Repo-Einstellung und wird von Hand gesetzt.
+
+---
+
 ## Offen
 
 | # | Frage | Wer/Wann |
