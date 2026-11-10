@@ -1,7 +1,7 @@
 # Voice-Bridge – Umsetzungsplan
 
 Stand: 10.11.2026 · Status: Entwurf vor Spike-Phase
-Anforderungen: [requirements.md](requirements.md) · Mockups: Design-Canvas «Voice-Bridge – Mockups»
+Anforderungen: [requirements.md](requirements.md) · Mockups: [mockups/](mockups/index.html) · UI: [ui-spec.md](ui-spec.md) · Entscheide: [decisions.md](decisions.md) · Aufgaben: [backlog.md](backlog.md) · Citrix: [citrix.md](citrix.md)
 
 ---
 
@@ -228,8 +228,8 @@ voice-bridge/
 │  ├─ renderer/    Svelte: pill/, popup/, toast/, settings/
 │  └─ cli/         vb run
 ├─ test/           unit/, integration/
-├─ docs/          requirements.md, PLAN.md, decisions.md, citrix.md
-├─ examples/       sessions.example.json, adapters.example.json
+├─ docs/          requirements.md, PLAN.md, decisions.md, backlog.md, ui-spec.md, citrix.md, mockups/
+├─ examples/      config / adapters / sessions / pipe-protocol Beispiele
 └─ package.json
 ```
 

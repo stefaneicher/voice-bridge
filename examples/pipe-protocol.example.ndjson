@@ -1,0 +1,5 @@
+{"type":"register","version":1,"sessionId":"pty:8f3a1c","name":"voice-bridge","cwd":"C:/dev/voice-bridge","command":"copilot","pid":21344}
+{"type":"heartbeat","sessionId":"pty:8f3a1c","state":"idle"}
+{"type":"inject","sessionId":"pty:8f3a1c","requestId":"r-17","text":"Bitte zuerst die Rundungsfehler beheben.","submit":true}
+{"type":"injectResult","requestId":"r-17","ok":true}
+{"type":"bye","sessionId":"pty:8f3a1c","exitCode":0}

@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="de-CH">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent – gesendet – Voice-Bridge Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#B26A00}a:hover{color:#8A5200}
+</style>
+<style>html{background:#0B0D11}body{display:flex;justify-content:center;padding:24px 0}</style>
+</head>
+<body>
+<div style="width: 1200px; height: 760px; position: relative; overflow: hidden; background: #1D2230; font-family: Inter, system-ui, sans-serif">
+
+  <div style="position: absolute; left: 48px; top: 40px; width: 560px; height: 430px; background: #0C0E12; border-radius: 10px; box-shadow: 0 20px 60px rgba(0,0,0,.4); overflow: hidden">
+    <div style="height: 34px; display: flex; align-items: center; gap: 2px; padding: 0 8px; background: #161920">
+      <span style="font-size: 12px; color: #8C94A3; padding: 8px 12px">voice-bridge</span>
+      <span style="font-size: 12px; color: #E6E9EF; background: #0C0E12; padding: 8px 12px; border-radius: 6px 6px 0 0">billing-service <span style="color: #FFB547">●</span></span>
+      <span style="font-size: 12px; color: #8C94A3; padding: 8px 12px">web-frontend</span>
+      <span style="font-size: 12px; color: #8C94A3; padding: 8px 12px">+2</span>
+    </div>
+    <div style="padding: 16px 18px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; line-height: 1.7; color: #B9C0CC">
+      <div style="color: #7D8696">~/dev/billing-service</div>
+      <div><span style="color: #FFB547">copilot</span> › Rechnungslauf in drei Schritte aufgeteilt. Warte auf Eingabe.</div>
+      <div style="margin-top: 10px; color: #7D8696">────────────────────────────────</div>
+      <div><span style="color: #5EE6B0">›</span> Bitte zuerst die Rundungsfehler bei Teilzahlungen beheben</div>
+      <div style="padding-left: 16px">und dafür einen Test mit drei Raten schreiben. Danach</div>
+      <div style="padding-left: 16px">den Pull Request vorbereiten, aber noch nicht mergen.</div>
+      <div style="margin-top: 4px"><span style="font-size: 11px; color: #0E1014; background: #FFB547; padding: 2px 6px; border-radius: 4px">via Voice-Bridge</span></div>
+      <div style="margin-top: 10px"><span style="color: #FFB547">copilot</span> › Verstanden. Ich schaue mir zuerst <span style="color: #E6E9EF">RateCalculator</span> an …</div>
+    </div>
+  </div>
+
+  <div style="position: absolute; left: 360px; top: 120px; width: 780px; height: 520px; background: #F6F6F3; border-radius: 10px; box-shadow: 0 30px 80px rgba(0,0,0,.5); overflow: hidden">
+    <div style="height: 36px; display: flex; align-items: center; padding: 0 16px; background: #E9E9E4; border-bottom: 1px solid #DCDCD6; font-size: 12px; color: #3A3F4A; font-weight: 600">RoutingService.java – Editor <span style="margin-left: 10px; font-weight: 400; color: #5C6270">(bleibt aktiv)</span></div>
+    <div style="padding: 18px 22px; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.75; color: #3A3F4A">
+      <div><span style="color: #8A3FFC">public</span> <span style="color: #8A3FFC">final class</span> RoutingService {</div>
+      <div style="padding-left: 24px"><span style="color: #8A3FFC">private final</span> SessionRegistry registry;</div>
+      <div style="padding-left: 24px; color: #6B7280">// Ziel wird beim Loslassen fixiert</div>
+      <div style="padding-left: 24px"><span style="color: #8A3FFC">public</span> Result send(SessionId target, String text) {</div>
+      <div style="padding-left: 48px">…<span style="display: inline-block; width: 2px; height: 17px; background: #3A3F4A; vertical-align: -3px"></span></div>
+      <div style="padding-left: 24px">}</div>
+      <div>}</div>
+    </div>
+  </div>
+
+  <div role="status" style="position: absolute; right: 32px; bottom: 76px; width: 400px; box-sizing: border-box; background: #0E1014; border: 1px solid rgba(255,255,255,.1); border-radius: 16px; box-shadow: 0 24px 70px rgba(0,0,0,.6); padding: 16px; display: flex; flex-direction: column; gap: 12px">
+    <div style="display: flex; align-items: center; gap: 10px">
+      <span style="display: flex; width: 24px; height: 24px; border-radius: 50%; background: #FFB547; align-items: center; justify-content: center; color: #0E1014"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg></span>
+      <span style="font-size: 14px; font-weight: 600; color: #F2F4F7">Gesendet an <span style="font-family: 'JetBrains Mono', monospace">billing-service</span></span>
+      <span style="margin-left: auto; font-size: 12px; color: #9AA3B2">1,6 s</span>
+    </div>
+    <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #C5CBD6">«Bitte zuerst die Rundungsfehler bei Teilzahlungen beheben und dafür einen Test mit drei Raten schreiben …»</p>
+    <div style="display: flex; align-items: center; gap: 8px">
+      <span style="font-size: 12px; color: #9AA3B2">Copilot CLI · Fokus unverändert</span>
+      <button style="margin-left: auto; font: 500 13px Inter, sans-serif; color: #F2F4F7; background: transparent; border: 1px solid rgba(255,255,255,.18); border-radius: 18px; height: 36px; padding: 0 14px; cursor: pointer">Kopieren</button>
+      <button style="font: 500 13px Inter, sans-serif; color: #0E1014; background: #FFB547; border: 0; border-radius: 18px; height: 36px; padding: 0 14px; cursor: pointer">Session zeigen</button>
+    </div>
+  </div>
+
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 48px; background: #12151C; border-top: 1px solid rgba(255,255,255,.06); display: flex; align-items: center; justify-content: space-between; padding: 0 18px">
+    <div style="width: 120px"></div>
+    <div style="display: flex; gap: 10px" aria-hidden="true">
+      <span style="width: 30px; height: 30px; border-radius: 7px; background: #2C3342; box-shadow: inset 0 -2px 0 #7D8696"></span>
+      <span style="width: 30px; height: 30px; border-radius: 7px; background: #3A4458; box-shadow: inset 0 -2px 0 #FFB547"></span>
+      <span style="width: 30px; height: 30px; border-radius: 7px; background: #2C3342"></span>
+    </div>
+    <div style="width: 120px; display: flex; justify-content: flex-end; align-items: center; gap: 12px; color: #C5CBD6; font-size: 12px">
+      <span style="display: flex; color: #C5CBD6"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Voice-Bridge bereit"><rect x="9" y="2" width="6" height="12" rx="3"></rect><path d="M5 10a7 7 0 0 0 14 0"></path><path d="M12 17v4"></path></svg></span>
+      <span>12:16</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

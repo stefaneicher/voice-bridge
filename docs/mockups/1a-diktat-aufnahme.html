@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="de-CH">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diktat – Taste gehalten – Voice-Bridge Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#0F7A57}a:hover{color:#0A5A40}
+.wv{display:flex;align-items:center;gap:3px;height:30px}
+.wv i{display:block;width:3px;border-radius:2px;background:#5EE6B0;transform-origin:center;animation:wv 1s ease-in-out infinite}
+.wv i:nth-child(2n){animation-delay:-.25s}
+.wv i:nth-child(3n){animation-delay:-.5s}
+.wv i:nth-child(5n){animation-delay:-.75s}
+@keyframes wv{0%,100%{transform:scaleY(.4)}50%{transform:scaleY(1)}}
+.rec{animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.3}}
+.caret{animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.wv i,.rec,.caret{animation:none}}
+</style>
+<style>html{background:#0B0D11}body{display:flex;justify-content:center;padding:24px 0}</style>
+</head>
+<body>
+<div style="width: 1200px; height: 760px; position: relative; overflow: hidden; background: #1D2230; font-family: Inter, system-ui, sans-serif">
+
+  <div style="position: absolute; left: 140px; top: 48px; width: 920px; height: 520px; background: #FAFAF8; border-radius: 12px; box-shadow: 0 30px 80px rgba(0,0,0,.45); overflow: hidden; display: flex; flex-direction: column">
+    <div style="height: 40px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; background: #EEEEEA; border-bottom: 1px solid #E0E0DA">
+      <span style="font-size: 13px; font-weight: 600; color: #2A2E37">Neue Nachricht – Mail</span>
+      <div style="display: flex; gap: 14px; color: #5C6270; font-size: 12px"><span>—</span><span>☐</span><span>✕</span></div>
+    </div>
+    <div style="padding: 20px 28px 0; display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; gap: 12px; font-size: 14px; color: #2A2E37; padding-bottom: 10px; border-bottom: 1px solid #E6E6E0"><span style="color: #5C6270; width: 64px">An</span><span>Projektteam</span></div>
+      <div style="display: flex; gap: 12px; font-size: 14px; color: #2A2E37; padding-bottom: 10px; border-bottom: 1px solid #E6E6E0"><span style="color: #5C6270; width: 64px">Betreff</span><span>Stand Release 24.3</span></div>
+    </div>
+    <div style="padding: 22px 28px; font-size: 15px; line-height: 1.7; color: #22262E">
+      <p style="margin: 0">Hallo zusammen</p>
+      <p style="margin: 14px 0 0">Kurzer Stand zum Release: <span class="caret" style="display: inline-block; width: 2px; height: 19px; background: #0F7A57; vertical-align: -4px"></span></p>
+    </div>
+  </div>
+
+  <div style="position: absolute; left: 0; right: 0; bottom: 92px; display: flex; flex-direction: column; align-items: center; gap: 10px">
+    <div role="status" aria-label="Diktat-Aufnahme läuft" style="display: flex; align-items: center; gap: 16px; height: 60px; padding: 0 12px 0 20px; background: #0E1014; border: 1px solid rgba(255,255,255,.09); border-radius: 30px; box-shadow: 0 18px 50px rgba(0,0,0,.5)">
+      <div style="display: flex; align-items: center; gap: 8px">
+        <span class="rec" style="width: 10px; height: 10px; border-radius: 50%; background: #FF5A5F"></span>
+        <span style="font-size: 14px; font-weight: 600; color: #F2F4F7">Diktat</span>
+      </div>
+      <div class="wv" aria-hidden="true">
+        <i style="height: 8px"></i><i style="height: 14px"></i><i style="height: 22px"></i><i style="height: 12px"></i><i style="height: 28px"></i><i style="height: 18px"></i><i style="height: 24px"></i><i style="height: 10px"></i><i style="height: 20px"></i><i style="height: 30px"></i><i style="height: 16px"></i><i style="height: 26px"></i><i style="height: 12px"></i><i style="height: 22px"></i><i style="height: 8px"></i><i style="height: 18px"></i><i style="height: 28px"></i><i style="height: 14px"></i><i style="height: 20px"></i><i style="height: 10px"></i><i style="height: 16px"></i><i style="height: 6px"></i>
+      </div>
+      <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #C5CBD6">0:07</span>
+      <span style="font-size: 12px; font-weight: 500; color: #0E1014; background: #5EE6B0; padding: 6px 10px; border-radius: 16px">Maus 4</span>
+    </div>
+    <span style="font-size: 12px; color: #AEB5C2">Loslassen zum Einfügen · nichts wird automatisch gesendet</span>
+  </div>
+
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 48px; background: #12151C; border-top: 1px solid rgba(255,255,255,.06); display: flex; align-items: center; justify-content: space-between; padding: 0 18px">
+    <div style="width: 120px"></div>
+    <div style="display: flex; gap: 10px" aria-hidden="true">
+      <span style="width: 30px; height: 30px; border-radius: 7px; background: #2C3342"></span>
+      <span style="width: 30px; height: 30px; border-radius: 7px; background: #3A4458; box-shadow: inset 0 -2px 0 #5EE6B0"></span>
+      <span style="width: 30px; height: 30px; border-radius: 7px; background: #2C3342"></span>
+      <span style="width: 30px; height: 30px; border-radius: 7px; background: #2C3342"></span>
+    </div>
+    <div style="width: 120px; display: flex; justify-content: flex-end; align-items: center; gap: 12px; color: #C5CBD6; font-size: 12px">
+      <span style="position: relative; display: flex; color: #5EE6B0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Voice-Bridge nimmt auf"><rect x="9" y="2" width="6" height="12" rx="3"></rect><path d="M5 10a7 7 0 0 0 14 0"></path><path d="M12 17v4"></path></svg><span class="rec" style="position: absolute; right: -3px; top: -2px; width: 6px; height: 6px; border-radius: 50%; background: #FF5A5F"></span></span>
+      <span>12:15</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

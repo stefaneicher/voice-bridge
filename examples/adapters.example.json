@@ -1,0 +1,27 @@
+{
+  "$comment": "Adapter-Konfiguration. Sessions werden NICHT hier eingetragen, sondern zur Laufzeit entdeckt.",
+  "adapters": [
+    {
+      "id": "pty-bridge",
+      "type": "pty-bridge",
+      "enabled": true,
+      "pipeName": "voice-bridge-${profile}",
+      "heartbeatTimeoutMs": 5000,
+      "submit": { "bracketedPaste": true, "pressEnter": true }
+    },
+    {
+      "id": "acp-copilot",
+      "type": "acp",
+      "enabled": false,
+      "command": "copilot",
+      "args": ["--acp", "--stdio"],
+      "$comment": "Voice-Bridge hostet diese Sessions selbst (ADR-004). Ab M5."
+    },
+    {
+      "id": "firstmate",
+      "type": "unsupported",
+      "enabled": false,
+      "$comment": "Platzhalter. Keine bekannte Schnittstelle (O-1). Kein Adapter, bis geklärt."
+    }
+  ]
+}

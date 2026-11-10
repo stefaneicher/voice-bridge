@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="de-CH">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent – Session wählen – Voice-Bridge Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#B26A00}a:hover{color:#8A5200}
+.wv{display:flex;align-items:center;gap:2px;height:20px}
+.wv i{display:block;width:2px;border-radius:2px;background:#FFB547;animation:wv 1s ease-in-out infinite}
+.wv i:nth-child(2n){animation-delay:-.25s}
+.wv i:nth-child(3n){animation-delay:-.5s}
+.wv i:nth-child(5n){animation-delay:-.75s}
+@keyframes wv{0%,100%{transform:scaleY(.4)}50%{transform:scaleY(1)}}
+.rec{animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.3}}
+.row{transition:background .12s, box-shadow .12s}
+.row:hover{background:rgba(255,255,255,.05)}
+@media (prefers-reduced-motion: reduce){.wv i,.rec{animation:none}.row{transition:none}}
+</style>
+<style>html{background:#0B0D11}body{display:flex;justify-content:center;padding:24px 0}</style>
+</head>
+<body>
+<div style="width: 1200px; height: 760px; position: relative; overflow: hidden; background: #1D2230; font-family: Inter, system-ui, sans-serif">
+
+  <div style="position: absolute; left: 48px; top: 40px; width: 560px; height: 430px; background: #0C0E12; border-radius: 10px; box-shadow: 0 20px 60px rgba(0,0,0,.4); overflow: hidden; opacity: .9">
+    <div style="height: 34px; display: flex; align-items: center; gap: 2px; padding: 0 8px; background: #161920">
+      <span style="font-size: 12px; color: #E6E9EF; background: #0C0E12; padding: 8px 12px; border-radius: 6px 6px 0 0">voice-bridge</span>
+      <span style="font-size: 12px; color: #8C94A3; padding: 8px 12px">billing-service</span>
+      <span style="font-size: 12px; color: #8C94A3; padding: 8px 12px">web-frontend</span>
+      <span style="font-size: 12px; color: #8C94A3; padding: 8px 12px">+2</span>
+    </div>
+    <div style="padding: 16px 18px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; line-height: 1.7; color: #B9C0CC">
+      <div style="color: #7D8696">~/dev/voice-bridge</div>
+      <div><span style="color: #FFB547">copilot</span> › Hotkey-Schicht ist aufgesetzt, 6 Tests grün.</div>
+      <div>Soll ich als Nächstes das Session-Routing angehen?</div>
+      <div style="margin-top: 10px; color: #7D8696">────────────────────────────────</div>
+      <div><span style="color: #5EE6B0">›</span> <span style="display: inline-block; width: 8px; height: 15px; background: #B9C0CC; vertical-align: -3px"></span></div>
+    </div>
+  </div>
+
+  <div style="position: absolute; left: 360px; top: 120px; width: 780px; height: 520px; background: #F6F6F3; border-radius: 10px; box-shadow: 0 30px 80px rgba(0,0,0,.5); overflow: hidden">
+    <div style="height: 36px; display: flex; align-items: center; padding: 0 16px; background: #E9E9E4; border-bottom: 1px solid #DCDCD6; font-size: 12px; color: #3A3F4A; font-weight: 600">RoutingService.java – Editor <span style="margin-left: 10px; font-weight: 400; color: #5C6270">(aktives Fenster)</span></div>
+    <div style="padding: 18px 22px; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.75; color: #3A3F4A">
+      <div><span style="color: #8A3FFC">public</span> <span style="color: #8A3FFC">final class</span> RoutingService {</div>
+      <div style="padding-left: 24px"><span style="color: #8A3FFC">private final</span> SessionRegistry registry;</div>
+      <div style="padding-left: 24px; color: #6B7280">// Ziel wird beim Loslassen fixiert</div>
+      <div style="padding-left: 24px"><span style="color: #8A3FFC">public</span> Result send(SessionId target, String text) {</div>
+      <div style="padding-left: 48px">…</div>
+      <div style="padding-left: 24px">}</div>
+      <div>}</div>
+    </div>
+  </div>
+
+  <div id="popup" role="listbox" aria-label="Ziel-Session wählen" style="position: absolute; left: 590px; top: 196px; width: 420px; box-sizing: border-box; background: #0E1014; border: 1px solid rgba(255,255,255,.1); border-radius: 16px; box-shadow: 0 24px 70px rgba(0,0,0,.6); overflow: hidden">
+    <div style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,.07)">
+      <span class="rec" style="width: 9px; height: 9px; border-radius: 50%; background: #FF5A5F"></span>
+      <span style="font-size: 14px; font-weight: 600; color: #F2F4F7">Agent</span>
+      <div class="wv" aria-hidden="true"><i style="height: 6px"></i><i style="height: 12px"></i><i style="height: 18px"></i><i style="height: 10px"></i><i style="height: 20px"></i><i style="height: 14px"></i><i style="height: 8px"></i><i style="height: 16px"></i><i style="height: 20px"></i><i style="height: 10px"></i><i style="height: 6px"></i><i style="height: 14px"></i></div>
+      <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #C5CBD6">0:05</span>
+      <span style="margin-left: auto; font-size: 12px; font-weight: 500; color: #0E1014; background: #FFB547; padding: 5px 9px; border-radius: 14px">Maus 5</span>
+    </div>
+    <div style="padding: 10px 16px 4px; display: flex; justify-content: space-between; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: #9AA3B2"><span>Copilot CLI · <span id="count"></span> Sessions</span><span>Profil Privat</span></div>
+    <div id="rows" style="padding: 4px 8px 8px; display: flex; flex-direction: column; gap: 2px">
+      <!-- rows rendered by script -->
+    </div>
+    <div style="display: flex; gap: 16px; padding: 11px 16px; background: #15181E; border-top: 1px solid rgba(255,255,255,.07); font-size: 12px; color: #AEB5C2">
+      <span style="display: flex; align-items: center; gap: 6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="6"></rect><path d="M12 6v4"></path></svg>Mausrad wechselt</span>
+      <span>Klick wählt</span>
+      <span style="margin-left: auto; color: #FFCB80">Loslassen → <span id="sel"></span></span>
+    </div>
+  </div>
+
+  <svg style="position: absolute; left: 574px; top: 182px" width="22" height="26" viewBox="0 0 22 26" aria-hidden="true"><path d="M2 2l16 12-7 1 4 8-3 1.5-4-8-6 5z" fill="#FFFFFF" stroke="#0E1014" stroke-width="1.5" stroke-linejoin="round"></path></svg>
+
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 48px; background: #12151C; border-top: 1px solid rgba(255,255,255,.06); display: flex; align-items: center; justify-content: space-between; padding: 0 18px">
+    <div style="width: 120px"></div>
+    <div style="display: flex; gap: 10px" aria-hidden="true">
+      <span style="width: 30px; height: 30px; border-radius: 7px; background: #2C3342; box-shadow: inset 0 -2px 0 #7D8696"></span>
+      <span style="width: 30px; height: 30px; border-radius: 7px; background: #3A4458; box-shadow: inset 0 -2px 0 #FFB547"></span>
+      <span style="width: 30px; height: 30px; border-radius: 7px; background: #2C3342"></span>
+    </div>
+    <div style="width: 120px; display: flex; justify-content: flex-end; align-items: center; gap: 12px; color: #C5CBD6; font-size: 12px">
+      <span style="position: relative; display: flex; color: #FFB547"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Voice-Bridge nimmt auf"><rect x="9" y="2" width="6" height="12" rx="3"></rect><path d="M5 10a7 7 0 0 0 14 0"></path><path d="M12 17v4"></path></svg><span class="rec" style="position: absolute; right: -3px; top: -2px; width: 6px; height: 6px; border-radius: 50%; background: #FF5A5F"></span></span>
+      <span>12:15</span>
+    </div>
+  </div>
+</div>
+
+<script>
+const sessions = [
+  { name: 'voice-bridge', task: 'MVP: Hotkey-Schicht und Tests', status: 'wartet · 2 min', dot: '#5EE6B0' },
+  { name: 'billing-service', task: 'Rechnungslauf refaktorisieren', status: 'arbeitet …', dot: '#FFB547' },
+  { name: 'web-frontend', task: 'Lazy Loading der Module', status: 'wartet · 14 min', dot: '#5EE6B0' },
+  { name: 'infra-scripts', task: 'Deploy-Skript prüfen', status: 'wartet · 1 h', dot: '#5EE6B0' },
+  { name: 'docs-site', task: 'README überarbeiten', status: 'wartet · 3 h', dot: '#5EE6B0' }
+];
+let idx = 1, last = 0;
+const rows = document.getElementById('rows');
+function render() {
+  rows.textContent = '';
+  sessions.forEach((s, i) => {
+    const sel = i === idx;
+    const b = document.createElement('button');
+    b.className = 'row'; b.setAttribute('role', 'option'); b.setAttribute('aria-selected', sel);
+    b.style.cssText = 'display:flex;align-items:center;gap:12px;width:100%;min-height:54px;padding:8px 10px;border:0;border-radius:10px;text-align:left;cursor:pointer;font-family:Inter,sans-serif;'
+      + (sel ? 'background:rgba(255,181,71,.14);box-shadow:inset 0 0 0 1px rgba(255,181,71,.55)' : 'background:transparent');
+    b.innerHTML = '<span style="width:8px;height:8px;flex:none;border-radius:50%;background:' + s.dot + '"></span>'
+      + '<span style="display:flex;flex-direction:column;gap:2px;min-width:0;flex:1"><span style="font-family:\'JetBrains Mono\',monospace;font-size:13px;font-weight:500;color:#F2F4F7"></span><span style="font-size:12px;color:#9AA3B2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></span></span>'
+      + (sel ? '<span style="font-size:11px;font-weight:600;color:#0E1014;background:#FFB547;padding:4px 8px;border-radius:10px">Ziel</span>'
+             : '<span style="font-size:11px;color:#9AA3B2"></span>');
+    const spans = b.querySelectorAll('span span');
+    spans[0].textContent = s.name; spans[1].textContent = s.task;
+    if (!sel) b.lastElementChild.textContent = s.status;
+    b.onclick = () => { idx = i; render(); };
+    rows.appendChild(b);
+  });
+  document.getElementById('count').textContent = sessions.length;
+  document.getElementById('sel').textContent = sessions[idx].name;
+}
+document.getElementById('popup').addEventListener('wheel', e => {
+  e.preventDefault();
+  const now = Date.now(); if (now - last < 120) return; last = now;
+  idx = (idx + (e.deltaY > 0 ? 1 : -1) + sessions.length) % sessions.length; render();
+}, { passive: false });
+render();
+</script>
+</body>
+</html>

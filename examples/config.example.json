@@ -1,0 +1,44 @@
+{
+  "$comment": "Beispielkonfiguration pro Profil. Ablage: %APPDATA%/voice-bridge/<profil>/config.json. API-Keys stehen NICHT hier, sondern in safeStorage.",
+  "profile": "privat",
+  "hotkeys": {
+    "dictate": { "device": "mouse", "button": "XButton1" },
+    "agent":   { "device": "mouse", "button": "XButton2" },
+    "minHoldMs": 300,
+    "maxRecordingSec": 120
+  },
+  "audio": {
+    "deviceId": "default",
+    "sampleRate": 16000,
+    "keepAudioOnFailureOnly": true
+  },
+  "stt": {
+    "engine": "openai",
+    "model": "gpt-4o-transcribe",
+    "language": "de",
+    "dialectHint": "Schweizerdeutsch (Berndeutsch)",
+    "glossary": ["Copilot", "Firstmate", "Citrix", "Pull Request", "Deployment"],
+    "polish": {
+      "enabled": true,
+      "model": "gpt-4o-mini",
+      "target": "de-CH",
+      "instruction": "Schreibe in gut lesbarem Schweizer Hochdeutsch (ss statt ß). Inhalt nicht verändern, Füllwörter entfernen."
+    },
+    "showRawTranscript": true,
+    "timeoutMs": 15000
+  },
+  "insertion": {
+    "method": "clipboard-paste",
+    "restoreClipboardAfterMs": 300,
+    "fallback": "unicode-typing",
+    "pressEnter": false
+  },
+  "agents": {
+    "adapters": ["pty-bridge"],
+    "lastSessionId": null
+  },
+  "privacy": {
+    "cloudAllowed": true,
+    "historyEntries": 50
+  }
+}

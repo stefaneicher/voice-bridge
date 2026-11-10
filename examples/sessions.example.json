@@ -1,0 +1,27 @@
+{
+  "$comment": "So sieht die Laufzeit-Liste aus, die das Popup anzeigt (Antwort von listSessions() aller Adapter). Nur Beispiel, nicht zum Konfigurieren.",
+  "sessions": [
+    {
+      "id": "pty:8f3a1c",
+      "adapterId": "pty-bridge",
+      "name": "voice-bridge",
+      "title": "MVP: Hotkey-Schicht und Tests",
+      "cwd": "C:/dev/voice-bridge",
+      "command": "copilot",
+      "pid": 21344,
+      "state": "idle",
+      "lastActivity": "2026-11-10T11:13:02Z"
+    },
+    {
+      "id": "pty:2b77e0",
+      "adapterId": "pty-bridge",
+      "name": "billing-service",
+      "title": "Rechnungslauf refaktorisieren",
+      "cwd": "C:/dev/billing-service",
+      "command": "copilot",
+      "pid": 19020,
+      "state": "busy",
+      "lastActivity": "2026-11-10T11:15:40Z"
+    }
+  ]
+}

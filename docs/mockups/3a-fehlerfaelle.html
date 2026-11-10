@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="de-CH">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fehlerfälle – Voice-Bridge Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#FFCB80}a:hover{color:#FFE0B0}
+</style>
+<style>html{background:#0B0D11}body{display:flex;justify-content:center;padding:24px 0}</style>
+</head>
+<body>
+<div style="width: 1200px; height: 760px; position: relative; overflow: hidden; background: #1D2230; font-family: Inter, system-ui, sans-serif; box-sizing: border-box; padding: 56px 48px 0; display: flex; flex-direction: column; gap: 28px">
+
+  <div style="display: flex; flex-direction: column; gap: 6px">
+    <h1 style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 30px; font-weight: 600; color: #F2F4F7">Wenn etwas schiefgeht, bleibt der Text erhalten</h1>
+    <p style="margin: 0; font-size: 15px; color: #AEB5C2">Keine stille Umleitung, kein verlorenes Diktat. Audio liegt nur im Arbeitsspeicher, bis die Meldung geschlossen wird.</p>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; align-items: start">
+
+    <div role="alertdialog" aria-label="Session nicht mehr verfügbar" style="background: #0E1014; border: 1px solid rgba(255,255,255,.1); border-radius: 16px; box-shadow: 0 24px 70px rgba(0,0,0,.5); padding: 20px; display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; align-items: center; gap: 10px">
+        <span style="display: flex; width: 32px; height: 32px; border-radius: 50%; background: rgba(255,90,95,.16); color: #FF7A7E; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6L6 18"></path><path d="M6 6l12 12"></path></svg></span>
+        <span style="font-size: 15px; font-weight: 600; color: #F2F4F7">Session beendet</span>
+      </div>
+      <p style="margin: 0; font-size: 13px; line-height: 1.55; color: #C5CBD6"><span style="font-family: 'JetBrains Mono', monospace; color: #FFCB80">infra-scripts</span> wurde geschlossen, während du gesprochen hast. Der Text wurde an keine andere Session gesendet.</p>
+      <div style="background: #181B22; border-radius: 10px; padding: 12px; font-size: 13px; line-height: 1.5; color: #DDE2EA">Prüf bitte, ob das Deploy-Skript auch ohne Admin-Rechte durchläuft.</div>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px">
+        <button style="font: 500 13px Inter, sans-serif; color: #0E1014; background: #FFB547; border: 0; border-radius: 18px; height: 36px; padding: 0 14px; cursor: pointer">Andere Session wählen</button>
+        <button style="font: 500 13px Inter, sans-serif; color: #F2F4F7; background: transparent; border: 1px solid rgba(255,255,255,.18); border-radius: 18px; height: 36px; padding: 0 14px; cursor: pointer">Kopieren</button>
+        <button style="font: 500 13px Inter, sans-serif; color: #AEB5C2; background: transparent; border: 0; height: 36px; padding: 0 8px; cursor: pointer">Verwerfen</button>
+      </div>
+    </div>
+
+    <div role="alertdialog" aria-label="Transkription fehlgeschlagen" style="background: #0E1014; border: 1px solid rgba(255,255,255,.1); border-radius: 16px; box-shadow: 0 24px 70px rgba(0,0,0,.5); padding: 20px; display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; align-items: center; gap: 10px">
+        <span style="display: flex; width: 32px; height: 32px; border-radius: 50%; background: rgba(255,181,71,.16); color: #FFB547; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8v5"></path><path d="M12 16.5v.5"></path><circle cx="12" cy="12" r="9"></circle></svg></span>
+        <span style="font-size: 15px; font-weight: 600; color: #F2F4F7">Transkription fehlgeschlagen</span>
+      </div>
+      <p style="margin: 0; font-size: 13px; line-height: 1.55; color: #C5CBD6">OpenAI antwortete nicht innerhalb von 15 s. Deine Aufnahme ist noch da und kann erneut gesendet werden.</p>
+      <div style="display: flex; align-items: center; gap: 12px; background: #181B22; border-radius: 10px; padding: 12px">
+        <button aria-label="Aufnahme abspielen" style="display: flex; width: 32px; height: 32px; border-radius: 50%; border: 0; background: #2A2F3A; color: #F2F4F7; align-items: center; justify-content: center; cursor: pointer"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4l13 8-13 8z"></path></svg></button>
+        <div style="display: flex; align-items: center; gap: 2px; flex: 1; height: 24px" aria-hidden="true">
+          <span style="width: 3px; height: 8px; background: #5C6574; border-radius: 2px"></span><span style="width: 3px; height: 16px; background: #5C6574; border-radius: 2px"></span><span style="width: 3px; height: 12px; background: #5C6574; border-radius: 2px"></span><span style="width: 3px; height: 20px; background: #5C6574; border-radius: 2px"></span><span style="width: 3px; height: 10px; background: #5C6574; border-radius: 2px"></span><span style="width: 3px; height: 18px; background: #5C6574; border-radius: 2px"></span><span style="width: 3px; height: 14px; background: #5C6574; border-radius: 2px"></span><span style="width: 3px; height: 22px; background: #5C6574; border-radius: 2px"></span><span style="width: 3px; height: 8px; background: #5C6574; border-radius: 2px"></span><span style="width: 3px; height: 16px; background: #5C6574; border-radius: 2px"></span><span style="width: 3px; height: 12px; background: #5C6574; border-radius: 2px"></span><span style="width: 3px; height: 6px; background: #5C6574; border-radius: 2px"></span><span style="width: 3px; height: 18px; background: #5C6574; border-radius: 2px"></span><span style="width: 3px; height: 10px; background: #5C6574; border-radius: 2px"></span>
+        </div>
+        <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #AEB5C2">0:12</span>
+      </div>
+      <span style="font-size: 12px; color: #9AA3B2">Ziel bleibt: <span style="font-family: 'JetBrains Mono', monospace; color: #FFCB80">web-frontend</span></span>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px">
+        <button style="font: 500 13px Inter, sans-serif; color: #0E1014; background: #FFB547; border: 0; border-radius: 18px; height: 36px; padding: 0 14px; cursor: pointer">Erneut versuchen</button>
+        <button style="font: 500 13px Inter, sans-serif; color: #AEB5C2; background: transparent; border: 0; height: 36px; padding: 0 8px; cursor: pointer">Verwerfen</button>
+      </div>
+    </div>
+
+    <div role="alertdialog" aria-label="Kein Textfeld aktiv" style="background: #0E1014; border: 1px solid rgba(255,255,255,.1); border-radius: 16px; box-shadow: 0 24px 70px rgba(0,0,0,.5); padding: 20px; display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; align-items: center; gap: 10px">
+        <span style="display: flex; width: 32px; height: 32px; border-radius: 50%; background: rgba(94,230,176,.14); color: #5EE6B0; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"></rect><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"></path></svg></span>
+        <span style="font-size: 15px; font-weight: 600; color: #F2F4F7">Kein Textfeld aktiv</span>
+      </div>
+      <p style="margin: 0; font-size: 13px; line-height: 1.55; color: #C5CBD6">Beim Loslassen war kein Eingabefeld fokussiert. Der Text liegt in der Zwischenablage – mit Strg+V einfügen.</p>
+      <div style="background: #181B22; border-radius: 10px; padding: 12px; font-size: 13px; line-height: 1.5; color: #DDE2EA">Termin mit dem Kunden auf Donnerstag 14 Uhr verschieben.</div>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px">
+        <button style="font: 500 13px Inter, sans-serif; color: #0E1014; background: #5EE6B0; border: 0; border-radius: 18px; height: 36px; padding: 0 14px; cursor: pointer">OK</button>
+        <button style="font: 500 13px Inter, sans-serif; color: #F2F4F7; background: transparent; border: 1px solid rgba(255,255,255,.18); border-radius: 18px; height: 36px; padding: 0 14px; cursor: pointer">Verlauf öffnen</button>
+      </div>
+    </div>
+  </div>
+
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 48px; background: #12151C; border-top: 1px solid rgba(255,255,255,.06)"></div>
+</div>
+</body>
+</html>
