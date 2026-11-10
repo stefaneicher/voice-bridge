@@ -74,6 +74,8 @@ interface Job {
   target?: SessionInfo;
   /** For agent runs: the session ID fixed at release time (may be missing → no-sessions). */
   targetId: string | null;
+  /** Target the user asked for explicitly (phone); missing means session-gone, not no-sessions. */
+  requestedTargetId?: string;
   releasedAt: number;
 }
 
@@ -91,6 +93,7 @@ export class SessionController {
   private watchdog: TimerHandle | null = null;
   private unsubscribeSessions: (() => void) | null = null;
   private lastWheelAt = Number.NEGATIVE_INFINITY;
+  private preferredTargetId: string | undefined;
   private failureSeq = 0;
   private readonly unsubscribeInput: () => void;
 
@@ -132,6 +135,11 @@ export class SessionController {
     Object.assign(this.o, options);
   }
 
+  /** Discards a running recording without processing it (e.g. cancelled on the phone). */
+  cancelRecording(): void {
+    if (this.state.phase.name === 'recording') this.abortRecording();
+  }
+
   setPaused(paused: boolean): void {
     if (paused && this.state.phase.name === 'recording') this.abortRecording();
     this.update({ paused });
@@ -140,7 +148,7 @@ export class SessionController {
   handleInput(event: InputEvent): void {
     switch (event.type) {
       case 'down':
-        this.onDown(event.action);
+        this.onDown(event.action, event.targetId);
         break;
       case 'up':
         this.onUp(event.action);
@@ -203,12 +211,13 @@ export class SessionController {
 
   // ---------------------------------------------------------------- input
 
-  private onDown(action: HotkeyAction): void {
+  private onDown(action: HotkeyAction, preferredTargetId?: string): void {
     if (this.state.paused) return;
     const name = this.state.phase.name;
     if (name !== 'idle' && name !== 'done') return;
 
     const runId = ++this.run;
+    this.preferredTargetId = preferredTargetId;
     const startedAt = this.o.clock.now();
     this.recorderStart = this.o.recorder.start().then(
       () => true,
@@ -253,7 +262,7 @@ export class SessionController {
         ...phase,
         loading: false,
         sessions: fresh.map((s) => ({ ...s, gone: false })),
-        selectedId: phase.selectedId ?? initialSelection(fresh, this.state.lastSessionId),
+        selectedId: phase.selectedId ?? this.chooseInitial(fresh),
       });
     });
   }
@@ -263,8 +272,18 @@ export class SessionController {
     if (this.run !== runId || phase.name !== 'recording' || phase.mode !== 'agent') return;
     const sessions = mergeSessions(phase.sessions, fresh, phase.selectedId);
     // Only an empty selection may be filled automatically; a chosen one is never replaced.
-    const selectedId = phase.selectedId ?? initialSelection(fresh, this.state.lastSessionId);
+    const selectedId = phase.selectedId ?? this.chooseInitial(fresh);
     this.setPhase({ ...phase, loading: false, sessions, selectedId });
+  }
+
+  /**
+   * An explicitly requested target (from the phone) is never replaced by another session: if it is
+   * missing, nothing is selected and the release ends in a session-gone failure.
+   */
+  private chooseInitial(fresh: SessionInfo[]): string | null {
+    const wanted = this.preferredTargetId;
+    if (wanted !== undefined) return fresh.some((s) => s.id === wanted) ? wanted : null;
+    return initialSelection(fresh, this.state.lastSessionId);
   }
 
   private onWheel(delta: 1 | -1): void {
@@ -295,6 +314,7 @@ export class SessionController {
     }
 
     const fixedTarget = target ? stripView(target) : undefined;
+    const requestedTargetId = phase.mode === 'agent' ? this.preferredTargetId : undefined;
     this.setPhase({ name: 'transcribing', mode: action, target: fixedTarget });
 
     void started.then(async (ok) => {
@@ -311,7 +331,14 @@ export class SessionController {
         });
         return;
       }
-      await this.process({ mode: action, audio, target: fixedTarget, targetId, releasedAt });
+      await this.process({
+        mode: action,
+        audio,
+        target: fixedTarget,
+        targetId,
+        requestedTargetId,
+        releasedAt,
+      });
     });
   }
 
@@ -350,6 +377,17 @@ export class SessionController {
 
     if (!job.target || job.targetId === null) {
       this.setPhase({ name: 'idle' });
+      if (job.requestedTargetId) {
+        this.addFailure({
+          kind: 'session-gone',
+          mode: 'agent',
+          message:
+            'Die gewählte Session ist nicht mehr da. Der Text wurde an keine andere Session gesendet.',
+          text,
+          rawText,
+        });
+        return;
+      }
       this.addFailure({
         kind: 'no-sessions',
         mode: 'agent',

@@ -50,7 +50,8 @@ export interface Transcript {
 
 /** Normalised input events delivered by an InputPort. */
 export type InputEvent =
-  | { type: 'down'; action: HotkeyAction }
+  /** `targetId` preselects a session (e.g. chosen on the phone before pressing). */
+  | { type: 'down'; action: HotkeyAction; targetId?: string }
   | { type: 'up'; action: HotkeyAction }
   | { type: 'wheel'; delta: 1 | -1 };
 
