@@ -79,7 +79,6 @@ Alle Mockups im Browser: [Übersicht](https://raw.githack.com/stefaneicher/voice
 ```bash
 git clone https://github.com/stefaneicher/voice-bridge.git
 cd voice-bridge
-git checkout claude/repo-access-61t4xd   # bis der Stand in main ist
 npm install
 npm run build
 npm link        # stellt die Befehle voice-bridge und vb global bereit
