@@ -9,6 +9,7 @@ const api = {
   onOverlay: (cb: (v: OverlayView) => void) => ((emitOverlay = cb), () => {}),
   onFailures: () => () => {},
   onLevel: () => () => {},
+  onLiveText: () => () => {},
   selectSession: vi.fn(),
   setOverlaySize: vi.fn(),
 };
@@ -60,7 +61,8 @@ describe('Session popup', () => {
     expect(options[1]!.getAttribute('aria-selected')).toBe('true');
     expect(screen.getByText('Ziel')).toBeTruthy();
     expect(screen.getByText('beendet')).toBeTruthy();
-    expect(screen.getByText(/Loslassen → billing-service/)).toBeTruthy();
+    expect(screen.queryByText(/Loslassen/)).toBeNull();
+    expect(screen.queryByText('Maus 5')).toBeNull();
     expect(screen.getByText('Write Message Function')).toBeTruthy();
     expect(screen.getByText('voice-bridge · copilot')).toBeTruthy();
     expect((options[2] as HTMLButtonElement).disabled).toBe(true);
@@ -71,6 +73,7 @@ describe('Session popup', () => {
       expect.any(Number),
       expect.any(Number),
       'cursor',
+      expect.any(Number),
     );
   });
 

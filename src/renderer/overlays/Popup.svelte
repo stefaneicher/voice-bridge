@@ -1,15 +1,13 @@
 <script lang="ts">
   import type { SessionView } from '../../core/types';
   import { autosize } from '../lib/autosize';
-  import { formatAgo, formatTimer } from '../lib/format';
+  import { formatAgo, formatTimer, liveTail } from '../lib/format';
   import { overlay } from '../lib/state.svelte';
   import Waveform from './Waveform.svelte';
 
   const view = $derived(overlay.view);
   const rec = $derived(view.kind === 'recording' && view.mode === 'agent' ? view : null);
   const sessions = $derived(rec?.sessions ?? []);
-  const live = $derived(sessions.filter((s) => !s.gone));
-  const selected = $derived(sessions.find((s) => s.id === rec?.selectedId));
 
   let list: HTMLElement | undefined = $state();
 
@@ -40,18 +38,15 @@
 </script>
 
 {#if rec}
-  <div class="overlay-frame" use:autosize={'cursor'}>
-    <div class="popup">
-      <div class="head" role="status">
+  <div class="overlay-frame stack" use:autosize={'cursor'}>
+    {#if overlay.liveText}
+      <div class="live"><span>{liveTail(overlay.liveText, 600)}</span></div>
+    {/if}
+    <div class="popup" data-overlay-anchor>
+      <div class="head" role="status" aria-label="Agent-Aufnahme läuft">
         <span class="rec-dot"></span>
-        <span class="label">Agent</span>
         <Waveform levels={overlay.levels} color="var(--vb-agent)" />
         <span class="mono timer">{formatTimer(overlay.now - rec.startedAt)}</span>
-        <span class="chip" style:background="var(--vb-agent)">{rec.hotkeyLabel}</span>
-      </div>
-      <div class="meta">
-        <span>Agents · {live.length} {live.length === 1 ? 'Session' : 'Sessions'}</span>
-        <span>Profil {rec.profile}</span>
       </div>
 
       {#if rec.loading}
@@ -98,24 +93,37 @@
           {/each}
         </div>
       {/if}
-
-      <div class="foot">
-        <span>Mausrad wechselt</span>
-        <span>Klick wählt</span>
-        <span>Esc bricht ab</span>
-        <span class="release">
-          Loslassen → {selected
-            ? selected.gone
-              ? `${label(selected)} (beendet)`
-              : label(selected)
-            : 'kein Ziel'}
-        </span>
-      </div>
     </div>
   </div>
 {/if}
 
 <style>
+  /* Same width as the popup: live text grows upward, the popup itself never moves. */
+  .stack {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 420px;
+  }
+  .live {
+    box-sizing: border-box;
+    max-height: 168px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 10px 16px;
+    border-radius: 14px;
+    border-left: 3px solid var(--vb-agent);
+    background: var(--vb-ink);
+    border-top: 1px solid var(--vb-line);
+    border-right: 1px solid var(--vb-line);
+    border-bottom: 1px solid var(--vb-line);
+    box-shadow: var(--vb-shadow);
+    color: var(--vb-text);
+    font-size: 14px;
+    line-height: 1.4;
+  }
   .popup {
     width: 420px;
     border-radius: 16px;
@@ -132,25 +140,9 @@
     padding: 14px 16px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.07);
   }
-  .head .chip {
-    margin-left: auto;
-  }
-  .label {
-    font-size: 14px;
-    font-weight: 600;
-  }
   .timer {
     font-size: 12px;
     color: var(--vb-text-2);
-  }
-  .meta {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px 16px 4px;
-    font-size: 11px;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--vb-text-3);
   }
   .rows {
     display: flex;
@@ -238,19 +230,6 @@
   }
   code {
     font-family: var(--font-mono);
-    color: var(--vb-agent);
-  }
-  .foot {
-    display: flex;
-    gap: 16px;
-    padding: 11px 16px;
-    background: var(--vb-ink-2);
-    border-top: 1px solid rgba(255, 255, 255, 0.07);
-    font-size: 12px;
-    color: var(--vb-text-3);
-  }
-  .release {
-    margin-left: auto;
     color: var(--vb-agent);
   }
 </style>

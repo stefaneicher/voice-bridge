@@ -1,7 +1,14 @@
 import { join } from 'node:path';
 import { BrowserWindow, screen, shell, type BrowserWindowConstructorOptions } from 'electron';
 import type { OverlayAnchor } from '../shared/ipc';
-import { bottomCenter, bottomRight, popupPosition, type Point } from './geometry';
+import {
+  anchoredSize,
+  bottomCenter,
+  bottomRight,
+  popupPosition,
+  stackAbove,
+  type Point,
+} from './geometry';
 
 export type OverlayRole = 'pill' | 'popup' | 'toast';
 export type Anchor = OverlayAnchor;
@@ -92,8 +99,12 @@ export class Overlays {
     }
   }
 
-  /** Called by the renderer with its content size. 0 × 0 hides the window. */
-  place(role: OverlayRole, width: number, height: number, anchor: Anchor): void {
+  /**
+   * Called by the renderer with its content size. 0 × 0 hides the window. `above` is the height
+   * of content stacked over the anchored part; the window grows upward by it so the anchored part
+   * (e.g. the session popup) stays where it is while live text grows.
+   */
+  place(role: OverlayRole, width: number, height: number, anchor: Anchor, above = 0): void {
     const win = this.windows[role];
     if (win.isDestroyed()) return;
     if (width <= 0 || height <= 0) {
@@ -110,17 +121,54 @@ export class Overlays {
     const workArea = screen.getDisplayNearestPoint(cursor).workArea;
     const pos =
       anchor === 'cursor'
-        ? popupPosition(cursor, size, workArea)
+        ? stackAbove(popupPosition(cursor, anchoredSize(size, above), workArea), above, workArea)
         : anchor === 'bottom-right'
           ? bottomRight(size, workArea)
           : bottomCenter(size, workArea);
     win.setBounds({ ...pos, ...size });
-    if (!win.isVisible()) win.showInactive();
+    if (!win.isVisible()) {
+      win.showInactive();
+      raise(win, true);
+      this.keepOnTop();
+    }
+  }
+
+  private topTimer: NodeJS.Timeout | null = null;
+
+  /**
+   * Fullscreen viewers such as Citrix Workspace are topmost windows themselves and re-raise on
+   * activity, hiding our overlays. While an overlay is visible, keep moving it back to the top.
+   */
+  private keepOnTop(): void {
+    if (this.topTimer) return;
+    this.topTimer = setInterval(() => {
+      const visible = Object.values(this.windows).filter((w) => !w.isDestroyed() && w.isVisible());
+      if (!visible.length) {
+        if (this.topTimer) clearInterval(this.topTimer);
+        this.topTimer = null;
+        return;
+      }
+      for (const w of visible) raise(w, false);
+    }, TOP_INTERVAL_MS);
   }
 
   destroy(): void {
+    if (this.topTimer) clearInterval(this.topTimer);
+    this.topTimer = null;
     for (const win of Object.values(this.windows)) if (!win.isDestroyed()) win.destroy();
   }
+}
+
+const TOP_INTERVAL_MS = 400;
+
+/** Moves an overlay above other topmost windows without activating it (never focus()). */
+function raise(win: BrowserWindow, reassert: boolean): void {
+  if (reassert) {
+    // Re-entering the topmost band puts the window at the top of it again.
+    win.setAlwaysOnTop(false);
+    win.setAlwaysOnTop(true, 'screen-saver');
+  }
+  win.moveTop();
 }
 
 export function createRecorderWindow(): BrowserWindow {

@@ -20,6 +20,16 @@ export function popupPosition(cursor: Point, size: Size, workArea: Rect, offset 
   return { x: Math.round(x), y: Math.round(y) };
 }
 
+/** Size of the anchored part when `above` px of content are stacked on top of it. */
+export function anchoredSize(size: Size, above: number): Size {
+  return { width: size.width, height: Math.max(1, size.height - Math.max(0, above)) };
+}
+
+/** Moves a position of the anchored part up by the stacked content, kept inside the work area. */
+export function stackAbove(pos: Point, above: number, workArea: Rect): Point {
+  return { x: pos.x, y: Math.max(workArea.y, pos.y - Math.max(0, above)) };
+}
+
 /** Pill and dictate toast: centred, `marginBottom` above the bottom of the work area. */
 export function bottomCenter(size: Size, workArea: Rect, marginBottom = 92): Point {
   return {

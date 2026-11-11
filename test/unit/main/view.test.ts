@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ControllerState } from '../../../src/core';
 import { defaultConfig } from '../../../src/shared/config';
-import { bottomCenter, popupPosition } from '../../../src/main/geometry';
+import { anchoredSize, bottomCenter, popupPosition, stackAbove } from '../../../src/main/geometry';
 import { parseProfileArg } from '../../../src/main/profile';
 import { failureViews, formatSeconds, overlayView, trayStatus } from '../../../src/main/view';
 
@@ -86,6 +86,14 @@ describe('geometry', () => {
   });
   it('centres the pill above the taskbar', () => {
     expect(bottomCenter({ width: 400, height: 60 }, work)).toEqual({ x: 760, y: 888 });
+  });
+  it('keeps the popup in place while live text grows above it', () => {
+    const cursor = { x: 100, y: 400 };
+    const size = { width: 420, height: 300 + 120 };
+    const pos = stackAbove(popupPosition(cursor, anchoredSize(size, 120), work), 120, work);
+    expect(pos).toEqual({ x: 116, y: 416 - 120 });
+    expect(stackAbove({ x: 0, y: 50 }, 120, work).y).toBe(0);
+    expect(anchoredSize({ width: 10, height: 50 }, -5).height).toBe(50);
   });
 });
 

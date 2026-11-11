@@ -314,10 +314,15 @@ export class VoiceBridgeApp {
     const fromSettings = (e: Electron.IpcMainInvokeEvent) =>
       !!this.settingsWindow && e.sender === this.settingsWindow.webContents;
 
-    ipcMain.on(IPC.overlaySize, (e, w: number, h: number, anchor: OverlayAnchor) => {
-      const role = fromOverlay(e);
-      if (role && Number.isFinite(w) && Number.isFinite(h)) this.overlays.place(role, w, h, anchor);
-    });
+    ipcMain.on(
+      IPC.overlaySize,
+      (e, w: number, h: number, anchor: OverlayAnchor, above: unknown) => {
+        const role = fromOverlay(e);
+        if (!role || !Number.isFinite(w) || !Number.isFinite(h)) return;
+        const offset = typeof above === 'number' && Number.isFinite(above) ? above : 0;
+        this.overlays.place(role, w, h, anchor, offset);
+      },
+    );
     ipcMain.on(IPC.selectSession, (e, id: string) => {
       if (fromOverlay(e) && typeof id === 'string') this.controller.selectSession(id);
     });
