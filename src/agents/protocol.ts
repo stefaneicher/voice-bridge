@@ -16,6 +16,10 @@ export interface RegisterMessage {
   cwd?: string;
   command?: string;
   pid?: number;
+  /** Set by terminals Voice-Bridge opened itself (`vb run --launch <token>`, T-026). */
+  launchToken?: string;
+  /** Initial state; launched sessions start as busy until Copilot accepts input. Default idle. */
+  state?: SessionState;
 }
 export interface HeartbeatMessage {
   type: 'heartbeat';
@@ -52,6 +56,7 @@ export function encode(message: Message): string {
 
 const str = (v: unknown): v is string => typeof v === 'string';
 const optStr = (v: unknown) => v === undefined || typeof v === 'string';
+const isState = (v: unknown) => v === 'idle' || v === 'busy' || v === 'unknown';
 
 /** Validates an untrusted object. Returns null for anything malformed. */
 export function parseMessage(value: unknown): Message | null {
@@ -65,13 +70,13 @@ export function parseMessage(value: unknown): Message | null {
         optStr(m.title) &&
         optStr(m.cwd) &&
         optStr(m.command) &&
-        (m.pid === undefined || typeof m.pid === 'number')
+        (m.pid === undefined || typeof m.pid === 'number') &&
+        optStr(m.launchToken) &&
+        (m.state === undefined || isState(m.state))
         ? (m as unknown as RegisterMessage)
         : null;
     case 'heartbeat':
-      return str(m.sessionId) && (m.state === 'idle' || m.state === 'busy' || m.state === 'unknown')
-        ? (m as unknown as HeartbeatMessage)
-        : null;
+      return str(m.sessionId) && isState(m.state) ? (m as unknown as HeartbeatMessage) : null;
     case 'bye':
       return str(m.sessionId) ? (m as unknown as ByeMessage) : null;
     case 'inject':

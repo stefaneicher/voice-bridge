@@ -24,6 +24,7 @@ async function main(): Promise<number> {
         args: cmd.args,
         name: cmd.name,
         title: cmd.title,
+        launchToken: cmd.launchToken,
         pipePath: pipePath(cmd.profile),
         spawn: pty.spawn,
       });

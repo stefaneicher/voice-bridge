@@ -63,6 +63,19 @@ describe('PtyBridgeAdapter', () => {
     c.socket.destroy();
   });
 
+  it('keeps launch token and initial state of a launched session', async () => {
+    const path = tempPipe();
+    adapter = new PtyBridgeAdapter({ pipePath: path });
+    await adapter.start();
+    const c = await client(path);
+    c.send({ ...register('pty:l'), launchToken: 'abcd1234', state: 'busy' });
+    await until(() => adapter['sessions'].size === 1);
+    expect(await adapter.listSessions()).toMatchObject([
+      { id: 'pty:l', launchToken: 'abcd1234', state: 'busy' },
+    ]);
+    c.socket.destroy();
+  });
+
   it('does not let a second connection take over a session ID', async () => {
     const path = tempPipe();
     adapter = new PtyBridgeAdapter({ pipePath: path });

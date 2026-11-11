@@ -44,6 +44,22 @@ describe('protocol', () => {
     expect(parseMessage({ type: 'register', sessionId: 1 })).toBeNull();
     expect(parseMessage({ type: 'heartbeat', sessionId: 'a', state: 'weird' })).toBeNull();
     expect(parseMessage({ type: 'evil' })).toBeNull();
+    expect(
+      parseMessage({ type: 'register', version: 1, sessionId: 'a', name: 'a', state: 'x' }),
+    ).toBeNull();
+    expect(
+      parseMessage({ type: 'register', version: 1, sessionId: 'a', name: 'a', launchToken: 7 }),
+    ).toBeNull();
+    expect(
+      parseMessage({
+        type: 'register',
+        version: 1,
+        sessionId: 'a',
+        name: 'a',
+        launchToken: 'abcd1234',
+        state: 'busy',
+      }),
+    ).toMatchObject({ launchToken: 'abcd1234', state: 'busy' });
   });
 
   it('handles chunked input, blank lines and bad JSON', () => {

@@ -10,6 +10,7 @@ import {
   ptyPayload,
   type Message,
 } from '../agents/protocol';
+import { LaunchReadiness } from './readiness';
 
 /** The subset of node-pty used here (injectable for tests). */
 export interface Pty {
@@ -49,6 +50,8 @@ export interface RunOptions {
   /** Delay between paste and Enter so the TUI can take the paste first. */
   submitDelayMs?: number;
   log?: (msg: string) => void;
+  /** Token from `vb run --launch`: this terminal was opened by Voice-Bridge for a pending prompt. */
+  launchToken?: string;
 }
 
 export interface RunHandle {
@@ -91,11 +94,17 @@ export function runWrapped(o: RunOptions): RunHandle {
   const registered = new Promise<void>((r) => (markRegistered = r));
 
   // ---- terminal passthrough
+  // Only launched sessions wait for Copilot's input field; others keep the silence heuristic.
+  const readiness = o.launchToken ? new LaunchReadiness() : null;
   pty.onData((data) => {
     lastOutputAt = Date.now();
+    readiness?.onOutput(data);
     stdout.write(data);
   });
-  const onInput = (chunk: Buffer | string) => pty.write(chunk.toString());
+  const onInput = (chunk: Buffer | string) => {
+    readiness?.onUserInput();
+    pty.write(chunk.toString());
+  };
   if (stdin.isTTY && stdin.setRawMode) stdin.setRawMode(true);
   stdin.on('data', onInput);
   stdin.resume?.();
@@ -105,7 +114,10 @@ export function runWrapped(o: RunOptions): RunHandle {
   (stdout as NodeJS.WriteStream).on?.('resize', onResize);
 
   // ---- bridge connection
-  const state = (): SessionState => (Date.now() - lastOutputAt > idleAfterMs ? 'idle' : 'busy');
+  const state = (): SessionState => {
+    if (readiness && !readiness.isReady()) return 'busy';
+    return Date.now() - lastOutputAt > idleAfterMs ? 'idle' : 'busy';
+  };
 
   const send = (m: Message) => {
     if (socket && !socket.destroyed) socket.write(encode(m));
@@ -126,6 +138,7 @@ export function runWrapped(o: RunOptions): RunHandle {
         cwd,
         command: [o.command, ...o.args].join(' '),
         pid: pty.pid,
+        ...(o.launchToken ? { launchToken: o.launchToken, state: state() } : {}),
       });
       markRegistered();
       heartbeat = setInterval(

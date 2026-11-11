@@ -25,6 +25,17 @@ describe('vb arguments', () => {
     });
   });
   it('reports errors and help', () => {
+    expect(parseCliArgs(['run', '--launch', 'a1b2c3d4', '--', 'copilot'], {})).toMatchObject({
+      kind: 'run',
+      launchToken: 'a1b2c3d4',
+      command: 'copilot',
+    });
+    expect(parseCliArgs(['run', '--launch', 'a b;c', '--', 'copilot'], {})).toMatchObject({
+      kind: 'error',
+    });
+    expect(parseCliArgs(['run', '--launch', '--', 'copilot'], {})).toMatchObject({
+      kind: 'error',
+    });
     expect(parseCliArgs([], {})).toEqual({ kind: 'help' });
     expect(parseCliArgs(['run', '--'], {})).toMatchObject({ kind: 'error' });
     expect(parseCliArgs(['run', '--name'], {})).toMatchObject({ kind: 'error' });

@@ -109,4 +109,39 @@ describe('vb run ↔ PtyBridgeAdapter (integration)', () => {
     stdin.write('exit\r');
     await handle.exited;
   });
+
+  it('reports a launched session busy until the trust question is answered', async () => {
+    const path = tempPipe();
+    adapter = new PtyBridgeAdapter({ pipePath: path });
+    await adapter.start();
+    const stdin = new PassThrough();
+    const stdout = new Capture();
+    const handle = runWrapped({
+      command: process.execPath,
+      args: [join(__dirname, '../fixtures/trust-agent.mjs')],
+      pipePath: path,
+      spawn: pty.spawn,
+      stdin,
+      stdout,
+      launchToken: 'abcd1234',
+      heartbeatMs: 50,
+      idleAfterMs: 100,
+    });
+    await handle.registered;
+    await waitFor(() => stdout.text.includes('trust the files'));
+    const [s] = await waitFor(async () => {
+      const list = await adapter!.listSessions();
+      return list.length ? list : null;
+    });
+    expect(s).toMatchObject({ launchToken: 'abcd1234', state: 'busy' });
+    // Silence alone must not make it ready while the question is open.
+    await new Promise((r) => setTimeout(r, 400));
+    expect((await adapter.listSessions())[0]?.state).toBe('busy');
+
+    stdin.write('\r');
+    await waitFor(async () => (await adapter!.listSessions())[0]?.state === 'idle');
+
+    stdin.write('exit\r');
+    await handle.exited;
+  });
 });

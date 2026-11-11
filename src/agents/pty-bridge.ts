@@ -162,7 +162,8 @@ export class PtyBridgeAdapter implements AgentAdapter {
             cwd: m.cwd,
             command: m.command,
             pid: m.pid,
-            state: 'idle',
+            state: m.state ?? 'idle',
+            ...(m.launchToken ? { launchToken: m.launchToken } : {}),
             lastActivity: new Date().toISOString(),
           },
         });
