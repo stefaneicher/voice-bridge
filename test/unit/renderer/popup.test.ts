@@ -77,6 +77,51 @@ describe('Session popup', () => {
     );
   });
 
+  it('offers a «Neue Session» row with the folder that is selectable like a session', async () => {
+    const { default: Popup } = await import('../../../src/renderer/overlays/Popup.svelte');
+    render(Popup);
+    const view = (selectedId: string) =>
+      emitOverlay({
+        kind: 'recording',
+        mode: 'agent',
+        startedAt: Date.now(),
+        hotkeyLabel: 'Maus 5',
+        profile: 'privat',
+        loading: false,
+        selectedId,
+        sessions: [
+          session('s1', 'copilot', { cwd: 'C:\\work\\voice-bridge' }),
+          session('vb:new-session', 'Neue Session', {
+            adapterId: 'launcher',
+            state: 'unknown',
+            cwd: 'C:\\work\\voice-bridge',
+            newSession: true,
+          }),
+        ],
+      });
+    view('s1');
+    flushSync();
+
+    const options = screen.getAllByRole('option');
+    expect(options).toHaveLength(2);
+    const row = options[1]!;
+    expect(row.classList.contains('new')).toBe(true);
+    expect(row.textContent).toContain('＋');
+    expect(row.textContent).toContain('Neue Session');
+    expect(row.textContent).toContain('in voice-bridge');
+    expect(row.querySelector('.dot')).toBeNull();
+    expect(row.querySelector('.status')).toBeNull();
+
+    await fireEvent.click(row);
+    expect(api.selectSession).toHaveBeenCalledWith('vb:new-session');
+
+    view('vb:new-session');
+    flushSync();
+    const selected = screen.getAllByRole('option')[1]!;
+    expect(selected.getAttribute('aria-selected')).toBe('true');
+    expect(selected.querySelector('.target')?.textContent).toBe('Ziel');
+  });
+
   it('explains how to start a session when none exist', async () => {
     const { default: Popup } = await import('../../../src/renderer/overlays/Popup.svelte');
     render(Popup);

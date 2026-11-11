@@ -1,10 +1,12 @@
 import { spawn } from 'node:child_process';
+import { randomBytes } from 'node:crypto';
 import { join } from 'node:path';
 import type { BrowserWindow } from 'electron';
 import { Notification, app, clipboard, ipcMain, session } from 'electron';
 import { copilotTitleLookup } from '../agents/copilot-sessions';
 import { PtyBridgeAdapter } from '../agents/pty-bridge';
 import { pipePath } from '../agents/pipe';
+import { TerminalLauncher } from '../agents/terminal-launcher';
 import {
   AgentRegistry,
   SessionController,
@@ -147,6 +149,8 @@ export class VoiceBridgeApp {
       minHoldMs: this.config.hotkeys.minHoldMs,
       maxRecordingMs: this.config.hotkeys.maxRecordingSec * 1000,
       lastSessionId: this.config.agents.lastSessionId,
+      launcher: new TerminalLauncher({ profile: this.profile, appPath: app.getAppPath() }),
+      createToken: () => randomBytes(4).toString('hex'),
     });
 
     this.tray = new AppTray({

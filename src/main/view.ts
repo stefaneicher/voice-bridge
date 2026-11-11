@@ -1,5 +1,5 @@
 import type { ControllerState } from '../core';
-import { bindingLabel } from '../core';
+import { bindingLabel, folderName } from '../core';
 import type { AppConfig } from '../shared/config';
 import type { FailureView, OverlayView, TrayView } from '../shared/ipc';
 
@@ -26,6 +26,12 @@ export function overlayView(state: ControllerState, config: AppConfig): OverlayV
       return { kind: 'working', mode: 'dictate', label: 'Füge ein …' };
     case 'delivering':
       return { kind: 'working', mode: 'agent', label: `Sende an ${p.target.name} …` };
+    case 'launching':
+      return {
+        kind: 'working',
+        mode: 'agent',
+        label: `Starte Session in ${folderName(p.folder)} …`,
+      };
     case 'done':
       return {
         kind: 'done',
@@ -52,7 +58,12 @@ export function trayStatus(state: ControllerState): TrayView['status'] {
   if (state.failures.length) return 'error';
   const p = state.phase;
   if (p.name === 'recording') return p.mode === 'dictate' ? 'recording-dictate' : 'recording-agent';
-  if (p.name === 'transcribing' || p.name === 'inserting' || p.name === 'delivering') {
+  if (
+    p.name === 'transcribing' ||
+    p.name === 'inserting' ||
+    p.name === 'delivering' ||
+    p.name === 'launching'
+  ) {
     return 'working';
   }
   return 'ready';

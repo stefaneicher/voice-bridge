@@ -40,6 +40,7 @@
     delivery: 'Senden fehlgeschlagen',
     'no-textfield': 'Kein Textfeld aktiv',
     insert: 'Einfügen fehlgeschlagen',
+    launch: 'Neue Session nicht bereit',
   };
 
   function act(f: FailureView, type: 'retry' | 'discard' | 'copy') {
@@ -123,6 +124,15 @@
             <button class="vb-btn" onclick={() => (pickingFor = pickingFor === f.id ? null : f.id)}
               >Andere Session</button
             >
+            <button class="vb-btn" onclick={() => act(f, 'copy')}>Kopieren</button>
+          {:else if f.kind === 'launch'}
+            <button
+              class="vb-btn primary"
+              style:background="var(--vb-agent)"
+              onclick={() => act(f, 'retry')}
+            >
+              Nochmals
+            </button>
             <button class="vb-btn" onclick={() => act(f, 'copy')}>Kopieren</button>
           {:else if f.kind === 'no-textfield'}
             <button

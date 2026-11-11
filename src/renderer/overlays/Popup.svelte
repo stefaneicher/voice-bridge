@@ -31,8 +31,9 @@
   const label = (s: SessionView): string => s.title ?? s.name;
 
   function detail(s: SessionView): string {
-    if (!s.title) return s.cwd ?? s.command ?? '';
     const folder = s.cwd?.split(/[\\/]/).filter(Boolean).at(-1);
+    if (s.newSession) return folder ? `in ${folder}` : '';
+    if (!s.title) return s.cwd ?? s.command ?? '';
     return folder ? `${folder} · ${s.name}` : s.name;
   }
 </script>
@@ -66,27 +67,32 @@
               class="row"
               class:sel={isSel}
               class:gone={s.gone}
+              class:new={s.newSession}
               role="option"
               aria-selected={isSel}
               data-id={s.id}
               disabled={s.gone}
               onclick={() => window.vb.selectSession(s.id)}
             >
-              <span
-                class="dot"
-                style:background={s.gone
-                  ? 'var(--vb-rec)'
-                  : s.state === 'busy'
-                    ? 'var(--vb-agent)'
-                    : 'var(--vb-dictate)'}
-              ></span>
+              {#if s.newSession}
+                <span class="plus" aria-hidden="true">＋</span>
+              {:else}
+                <span
+                  class="dot"
+                  style:background={s.gone
+                    ? 'var(--vb-rec)'
+                    : s.state === 'busy'
+                      ? 'var(--vb-agent)'
+                      : 'var(--vb-dictate)'}
+                ></span>
+              {/if}
               <span class="text">
-                <span class="name" class:mono={!s.title}>{label(s)}</span>
+                <span class="name" class:mono={!s.title && !s.newSession}>{label(s)}</span>
                 <span class="task">{detail(s)}</span>
               </span>
               {#if isSel && !s.gone}
                 <span class="target">Ziel</span>
-              {:else}
+              {:else if !s.newSession}
                 <span class="status">{status(s)}</span>
               {/if}
             </button>
@@ -182,6 +188,28 @@
   }
   .row.gone .name {
     text-decoration: line-through;
+  }
+  /* The virtual «Neue Session» row: dashed and muted until it is the target. */
+  .row.new {
+    outline: 1px dashed rgba(255, 255, 255, 0.18);
+    outline-offset: -1px;
+    color: var(--vb-text-2);
+  }
+  .row.new.sel {
+    outline-color: rgba(163, 216, 88, 0.6);
+    color: var(--vb-text);
+  }
+  .row.new .name {
+    color: inherit;
+  }
+  .plus {
+    width: 8px;
+    flex: none;
+    display: inline-grid;
+    place-items: center;
+    font-size: 14px;
+    line-height: 1;
+    color: var(--vb-agent);
   }
   .dot {
     width: 8px;

@@ -1,9 +1,10 @@
-import type {
-  AgentRegistry,
-  ControllerState,
-  HotkeyAction,
-  InputEvent,
-  SessionController,
+import {
+  folderName,
+  type AgentRegistry,
+  type ControllerState,
+  type HotkeyAction,
+  type InputEvent,
+  type SessionController,
 } from '../core';
 import type { RemoteTarget } from './protocol';
 import { RemoteAudioBuffer, type SwitchingRecorder } from './remote-recorder';
@@ -117,6 +118,13 @@ export class RemoteBridge implements RemoteHost {
           t: 'status',
           phase: 'working',
           label: `Sende an ${phase.target.name} …`,
+        });
+        return;
+      case 'launching':
+        run.client.send({
+          t: 'status',
+          phase: 'working',
+          label: `Starte Session in ${folderName(phase.folder)} …`,
         });
         return;
       case 'done':

@@ -67,6 +67,18 @@ describe('overlayView', () => {
     ).toBe('recording-agent');
     expect(trayStatus(base)).toBe('ready');
   });
+  it('shows the pending session start (T-026)', () => {
+    const launching = {
+      ...base,
+      phase: { name: 'launching', text: 'x', folder: 'C:\\work\\voice-bridge', token: 't' },
+    } as const;
+    expect(overlayView(launching, config)).toEqual({
+      kind: 'working',
+      mode: 'agent',
+      label: 'Starte Session in voice-bridge …',
+    });
+    expect(trayStatus(launching)).toBe('working');
+  });
   it('formats seconds Swiss style', () => {
     expect(formatSeconds(1300)).toBe('1,3 s');
   });
