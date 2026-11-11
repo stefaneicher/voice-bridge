@@ -42,6 +42,17 @@ export interface TextInserter {
   insert(text: string): Promise<InsertResult>;
 }
 
+/**
+ * Opens a new terminal that runs `vb run --launch <token> -- copilot` in `folder` (T-026).
+ * The started session registers with the same token, so a prompt is bound to exactly it.
+ */
+export interface SessionLauncher {
+  /** False hides the «Neue Session» row (no terminal or no `vb` found). */
+  available(): boolean;
+  /** Resolves once the terminal process was started; rejects if that failed. */
+  launch(folder: string, token: string): Promise<void>;
+}
+
 export interface TimerHandle {
   cancel(): void;
 }

@@ -2,13 +2,21 @@ import type {
   Clock,
   InputPort,
   RecorderPort,
+  SessionLauncher,
   SpeechToText,
   TextInserter,
   TimerHandle,
 } from './ports';
 import type { AgentRegistry } from './registry';
 import { errorMessage } from './registry';
-import { initialSelection, mergeSessions, moveSelection } from './selection';
+import {
+  NEW_SESSION_ID,
+  folderName,
+  initialSelection,
+  mergeSessions,
+  moveSelection,
+  withNewSessionRow,
+} from './selection';
 import type {
   AudioClip,
   Failure,
@@ -34,6 +42,8 @@ export type Phase =
   | { name: 'transcribing'; mode: HotkeyAction; target?: SessionInfo }
   | { name: 'inserting'; text: string }
   | { name: 'delivering'; text: string; target: SessionInfo }
+  /** A new terminal was opened (T-026); the prompt waits until exactly that session is ready. */
+  | { name: 'launching'; text: string; rawText?: string; folder: string; token: string }
   | {
       name: 'done';
       mode: HotkeyAction;
@@ -65,6 +75,12 @@ export interface ControllerOptions {
   /** Wheel events closer together than this are ignored. */
   wheelDebounceMs?: number;
   lastSessionId?: string | null;
+  /** Opens new agent terminals (T-026). Without it the «Neue Session» row is hidden. */
+  launcher?: SessionLauncher;
+  /** How long a new session may take until it is ready for input. */
+  launchTimeoutMs?: number;
+  /** Creates the launch token that binds a prompt to its new session. */
+  createToken?: () => string;
 }
 
 /** Result of a run that reached transcription. Kept in memory only. */
@@ -72,6 +88,8 @@ interface Job {
   mode: HotkeyAction;
   audio: AudioClip;
   target?: SessionInfo;
+  /** Set when the «Neue Session» row was chosen: the folder to start the new session in. */
+  launchFolder?: string;
   /** For agent runs: the session ID fixed at release time (may be missing → no-sessions). */
   targetId: string | null;
   /** Target the user asked for explicitly (phone); missing means session-gone, not no-sessions. */
@@ -85,7 +103,11 @@ interface Job {
  * release; a vanished target is an error, never a redirect; failures keep text and audio.
  */
 export class SessionController {
-  private readonly o: Required<Omit<ControllerOptions, 'lastSessionId'>>;
+  private readonly o: Required<Omit<ControllerOptions, 'lastSessionId' | 'launcher'>>;
+  private readonly launcher: SessionLauncher | undefined;
+  /** Whether the «Neue Session» row is offered in the current recording. */
+  private launchEnabled = false;
+  private stopLaunchWait: (() => void) | null = null;
   private state: ControllerState;
   private readonly listeners = new Set<(s: ControllerState) => void>();
   private run = 0;
@@ -104,8 +126,11 @@ export class SessionController {
       minHoldMs: 300,
       maxRecordingMs: 120_000,
       wheelDebounceMs: 120,
+      launchTimeoutMs: 20_000,
+      createToken: randomToken,
       ...options,
     };
+    this.launcher = options.launcher;
     this.state = {
       phase: { name: 'idle' },
       failures: [],
@@ -127,6 +152,7 @@ export class SessionController {
   dispose(): void {
     this.unsubscribeInput();
     this.endRecordingSideEffects();
+    this.stopLaunchWait?.();
     this.listeners.clear();
   }
 
@@ -187,7 +213,7 @@ export class SessionController {
     if (phase.name !== 'recording' || phase.mode !== 'agent') return;
     const view = phase.sessions.find((s) => s.id === sessionId);
     if (!view || view.gone) return;
-    this.setPhase({ ...phase, selectedId: sessionId });
+    this.setPhase({ ...phase, selectedId: sessionId, sessions: this.withRow(phase, sessionId) });
   }
 
   async resolveFailure(failureId: string, action: FailureAction): Promise<void> {
@@ -206,9 +232,22 @@ export class SessionController {
           mode: failure.mode,
           audio: failure.audio,
           target: failure.target,
-          targetId: failure.target?.id ?? null,
+          launchFolder: failure.launch?.folder,
+          targetId: failure.launch ? NEW_SESSION_ID : (failure.target?.id ?? null),
           releasedAt: this.o.clock.now(),
         });
+      } else if (failure.kind === 'launch' && failure.text !== undefined && failure.launch) {
+        // Never two runs at once: a retry while something else runs is ignored.
+        const name = this.state.phase.name;
+        if (name !== 'idle' && name !== 'done') return;
+        this.removeFailure(failureId);
+        await this.launchAndDeliver(
+          failure.text,
+          failure.rawText,
+          failure.launch.folder,
+          failure.launch.token,
+          this.o.clock.now(),
+        );
       } else if (failure.kind === 'delivery' && failure.text !== undefined && failure.target) {
         this.removeFailure(failureId);
         await this.deliver(failure.text, failure.rawText, failure.target, this.o.clock.now());
@@ -265,6 +304,7 @@ export class SessionController {
 
     this.o.input.setWheelCapture(true);
     this.lastWheelAt = Number.NEGATIVE_INFINITY;
+    this.launchEnabled = this.launcherAvailable();
     this.setPhase({
       name: 'recording',
       mode: 'agent',
@@ -280,11 +320,13 @@ export class SessionController {
       const phase = this.state.phase;
       if (this.run !== runId || phase.name !== 'recording' || phase.mode !== 'agent') return;
       if (!phase.loading) return this.onSessionsChanged(runId, fresh);
+      const selectedId = phase.selectedId ?? this.chooseInitial(fresh);
+      const sessions = fresh.map((s) => ({ ...s, gone: false }));
       this.setPhase({
         ...phase,
         loading: false,
-        sessions: fresh.map((s) => ({ ...s, gone: false })),
-        selectedId: phase.selectedId ?? this.chooseInitial(fresh),
+        sessions: this.withRow({ sessions }, selectedId),
+        selectedId,
       });
     });
   }
@@ -292,10 +334,39 @@ export class SessionController {
   private onSessionsChanged(runId: number, fresh: SessionInfo[]): void {
     const phase = this.state.phase;
     if (this.run !== runId || phase.name !== 'recording' || phase.mode !== 'agent') return;
-    const sessions = mergeSessions(phase.sessions, fresh, phase.selectedId);
+    // The virtual row is no real session: it never becomes "gone" and is rebuilt below.
+    const real = phase.sessions.filter((s) => !s.newSession);
+    const mergeId = phase.selectedId === NEW_SESSION_ID ? null : phase.selectedId;
+    const merged = mergeSessions(real, fresh, mergeId);
     // Only an empty selection may be filled automatically; a chosen one is never replaced.
     const selectedId = phase.selectedId ?? this.chooseInitial(fresh);
+    const sessions = withNewSessionRow(
+      merged,
+      selectedId,
+      rowCwd(phase.sessions),
+      this.launchEnabled,
+      this.state.lastSessionId,
+    );
     this.setPhase({ ...phase, loading: false, sessions, selectedId });
+  }
+
+  /** Rebuilds the «Neue Session» row so its folder follows the selected session. */
+  private withRow(phase: { sessions: SessionView[] }, selectedId: string | null): SessionView[] {
+    return withNewSessionRow(
+      phase.sessions,
+      selectedId,
+      rowCwd(phase.sessions),
+      this.launchEnabled,
+      this.state.lastSessionId,
+    );
+  }
+
+  private launcherAvailable(): boolean {
+    try {
+      return this.launcher?.available() ?? false;
+    } catch {
+      return false;
+    }
   }
 
   /**
@@ -314,7 +385,8 @@ export class SessionController {
     const now = this.o.clock.now();
     if (now - this.lastWheelAt < this.o.wheelDebounceMs) return;
     this.lastWheelAt = now;
-    this.setPhase({ ...phase, selectedId: moveSelection(phase.sessions, phase.selectedId, delta) });
+    const selectedId = moveSelection(phase.sessions, phase.selectedId, delta);
+    this.setPhase({ ...phase, selectedId, sessions: this.withRow(phase, selectedId) });
   }
 
   private onUp(action: HotkeyAction): void {
@@ -323,8 +395,10 @@ export class SessionController {
     const runId = this.run;
     const releasedAt = this.o.clock.now();
     const heldMs = releasedAt - phase.startedAt;
-    const target =
+    const selected =
       phase.mode === 'agent' ? phase.sessions.find((s) => s.id === phase.selectedId) : undefined;
+    const launchFolder = selected?.newSession ? selected.cwd : undefined;
+    const target = selected?.newSession ? undefined : selected;
     const targetId = phase.mode === 'agent' ? phase.selectedId : null;
     const started = this.recorderStart ?? Promise.resolve(false);
     this.endRecordingSideEffects();
@@ -359,6 +433,7 @@ export class SessionController {
         mode: action,
         audio,
         target: fixedTarget,
+        launchFolder,
         targetId,
         requestedTargetId,
         releasedAt,
@@ -389,6 +464,7 @@ export class SessionController {
         message: `Transkription fehlgeschlagen: ${errorMessage(err)}. Deine Aufnahme ist noch da und kann erneut gesendet werden.`,
         audio: job.audio,
         target: job.target,
+        ...(job.launchFolder ? { launch: { folder: job.launchFolder } } : {}),
       });
       return;
     } finally {
@@ -403,6 +479,11 @@ export class SessionController {
 
     if (job.mode === 'dictate') {
       await this.insert(text, rawText, job.releasedAt);
+      return;
+    }
+
+    if (job.launchFolder !== undefined) {
+      await this.launchAndDeliver(text, rawText, job.launchFolder, undefined, job.releasedAt);
       return;
     }
 
@@ -501,6 +582,92 @@ export class SessionController {
     }
   }
 
+  /**
+   * Opens a new terminal bound to a fresh token (unless `token` says it is already open) and sends
+   * the text once exactly that session is registered and ready for input. Copilot may first ask
+   * whether to trust the folder; the session only reports ready after that, so the prompt never
+   * answers the question. On timeout the text is kept – never sent to another session.
+   */
+  private async launchAndDeliver(
+    text: string,
+    rawText: string | undefined,
+    folder: string,
+    existingToken: string | undefined,
+    since: number,
+  ): Promise<void> {
+    const token = existingToken ?? this.o.createToken();
+    this.setPhase({ name: 'launching', text, rawText, folder, token });
+    const runId = this.run;
+    const keep = { text, rawText };
+
+    if (existingToken === undefined) {
+      try {
+        if (!this.launcher) throw new Error('kein Terminal verfügbar');
+        await this.launcher.launch(folder, token);
+      } catch (err) {
+        if (this.run !== runId) return;
+        this.setPhase({ name: 'idle' });
+        this.addFailure({
+          kind: 'launch',
+          mode: 'agent',
+          message: `Neue Session in ${folderName(folder)} konnte nicht gestartet werden: ${errorMessage(err)}. Der Text ist erhalten.`,
+          ...keep,
+          launch: { folder },
+        });
+        return;
+      }
+    }
+
+    const { session, seen } = await this.waitForLaunched(token);
+    if (this.run !== runId) return;
+    if (session) {
+      await this.deliver(text, rawText, session, since);
+      return;
+    }
+    this.setPhase({ name: 'idle' });
+    const name = folderName(folder);
+    this.addFailure({
+      kind: 'launch',
+      mode: 'agent',
+      message: seen
+        ? `Die neue Session in ${name} ist noch nicht bereit. Im Terminal bestätigen (z. B. die Frage, ob dem Ordner vertraut wird), dann «Nochmals». Der Text wurde an keine andere Session gesendet.`
+        : `Die neue Session in ${name} hat sich nicht gemeldet. Im Terminal bestätigen oder prüfen, ob es gestartet ist, dann «Nochmals». Der Text wurde an keine andere Session gesendet.`,
+      ...keep,
+      launch: { folder, token },
+    });
+  }
+
+  /** Resolves with the session carrying `token` once it is idle, or with null after the timeout. */
+  private waitForLaunched(token: string): Promise<{ session: SessionInfo | null; seen: boolean }> {
+    return new Promise((resolve) => {
+      let seen = false;
+      let finished = false;
+      const finish = (session: SessionInfo | null) => {
+        if (finished) return;
+        finished = true;
+        unsubscribe();
+        timer.cancel();
+        this.stopLaunchWait = null;
+        resolve({ session, seen });
+      };
+      const check = (sessions: SessionInfo[]) => {
+        const s = sessions.find((x) => x.launchToken === token);
+        if (!s) return;
+        seen = true;
+        if (s.state === 'idle') finish(s);
+      };
+      const unsubscribe = this.o.agents.onChange(check);
+      const timer = this.o.clock.setTimeout(() => finish(null), this.o.launchTimeoutMs);
+      this.stopLaunchWait = () => {
+        finished = true;
+        unsubscribe();
+        timer.cancel();
+        this.stopLaunchWait = null;
+      };
+      void this.o.agents.listSessions().then(check, () => undefined);
+    });
+  }
+
   // ---------------------------------------------------------------- helpers
 
   private abortRecording(): void {
@@ -545,6 +712,7 @@ export class SessionController {
     rawText?: string;
     audio?: AudioClip;
     target?: SessionInfo;
+    launch?: { folder: string; token?: string };
   }): void {
     const failure: Failure = { id: `f${++this.failureSeq}`, createdAt: this.o.clock.now(), ...f };
     this.update({ failures: [...this.state.failures, failure] });
@@ -576,6 +744,17 @@ export class SessionController {
 export function countWords(text: string): number {
   const t = text.trim();
   return t ? t.split(/\s+/).length : 0;
+}
+
+function rowCwd(views: readonly SessionView[]): string | undefined {
+  return views.find((v) => v.newSession)?.cwd;
+}
+
+/** 8 hex characters. Not a secret: it only tells our own new terminal apart from others. */
+function randomToken(): string {
+  return Math.floor(Math.random() * 0x1_0000_0000)
+    .toString(16)
+    .padStart(8, '0');
 }
 
 function stripView(view: SessionView): SessionInfo {

@@ -27,11 +27,15 @@ export interface SessionInfo {
   pid?: number;
   state: SessionState;
   lastActivity?: string;
+  /** Token of a terminal Voice-Bridge opened itself (T-026); binds a pending prompt to it. */
+  launchToken?: string;
 }
 
 /** A session as shown in the popup. `gone` marks a selected session that vanished during recording. */
 export interface SessionView extends SessionInfo {
   gone: boolean;
+  /** The virtual «Neue Session» row (T-026): opens a new terminal in `cwd`. */
+  newSession?: boolean;
 }
 
 export type DeliveryResult =
@@ -64,7 +68,14 @@ export type InputEvent =
   | { type: 'cancel' };
 
 export type FailureKind =
-  'recorder' | 'stt' | 'session-gone' | 'no-sessions' | 'delivery' | 'no-textfield' | 'insert';
+  | 'recorder'
+  | 'stt'
+  | 'session-gone'
+  | 'no-sessions'
+  | 'delivery'
+  | 'no-textfield'
+  | 'insert'
+  | 'launch';
 
 /** A failed run. Text and audio stay here until the user acts. */
 export interface Failure {
@@ -77,6 +88,8 @@ export interface Failure {
   rawText?: string;
   audio?: AudioClip;
   target?: SessionInfo;
+  /** New session to start (T-026). With `token` the terminal was already opened: retry only waits. */
+  launch?: { folder: string; token?: string };
 }
 
 export type FailureAction =
