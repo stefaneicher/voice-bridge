@@ -106,9 +106,14 @@ export interface VoiceBridgeApi {
   onDesk(cb: (data: DeskData) => void): () => void;
   /** Fixes the agent target by ID; never redirects to another session. */
   pinSession(id: string): void;
-  /** «＋ Neue Session» via the T-026 launcher; 
-ull asks for a folder first. */
+  /** «＋ Neue Session» via the T-026 launcher; null asks for a folder first. */
   launchSession(folder: string | null): Promise<DeskActionResult | null>;
+  /** Composer: sends to the pinned session only; on failure the text stays in the composer. */
+  sendPrompt(text: string): Promise<DeskActionResult | null>;
+  /** Whether the composer is the active input of the desk (dictation goes there, ADR-018). */
+  setComposerActive(active: boolean): void;
+  /** Dictated text for the composer while the desk has focus. */
+  onComposerText(cb: (text: string) => void): () => void;
 }
 
 export type InspectorTab = 'session' | 'settings';
@@ -120,6 +125,8 @@ export interface DeskData {
   canLaunch: boolean;
   /** Folder «＋ Neue Session» opens in by default. */
   newFolder?: string;
+  /** Prompts sent from the composer during this run, newest first (memory only). */
+  history: string[];
 }
 
 /** ok: false with an empty message: the user cancelled (e.g. the folder dialog). */
@@ -171,6 +178,9 @@ export const IPC = {
   desk: 'vb:desk',
   pinSession: 'vb:pin-session',
   launchSession: 'vb:launch-session',
+  sendPrompt: 'vb:send-prompt',
+  composerActive: 'vb:composer-active',
+  composerText: 'vb:composer-text',
 } as const;
 
 export type RecorderCommand =

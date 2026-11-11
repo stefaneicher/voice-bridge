@@ -2,6 +2,7 @@
   import type { InspectorTab } from '../../shared/ipc';
   import { settings } from '../lib/settings-store.svelte';
   import Settings from '../settings/Settings.svelte';
+  import Composer from './Composer.svelte';
   import { desk } from './desk-store.svelte';
   import SessionInspector from './SessionInspector.svelte';
   import SessionList from './SessionList.svelte';
@@ -98,7 +99,7 @@
   {/if}
 
   <main class="center">
-    <p class="empty">Composer folgt.</p>
+    <Composer />
   </main>
 
   {#if rightCollapsed}
@@ -294,11 +295,6 @@
     flex-direction: column;
     min-width: 0;
     min-height: 0;
-  }
-  .empty {
-    margin: 16px;
-    color: var(--vb-text-3);
-    font-size: 13px;
   }
   .status {
     grid-column: 1 / -1;

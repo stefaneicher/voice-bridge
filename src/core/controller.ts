@@ -259,6 +259,34 @@ export class SessionController {
     return { ok: true, sessionId: session.id };
   }
 
+  /**
+   * Agent Desk composer: sends typed text to exactly the given session (ADR-018). Never reroutes and
+   * leaves the push-to-talk phase alone; on failure the caller keeps the text.
+   */
+  async sendText(
+    sessionId: string | undefined,
+    text: string,
+  ): Promise<{ ok: true } | { ok: false; message: string }> {
+    if (!text.trim()) return { ok: false, message: 'Kein Text zum Senden.' };
+    if (!sessionId || sessionId === NEW_SESSION_ID) {
+      return { ok: false, message: 'Keine Ziel-Session gewählt. Links eine Session wählen.' };
+    }
+    const result = await this.o.agents.send(sessionId, text);
+    if (result.ok) {
+      this.pinSession(sessionId);
+      return { ok: true };
+    }
+    if (result.reason === 'gone') {
+      return {
+        ok: false,
+        message: 'Die Ziel-Session ist getrennt. Der Text wurde an keine andere Session gesendet.',
+      };
+    }
+    const why =
+      result.reason === 'busy' ? 'Session ist beschäftigt' : (result.detail ?? 'E/A-Fehler');
+    return { ok: false, message: `Senden fehlgeschlagen: ${why}.` };
+  }
+
   async resolveFailure(failureId: string, action: FailureAction): Promise<void> {
     const failure = this.state.failures.find((f) => f.id === failureId);
     if (!failure) return;

@@ -35,6 +35,9 @@ const api: VoiceBridgeApi = {
   onDesk: (cb) => on(IPC.desk, cb),
   pinSession: (id) => ipcRenderer.send(IPC.pinSession, id),
   launchSession: (folder) => ipcRenderer.invoke(IPC.launchSession, folder),
+  sendPrompt: (text) => ipcRenderer.invoke(IPC.sendPrompt, text),
+  setComposerActive: (active) => ipcRenderer.send(IPC.composerActive, active),
+  onComposerText: (cb) => on(IPC.composerText, cb),
 };
 
 /** Only for the hidden recorder window. */

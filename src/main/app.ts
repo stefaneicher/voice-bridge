@@ -9,6 +9,8 @@ import { pipePath } from '../agents/pipe';
 import { TerminalLauncher } from '../agents/terminal-launcher';
 import {
   AgentRegistry,
+  PromptHistory,
+  RoutedInserter,
   SessionController,
   bindingLabel,
   deskSessions,
@@ -83,6 +85,10 @@ export class VoiceBridgeApp {
   private knownFailures = new Set<string>();
   /** Last seen data of the pinned session, so the desk can show it as «getrennt» once it is gone. */
   private pinnedInfo: SessionInfo | undefined;
+  /** Composer prompts of this run (ADR-018); never written to disk. */
+  private readonly prompts = new PromptHistory();
+  /** The desk reports whether its composer is the active input. */
+  private composerActive = false;
 
   constructor(
     private readonly profile: string,
@@ -156,7 +162,11 @@ export class VoiceBridgeApp {
       input: mergedInput,
       recorder: switchingRecorder,
       stt: this.createStt(),
-      inserter: this.createInserter(),
+      inserter: new RoutedInserter(
+        this.createInserter(),
+        () => this.composerReceives(),
+        (text) => this.toComposer(text),
+      ),
       agents: this.agents,
       clock: realClock,
       minHoldMs: this.config.hotkeys.minHoldMs,
@@ -217,7 +227,10 @@ export class VoiceBridgeApp {
     this.deskWindow = win;
     win.webContents.once('did-finish-load', () => win.webContents.send(IPC.deskOpen, tab));
     win.on('closed', () => {
-      if (this.deskWindow === win) this.deskWindow = null;
+      if (this.deskWindow === win) {
+        this.deskWindow = null;
+        this.composerActive = false;
+      }
     });
   }
 
@@ -346,7 +359,31 @@ export class VoiceBridgeApp {
       pinnedId,
       canLaunch: this.controller.canLaunch(),
       newFolder: newSessionFolder(sessions, pinnedId),
+      history: [...this.prompts.entries],
     };
+  }
+
+  /** Dictation goes into the composer only while our own desk window has focus (ADR-018). */
+  private composerReceives(): boolean {
+    const win = this.deskWindow;
+    return this.composerActive && !!win && !win.isDestroyed() && win.isFocused();
+  }
+
+  private toComposer(text: string): boolean {
+    const win = this.deskWindow;
+    if (!win || win.isDestroyed()) return false;
+    win.webContents.send(IPC.composerText, text);
+    return true;
+  }
+
+  /** Composer «Senden»: strictly to the pinned session; the renderer keeps the text on failure. */
+  private async sendPrompt(text: string): Promise<DeskActionResult> {
+    const pinned = this.controller.getState().lastSessionId ?? undefined;
+    const result = await this.controller.sendText(pinned, text);
+    if (!result.ok) return result;
+    this.prompts.add(text);
+    this.pushFailures();
+    return { ok: true, message: '' };
   }
 
   /** «＋ Neue Session» from the desk; without a folder the user picks one first. */
@@ -480,6 +517,13 @@ export class VoiceBridgeApp {
     ipcMain.handle(IPC.launchSession, (e, folder: unknown) => {
       if (!fromSettings(e)) return null;
       return this.launchFromDesk(typeof folder === 'string' && folder ? folder : null);
+    });
+    ipcMain.handle(IPC.sendPrompt, (e, text: unknown) => {
+      if (!fromSettings(e) || typeof text !== 'string') return null;
+      return this.sendPrompt(text);
+    });
+    ipcMain.on(IPC.composerActive, (e, active: unknown) => {
+      if (fromSettings(e)) this.composerActive = active === true;
     });
   }
 
