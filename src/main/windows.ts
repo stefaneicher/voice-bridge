@@ -1,5 +1,11 @@
 import { join } from 'node:path';
-import { BrowserWindow, screen, shell, type BrowserWindowConstructorOptions } from 'electron';
+import {
+  BrowserWindow,
+  nativeTheme,
+  screen,
+  shell,
+  type BrowserWindowConstructorOptions,
+} from 'electron';
 import type { OverlayAnchor } from '../shared/ipc';
 import {
   anchoredSize,
@@ -187,6 +193,8 @@ export function createRecorderWindow(): BrowserWindow {
 
 /** Main window «Agent Desk» (ADR-018); contains the settings. Recreated after it was closed. */
 export function createDeskWindow(): BrowserWindow {
+  // The UI is dark only; without this Windows draws a light title bar in light mode.
+  nativeTheme.themeSource = 'dark';
   const { height: screenHeight } = screen.getPrimaryDisplay().workAreaSize;
   const win = new BrowserWindow({
     width: 1200,
