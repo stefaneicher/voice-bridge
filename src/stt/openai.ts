@@ -32,7 +32,7 @@ export class SttError extends Error {
 }
 
 /**
- * Stage 1: transcription (dialect hint + glossary as prompt). Stage 2 (optional): polishing into
+ * Stage 1: transcription (dialect hint as prompt, glossary as keywords). Stage 2 (optional): polishing into
  * Swiss Standard German with a small chat model (ADR-005). A failing stage 2 falls back to the raw
  * transcript instead of losing the result.
  */
@@ -59,11 +59,14 @@ export class OpenAiTranscriber implements SpeechToText {
       new Blob([clip.data as Uint8Array<ArrayBuffer>], { type: clip.mimeType }),
       `audio.${ext}`,
     );
+    // gpt-transcribe: `languages[]` replaces `language` (sending both is rejected), literal terms go
+    // to `keywords[]`, `prompt` carries only free-form context (ADR-018).
     form.append('model', config.model);
-    form.append('language', config.language);
+    form.append('languages[]', config.language);
     form.append('response_format', 'json');
     const prompt = buildPrompt(config);
     if (prompt) form.append('prompt', prompt);
+    for (const term of glossaryTerms(config)) form.append('keywords[]', term);
 
     const raw = (
       await this.request<{ text: string }>(
@@ -199,12 +202,17 @@ export class OpenAiTranscriber implements SpeechToText {
   }
 }
 
-export function buildPrompt(config: Pick<OpenAiSttConfig, 'dialectHint' | 'glossary'>): string {
-  const parts: string[] = [];
-  if (config.dialectHint) parts.push(`Gesprochen wird ${config.dialectHint}.`);
-  const terms = config.glossary.map((t) => t.trim()).filter(Boolean);
-  if (terms.length) parts.push(`Fachbegriffe: ${terms.join(', ')}.`);
-  return parts.join(' ');
+/** Free-form context for the transcription model. The glossary goes separately as keywords. */
+export function buildPrompt(config: Pick<OpenAiSttConfig, 'dialectHint'>): string {
+  return config.dialectHint ? `Gesprochen wird ${config.dialectHint}.` : '';
+}
+
+/** Glossary terms as sent in `keywords[]` (trimmed, empty ones dropped, at most 100). */
+export function glossaryTerms(config: Pick<OpenAiSttConfig, 'glossary'>): string[] {
+  return config.glossary
+    .map((t) => t.replace(/[\r\n]/g, ' ').trim())
+    .filter(Boolean)
+    .slice(0, 100);
 }
 
 /** Polishing only removes filler words; a much longer result is an answer, not a cleanup. */
@@ -221,7 +229,7 @@ export function isPromptEcho(
   const norm = (s: string) => s.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
   const text = norm(raw);
   if (!text) return false;
-  const terms = config.glossary.map((t) => t.trim()).filter(Boolean);
+  const terms = glossaryTerms(config);
   return [buildPrompt(config), terms.join(','), ...terms].some((p) => norm(p) === text);
 }
 
