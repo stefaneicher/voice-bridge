@@ -97,7 +97,7 @@ Fenstertitel «Agent Desk». Öffnet beim Start (ausser «Beim Start im Tray ble
 
 - **Werkzeugleiste (44 px):** Sessions ein/aus, Composer, ⚙ (öffnet den Inspektor mit dem Reiter «Einstellungen»).
 - **Einklappen (Variante B «Schiene»):** Sessions und Inspektor werden zu einer 28 px breiten Schiene mit senkrechtem Titel. Klick auf die Schiene klappt auf, «‹»/«›» im Kopf klappt ein. Zustand pro Profil gespeichert.
-- **Sessions:** Zeile mit Name, Ordner (letzter Teil des Pfads) und Status-Punkt: bereit (Mint), beschäftigt (Amber), getrennt (Rot, durchgestrichen), unbekannt (grau). Die fixierte Session trägt das Badge «Ziel». Klick fixiert per ID. «＋ Neue Session» startet ein Terminal im Ordner der fixierten Session (T-026) und ist ohne Starter deaktiviert.
+- **Sessions:** Zeile mit Name, Ordner (letzter Teil des Pfads) und Status-Punkt: bereit (Mint), beschäftigt (Amber), getrennt (Rot, durchgestrichen), unbekannt (grau). Die fixierte Session trägt das Badge «Ziel». Klick fixiert per ID. «＋ Neue Session» startet ein Terminal im Ordner der fixierten (sonst ersten) Session (T-026); «…» daneben bzw. ohne bekannten Ordner fragt zuerst nach dem Ordner. Ohne Starter ist die Aktion ausgeblendet.
 - **Composer:** Kopfzeile «Ziel: ‹Session›», darüber der Verlauf dieses Laufs (Zeit, Session, Text; Klick übernimmt den Text ins Feld). Strg+Enter oder «Senden» schickt den Text; Pfeil hoch/runter im leeren Feld blättert im Verlauf. Fehler erscheinen unter dem Feld, der Text bleibt stehen. Diktat bei aktivem Composer landet im Feld.
 - **Inspektor:** Reiter «Session» (Titel, ID, Ordner, Status, «Terminal anzeigen», Schnellschalter Live-Transkription, Hochdeutsch, Rohtranskript) und «Einstellungen» (die bestehenden Einstellungen, kompakt mit Reitern oben).
 

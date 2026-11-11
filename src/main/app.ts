@@ -2,7 +2,7 @@ import { spawn } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { join } from 'node:path';
 import type { BrowserWindow } from 'electron';
-import { Notification, app, clipboard, ipcMain, session } from 'electron';
+import { Notification, app, clipboard, dialog, ipcMain, session } from 'electron';
 import { copilotTitleLookup } from '../agents/copilot-sessions';
 import { PtyBridgeAdapter } from '../agents/pty-bridge';
 import { pipePath } from '../agents/pipe';
@@ -11,10 +11,13 @@ import {
   AgentRegistry,
   SessionController,
   bindingLabel,
+  deskSessions,
+  newSessionFolder,
   windowsKeyLabel,
   type Clock,
   type ControllerState,
   type FailureAction,
+  type SessionInfo,
   type SpeechToText,
 } from '../core';
 import { createPlatformInput, type PlatformInput } from '../input';
@@ -29,6 +32,8 @@ import { RealtimeTranscription } from '../stt/realtime';
 import { normalizeConfig, type AppConfig } from '../shared/config';
 import {
   IPC,
+  type DeskActionResult,
+  type DeskData,
   type DeskLayout,
   type InspectorTab,
   type OverlayAnchor,
@@ -76,6 +81,8 @@ export class VoiceBridgeApp {
   private remote!: RemoteManager;
   private lastPhase: ControllerState['phase']['name'] = 'idle';
   private knownFailures = new Set<string>();
+  /** Last seen data of the pinned session, so the desk can show it as «getrennt» once it is gone. */
+  private pinnedInfo: SessionInfo | undefined;
 
   constructor(
     private readonly profile: string,
@@ -325,7 +332,40 @@ export class VoiceBridgeApp {
   private pushFailures(state = this.controller.getState()): void {
     void this.agents.listSessions().then((sessions) => {
       this.overlays.broadcast(IPC.failures, failureViews(state), sessions);
+      const desk = this.deskWindow;
+      if (desk && !desk.isDestroyed()) desk.webContents.send(IPC.desk, this.deskData(sessions));
     });
+  }
+
+  private deskData(sessions: SessionInfo[]): DeskData {
+    const pinnedId = this.controller.getState().lastSessionId;
+    const pinned = sessions.find((s) => s.id === pinnedId);
+    if (pinned) this.pinnedInfo = pinned;
+    return {
+      sessions: deskSessions(sessions, pinnedId, this.pinnedInfo),
+      pinnedId,
+      canLaunch: this.controller.canLaunch(),
+      newFolder: newSessionFolder(sessions, pinnedId),
+    };
+  }
+
+  /** «＋ Neue Session» from the desk; without a folder the user picks one first. */
+  private async launchFromDesk(folder: string | null): Promise<DeskActionResult> {
+    let target = folder;
+    if (!target) {
+      const win = this.deskWindow;
+      const options: Electron.OpenDialogOptions = {
+        title: 'Ordner für die neue Session',
+        properties: ['openDirectory'],
+      };
+      const picked = await (win && !win.isDestroyed()
+        ? dialog.showOpenDialog(win, options)
+        : dialog.showOpenDialog(options));
+      target = picked.canceled ? null : (picked.filePaths[0] ?? null);
+      if (!target) return { ok: false, message: '' };
+    }
+    const result = await this.controller.launchSession(target);
+    return result.ok ? { ok: true, message: '' } : result;
   }
 
   private registerIpc(): void {
@@ -363,7 +403,9 @@ export class VoiceBridgeApp {
       if (fromOverlay(e) && typeof text === 'string') void clipboard.writeText(text);
     });
     ipcMain.on(IPC.revealSession, (e, id: string) => {
-      if (fromOverlay(e) && typeof id === 'string') void this.agents.reveal(id);
+      if ((fromOverlay(e) || fromSettings(e)) && typeof id === 'string') {
+        void this.agents.reveal(id);
+      }
     });
 
     ipcMain.handle(IPC.getSettings, (e) => (fromSettings(e) ? this.settingsData() : null));
@@ -428,6 +470,16 @@ export class VoiceBridgeApp {
       if (typeof layout.leftCollapsed === 'boolean') desk.leftCollapsed = layout.leftCollapsed;
       if (typeof layout.rightCollapsed === 'boolean') desk.rightCollapsed = layout.rightCollapsed;
       writeJson(this.configPath, this.config);
+    });
+    ipcMain.handle(IPC.getDesk, async (e) =>
+      fromSettings(e) ? this.deskData(await this.agents.listSessions()) : null,
+    );
+    ipcMain.on(IPC.pinSession, (e, id: unknown) => {
+      if (fromSettings(e) && typeof id === 'string') this.controller.pinSession(id);
+    });
+    ipcMain.handle(IPC.launchSession, (e, folder: unknown) => {
+      if (!fromSettings(e)) return null;
+      return this.launchFromDesk(typeof folder === 'string' && folder ? folder : null);
     });
   }
 

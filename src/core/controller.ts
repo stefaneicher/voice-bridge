@@ -108,6 +108,7 @@ export class SessionController {
   /** Whether the «Neue Session» row is offered in the current recording. */
   private launchEnabled = false;
   private stopLaunchWait: (() => void) | null = null;
+  private readonly deskWaits = new Set<() => void>();
   private state: ControllerState;
   private readonly listeners = new Set<(s: ControllerState) => void>();
   private run = 0;
@@ -153,6 +154,7 @@ export class SessionController {
     this.unsubscribeInput();
     this.endRecordingSideEffects();
     this.stopLaunchWait?.();
+    for (const stop of [...this.deskWaits]) stop();
     this.listeners.clear();
   }
 
@@ -214,6 +216,47 @@ export class SessionController {
     const view = phase.sessions.find((s) => s.id === sessionId);
     if (!view || view.gone) return;
     this.setPhase({ ...phase, selectedId: sessionId, sessions: this.withRow(phase, sessionId) });
+  }
+
+  /** Agent Desk: fixes the agent target by ID (ADR-018). The next agent run preselects it. */
+  pinSession(sessionId: string): void {
+    if (sessionId === NEW_SESSION_ID || sessionId === this.state.lastSessionId) return;
+    this.update({ lastSessionId: sessionId });
+  }
+
+  /** Whether «＋ Neue Session» can open a terminal (T-026 launcher). */
+  canLaunch(): boolean {
+    return this.launcherAvailable();
+  }
+
+  /**
+   * Agent Desk «＋ Neue Session»: opens a terminal through the T-026 launcher and pins the session
+   * carrying the launch token once it registers – unless the user pinned another one meanwhile.
+   */
+  async launchSession(
+    folder: string,
+  ): Promise<{ ok: true; sessionId: string } | { ok: false; message: string }> {
+    const name = folderName(folder);
+    const token = this.o.createToken();
+    const pinnedBefore = this.state.lastSessionId;
+    try {
+      if (!this.launcher) throw new Error('kein Terminal verfügbar');
+      await this.launcher.launch(folder, token);
+    } catch (err) {
+      return {
+        ok: false,
+        message: `Neue Session in ${name} konnte nicht gestartet werden: ${errorMessage(err)}.`,
+      };
+    }
+    const session = await this.waitForRegistered(token);
+    if (!session) {
+      return {
+        ok: false,
+        message: `Die neue Session in ${name} hat sich nicht gemeldet. Prüfen, ob das Terminal gestartet ist.`,
+      };
+    }
+    if (this.state.lastSessionId === pinnedBefore) this.pinSession(session.id);
+    return { ok: true, sessionId: session.id };
   }
 
   async resolveFailure(failureId: string, action: FailureAction): Promise<void> {
@@ -669,6 +712,30 @@ export class SessionController {
   }
 
   // ---------------------------------------------------------------- helpers
+
+  /** Resolves with the session carrying `token` as soon as it registers (any state), or null. */
+  private waitForRegistered(token: string): Promise<SessionInfo | null> {
+    return new Promise((resolve) => {
+      let finished = false;
+      const finish = (session: SessionInfo | null) => {
+        if (finished) return;
+        finished = true;
+        unsubscribe();
+        timer.cancel();
+        this.deskWaits.delete(stop);
+        resolve(session);
+      };
+      const stop = () => finish(null);
+      const check = (sessions: SessionInfo[]) => {
+        const s = sessions.find((x) => x.launchToken === token);
+        if (s) finish(s);
+      };
+      const unsubscribe = this.o.agents.onChange(check);
+      const timer = this.o.clock.setTimeout(stop, this.o.launchTimeoutMs);
+      this.deskWaits.add(stop);
+      void this.o.agents.listSessions().then(check, () => undefined);
+    });
+  }
 
   private abortRecording(): void {
     this.run++;

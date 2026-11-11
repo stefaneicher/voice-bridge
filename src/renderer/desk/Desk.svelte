@@ -2,6 +2,9 @@
   import type { InspectorTab } from '../../shared/ipc';
   import { settings } from '../lib/settings-store.svelte';
   import Settings from '../settings/Settings.svelte';
+  import { desk } from './desk-store.svelte';
+  import SessionInspector from './SessionInspector.svelte';
+  import SessionList from './SessionList.svelte';
 
   // Collapse variant B «Schiene» (ADR-018): a collapsed pane becomes a 28px rail.
   let leftCollapsed = $state(false);
@@ -26,6 +29,8 @@
     tab = next;
     setLayout(leftCollapsed, false);
   }
+
+  $effect(() => desk.start());
 
   $effect(() =>
     window.vb.onDeskOpen((next) => {
@@ -87,7 +92,7 @@
         >
       </header>
       <div class="body">
-        <p class="empty">Noch keine Sessions.</p>
+        <SessionList onOpen={() => showInspector('session')} />
       </div>
     </section>
   {/if}
@@ -132,7 +137,7 @@
         {#if tab === 'settings'}
           <Settings />
         {:else}
-          <p class="empty">Keine Session gewählt.</p>
+          <SessionInspector />
         {/if}
       </div>
     </section>
