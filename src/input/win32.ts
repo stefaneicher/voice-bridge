@@ -8,7 +8,9 @@ const nodeRequire = createRequire(import.meta.url);
 
 const WH_KEYBOARD_LL = 13;
 const WH_MOUSE_LL = 14;
-const LLMHF_INJECTED = 0x01;
+// Only keyboard input is filtered for injection (our own SendInput when inserting text). Mouse
+// buttons are never injected by us, and tools like Logitech Options+ deliver the side buttons
+// (Maus 4/5) as injected events, so filtering them would make mouse bindings silently dead.
 const LLKHF_INJECTED = 0x10;
 
 type Koffi = typeof KoffiModule;
@@ -76,17 +78,13 @@ export class Win32HookInput implements InputPort {
 
     const mouseProc = koffi.register((nCode: number, wParam: number, lParam: unknown) => {
       if (nCode === 0) {
-        const m = koffi.decode(lParam, MSLL) as { mouseData: number; flags: number };
-        if (!(m.flags & LLMHF_INJECTED)) {
-          const decoded = decodeMouse(Number(wParam), m.mouseData);
-          if (decoded) {
-            const r =
-              'wheel' in decoded
-                ? this.state.onWheel(decoded.wheel)
-                : this.state.onRaw(decoded.raw);
-            if (r.event) this.dispatch(r.event);
-            if (r.suppress) return 1;
-          }
+        const m = koffi.decode(lParam, MSLL) as { mouseData: number };
+        const decoded = decodeMouse(Number(wParam), m.mouseData);
+        if (decoded) {
+          const r =
+            'wheel' in decoded ? this.state.onWheel(decoded.wheel) : this.state.onRaw(decoded.raw);
+          if (r.event) this.dispatch(r.event);
+          if (r.suppress) return 1;
         }
       }
       return CallNextHookEx(null, nCode, wParam, lParam);
