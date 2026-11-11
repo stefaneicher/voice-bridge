@@ -128,6 +128,15 @@ Legende: ☐ offen · ◐ in Arbeit · ☑ erledigt
 - Lock mit einer PID, die keinem `vb run` gehört: grau, «anderswo offen», nicht wählbar (Mausrad überspringt sie).
 - **Fertig, wenn** eine in IntelliJ offene Session sichtbar, aber nicht wählbar ist.
 
+### ☑ T-026 Neue Session per Stimme (ADR-017)
+- Das Popup hat am Ende eine Zeile «＋ Neue Session · in ‹Ordner›». Ordner ist der `cwd` der gewählten, sonst der zuletzt verwendeten Session. Ohne bekannten `cwd` oder ohne Terminal-Starter ist die Zeile ausgeblendet.
+- Wählbar mit Mausrad und Klick wie jede Session; gewählt trägt sie das «Ziel»-Badge.
+- Loslassen (nach erfolgreicher Transkription): zufälliges Token (8 Hex-Zeichen), dann `wt new-tab -d <ordner> vb run --profile <p> --launch <token> -- copilot`; ohne `wt` über `cmd /c start`. Argumente als Array, kein Shell-String mit dem Ordner.
+- `vb run --launch <token>` meldet das Token bei der Anmeldung. Zugestellt wird nur an die Session mit genau diesem Token, und erst wenn Copilot das Eingabefeld zeigt. Die Frage «Do you trust the files in this folder?» wird nie mit dem Prompt beantwortet.
+- Overlay während des Wartens: «Starte Session in ‹Ordner› …».
+- Pro Token genau ein Start; ein weiteres Loslassen während des Starts wird ignoriert.
+- **Fertig, wenn** der Text in der neuen Session ankommt; nach 20 s ohne bereite Session Fehler-Dialog «Neue Session nicht bereit» mit Hinweis «Im Terminal bestätigen», «Nochmals» (wartet weiter auf dasselbe Token, startet kein zweites Terminal) und «Kopieren». Keine Umleitung. Unit-Tests für Core, Starter, Bereitschaftserkennung und Popup-Zeile.
+
 ---
 
 ## Idee · Handy als Mikrofon

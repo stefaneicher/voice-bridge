@@ -60,6 +60,7 @@ Alle Overlays werden beim Start einmal erzeugt und danach nur ein- und ausgeblen
 4. Ändert sich die Session-Liste während der Aufnahme, bleibt die Auswahl an der **ID** hängen. Verschwindet die gewählte Session, wird sie durchgestrichen und mit «beendet» markiert. Sie bleibt markiert, es wird nicht automatisch umgewählt.
 5. Taste oben: Ziel-ID fixieren, Popup weg, kleiner Status «Sende an X …», danach Toast 2b.
 6. Keine Sessions: Popup zeigt «Keine Sessions gefunden» und den Hinweis `vb run -- copilot`. Die Aufnahme läuft trotzdem. Beim Loslassen erscheint der Fehler-Dialog mit «Kopieren».
+7. Letzte Zeile «＋ Neue Session» mit «in ‹Ordner›» (Ordner der gewählten bzw. zuletzt verwendeten Session, ADR-017): gestrichelter Rahmen, gedämpfte Farbe, «＋» statt Status-Punkt, gewählt mit «Ziel»-Badge. Wählbar wie jede Zeile. Ausgeblendet ohne bekannten Ordner oder ohne Terminal-Starter. Loslassen öffnet ein Terminal mit Copilot im Ordner; Status «Starte Session in ‹Ordner› …», dann Toast 2b. Nach 20 s ohne bereite Session Fehler «Neue Session nicht bereit» mit «Im Terminal bestätigen».
 
 ### Fehler (Mockup 3a)
 
@@ -71,6 +72,7 @@ Jeder Fehler zeigt den Text bzw. die Aufnahme und bietet mindestens **Kopieren**
 | STT fehlgeschlagen | Erneut versuchen | Abspielen, Verwerfen |
 | Kein Textfeld | OK (Text liegt in der Zwischenablage) | Verlauf öffnen |
 | Senden fehlgeschlagen (I/O) | Erneut senden | Kopieren, Verwerfen |
+| Neue Session nicht bereit | Nochmals (wartet weiter) | Kopieren, Verwerfen |
 
 ### Tray (Mockup 3b)
 

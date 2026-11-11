@@ -213,6 +213,28 @@ Kurzform: Kontext → Entscheid → Folgen. Neue Einträge unten anhängen, alte
 
 ---
 
+## ADR-017 · Neue Copilot-Session per Stimme, an ein Start-Token gebunden
+
+**Status:** angenommen (T-026)
+
+**Kontext:** Der Nutzer will einen Prompt an eine Copilot-Session schicken, die es noch nicht gibt, meist im Ordner der Session, mit der er gerade arbeitet. Voice-Bridge darf den Text nie an «irgendein neues Terminal» oder eine andere Session umleiten. Copilot CLI fragt in einem neuen Ordner «Do you trust the files in this folder?»; Enter beantwortet die Frage mit «Yes». Ein zu früh eingefügter Prompt würde sie also beantworten. (ADR-016 ist für die Live-Transkription vergeben.)
+
+**Entscheid:**
+- Das Popup bekommt eine virtuelle Zeile «＋ Neue Session» (`vb:new-session`) für den Ordner der gewählten bzw. zuletzt verwendeten Session. Die Logik (Zeile, wartender Start, Zeitlimit, Fehler mit Text) liegt in `src/core` hinter dem Port `SessionLauncher` (`available()`, `launch(folder, token)`); Zeitlimit über `Clock`.
+- Gestartet wird erst nach erfolgreicher, nicht leerer Transkription. Pro Loslassen ein zufälliges Token (8 Hex-Zeichen); ein zweites Loslassen während des Starts wird ignoriert.
+- Start: `wt new-tab -d <ordner> <vb> run --profile <p> --launch <token> -- copilot`. Fehlt `wt`, dann `cmd /d /c start "" "<vb>" … ` mit dem Ordner als Arbeitsverzeichnis. Der Ordner geht nie in einen Shell-String; enthält er `;` (Trennzeichen von `wt`), wird `-d .` mit Arbeitsverzeichnis verwendet. Pfade mit `"%&|<>^` werden für `cmd` abgelehnt.
+- `<vb>` ist `vb.cmd`/`vb.exe` aus `PATH`, sonst `node bin/vb.js` des Checkouts (nicht aus einem asar-Archiv). Das Profil wird immer mitgegeben, damit die neue Session an derselben Pipe landet. Nur Windows; sonst ist die Zeile ausgeblendet.
+- `vb run --launch <token>` sendet das Token und einen Startzustand in `register`. Bis Copilot bereit ist, meldet die Session `busy`. Bereit heisst: der Platzhalter des Eingabefelds («… ? for shortcuts») ist zu sehen und keine Vertrauensfrage («Confirm folder trust» / «Do you trust the files in this folder?») offen. Eine offene Frage wird nur durch eine Taste des Nutzers im Terminal beendet. Erkannt wird auf dem Ausgabe-Ende ohne Escape-Sequenzen und Leerraum, damit Zeilenumbrüche und ConPTY-Neuzeichnen nicht stören.
+- Zugestellt wird nur an die Session mit genau diesem Token im Zustand `idle`. Nach 20 s: Fehler `launch` mit erhaltenem Text, Hinweis «Im Terminal bestätigen», «Nochmals» wartet weiter auf dasselbe Token (kein zweites Terminal), «Kopieren». Scheitert schon der Start, startet «Nochmals» mit neuem Token.
+
+**Folgen:**
+- Abhängigkeit von den Texten der Copilot-Oberfläche (Platzhalter, Vertrauensfrage). Ändern sie sich, bleibt die Session `busy` und der Nutzer bekommt nach 20 s den Fehler mit Text, es geht nichts verloren.
+- Restrisiko: Zeichnet Copilot das Eingabefeld vor der Vertrauensfrage, ohne die Frage danach auszugeben, gälte die Session zu früh als bereit. Beobachtet ist die umgekehrte Reihenfolge.
+- Bestehende Sessions ohne Token verhalten sich wie bisher (Ruhe-Heuristik).
+- Das Handy (ADR-013) sieht die virtuelle Zeile nicht.
+
+---
+
 ## Offen
 
 | # | Frage | Wer/Wann |
