@@ -235,6 +235,21 @@ Kurzform: Kontext → Entscheid → Folgen. Neue Einträge unten anhängen, alte
 
 ---
 
+## ADR-018 · gpt-transcribe statt gpt-4o-transcribe
+
+**Status:** angenommen (11.11.2026), ändert ADR-005 (Modell und Parameter von Stufe 1)
+
+**Kontext:** OpenAI stellt `gpt-4o-transcribe`, `gpt-4o-mini-transcribe` und `whisper-1` am 26.02.2027 ein (angekündigt am 26.08.2026). Für aufgenommene Dateien empfiehlt OpenAI `gpt-transcribe`; es ist günstiger und läuft über denselben Endpunkt `/v1/audio/transcriptions`.
+
+**Entscheid:**
+- Standardmodell für die Datei-Transkription ist `gpt-transcribe`. Gespeicherte Konfigurationen mit einem der eingestellten Modelle werden beim Start automatisch umgestellt; andere Modelle stehen nicht mehr zur Auswahl.
+- Anfrage im neuen Format: `languages[]` statt `language` (beides zusammen lehnt die API ab), das Glossar als `keywords[]`, im `prompt` nur noch der Dialekt-Hinweis.
+- Die Live-Transkription (`gpt-live-transcribe`, ADR-016) ist nicht betroffen.
+
+**Folgen:** Kein Handlungsbedarf für Nutzer. Ob das Modell zum Glätten (`gpt-4o-mini`, Stufe 2) ebenfalls eingestellt wird, ist noch nicht geprüft (die Deprecation-Seite von OpenAI war aus der Arbeitsumgebung nicht erreichbar).
+
+---
+
 ## Offen
 
 | # | Frage | Wer/Wann |

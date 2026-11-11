@@ -60,7 +60,7 @@ Legende: ☐ offen · ◐ in Arbeit · ☑ erledigt
 
 ### ☐ S4 STT Berndeutsch
 - 20 eigene Aufnahmen (5–20 s, Alltag und Fachbegriffe).
-- Vergleich: `gpt-4o-transcribe` vs. `gpt-4o-mini-transcribe` vs. `whisper-1`, je mit und ohne Stufe 2 (Glättung).
+- Vergleich: `gpt-transcribe` (Datei) vs. `gpt-live-transcribe` (live), je mit und ohne Stufe 2 (Glättung). Die gpt-4o-Modelle und `whisper-1` entfallen am 26.2.2027 (ADR-018).
 - Messen: Latenz (p50/p95), subjektive Qualität 1–5, Kosten.
 
 **Ergebnis:** Tabelle und Default-Wahl in `decisions.md` (ADR-005).
