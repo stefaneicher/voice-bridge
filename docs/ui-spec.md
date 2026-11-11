@@ -39,7 +39,7 @@ Alle Overlays werden beim Start einmal erzeugt und danach nur ein- und ausgeblen
 | Toast (Erfolg) | 400–520 px breit | unten mittig (Diktat) bzw. unten rechts (Agent) | nie | angenommen |
 | Fehler-Dialog | 360 px | wie Toast | nie, ausser «Andere Session wählen» | angenommen |
 | Tray-Flyout | 400 px | über dem Tray-Icon | normal | normal |
-| Einstellungen | 1100 × 760, skalierbar | zentriert | normales Fenster | normal |
+| Agent Desk (Hauptfenster, enthält die Einstellungen) | 1200 × 780, skalierbar, min. 760 × 480 | zentriert | normales Fenster | normal |
 
 ## Verhalten
 
@@ -78,6 +78,28 @@ Jeder Fehler zeigt den Text bzw. die Aufnahme und bietet mindestens **Kopieren**
 
 - Icon-Zustände: bereit (grau), Diktat-Aufnahme (Mint + roter Punkt), Agent-Aufnahme (Amber + roter Punkt), pausiert (durchgestrichen), Fehler (rot).
 - Profilwechsel startet die andere Profil-Instanz bzw. holt sie in den Vordergrund. Eine Instanz wechselt nie das eigene Profil im Betrieb.
+
+### Agent Desk (Hauptfenster, ADR-018)
+
+Fenstertitel «Agent Desk». Öffnet beim Start (ausser «Beim Start im Tray bleiben»), über das Tray-Menü und bei einem zweiten Start. ✕ schliesst nur das Fenster.
+
+```
+┌────┬──────────────┬──────────────────────────────┬────────────────┐
+│ ☰  │ SESSIONS  ＋ │ Ziel: copilot · voice-bridge │ INSPEKTOR      │
+│ ▤  │ ● copilot    │ ── Verlauf ──────────────── │ [Session|Einst]│
+│ ⚙  │   bereit     │ 14:02  Erkläre den Test …    │ Titel, ID,     │
+│    │ ○ claude     │                              │ Ordner, Status │
+│    │   beschäftigt│ ┌──────────────────────────┐ │ Schnellschalter│
+│    │              │ │ Prompt …        Senden ⏎ │ │                │
+└────┴──────────────┴──────────────────────────────┴────────────────┘
+ 44px   260px            flexibel                   340px (Einst. 460px)
+```
+
+- **Werkzeugleiste (44 px):** Sessions ein/aus, Composer, ⚙ (öffnet den Inspektor mit dem Reiter «Einstellungen»).
+- **Einklappen (Variante B «Schiene»):** Sessions und Inspektor werden zu einer 28 px breiten Schiene mit senkrechtem Titel. Klick auf die Schiene klappt auf, «‹»/«›» im Kopf klappt ein. Zustand pro Profil gespeichert.
+- **Sessions:** Zeile mit Name, Ordner (letzter Teil des Pfads) und Status-Punkt: bereit (Mint), beschäftigt (Amber), getrennt (Rot, durchgestrichen), unbekannt (grau). Die fixierte Session trägt das Badge «Ziel». Klick fixiert per ID. «＋ Neue Session» startet ein Terminal im Ordner der fixierten Session (T-026) und ist ohne Starter deaktiviert.
+- **Composer:** Kopfzeile «Ziel: ‹Session›», darüber der Verlauf dieses Laufs (Zeit, Session, Text; Klick übernimmt den Text ins Feld). Strg+Enter oder «Senden» schickt den Text; Pfeil hoch/runter im leeren Feld blättert im Verlauf. Fehler erscheinen unter dem Feld, der Text bleibt stehen. Diktat bei aktivem Composer landet im Feld.
+- **Inspektor:** Reiter «Session» (Titel, ID, Ordner, Status, «Terminal anzeigen», Schnellschalter Live-Transkription, Hochdeutsch, Rohtranskript) und «Einstellungen» (die bestehenden Einstellungen, kompakt mit Reitern oben).
 
 ## Barrierefreiheit
 
