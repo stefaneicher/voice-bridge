@@ -4,6 +4,7 @@ import {
   buildPrompt,
   isPromptEcho,
   looksLikeAnswer,
+  stripPromptLeak,
   type OpenAiSttConfig,
 } from '../../../src/stt/openai';
 import { defaultConfig } from '../../../src/shared/config';
@@ -101,6 +102,27 @@ describe('OpenAiTranscriber', () => {
     );
     expect(isPromptEcho('Starte Copilot bitte', cfg)).toBe(false);
     expect(isPromptEcho('', cfg)).toBe(false);
+  });
+
+  it('strips prompt fragments leaked into a real transcript', () => {
+    const cfg = { dialectHint: 'Schweizerdeutsch', glossary: ['Copilot'] };
+    expect(stripPromptLeak('context: Starte die Session', cfg)).toBe('Starte die Session');
+    expect(stripPromptLeak('Gesprochen wird Schweizerdeutsch. Mach den Build', cfg)).toBe(
+      'Mach den Build',
+    );
+    expect(stripPromptLeak('Mach den Build. Gesprochen wird Schweizerdeutsch.', cfg)).toBe(
+      'Mach den Build.',
+    );
+    expect(stripPromptLeak('Fachbegriffe: Copilot. Hallo', cfg)).toBe('Hallo');
+    expect(stripPromptLeak('Der Kontext ist wichtig', cfg)).toBe('Der Kontext ist wichtig');
+  });
+
+  it('removes leaked prompt text from the transcription result', async () => {
+    const f = fakeFetch([json({ text: 'context: Hallo zäme' })]);
+    const cfg = config();
+    cfg.polish.enabled = false;
+    const stt = new OpenAiTranscriber({ apiKey: async () => 'k', config: () => cfg, fetch: f.fn });
+    expect((await stt.transcribe(clip)).text).toBe('Hallo zäme');
   });
 
   it('skips polishing when disabled', async () => {

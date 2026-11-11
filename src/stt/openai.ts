@@ -75,14 +75,44 @@ export class OpenAiTranscriber implements SpeechToText {
       )
     ).text.trim();
 
+    return this.postProcess(raw, config, key, options.signal);
+  }
+
+  /** Applies the same checks and optional polishing to a transcript from another source. */
+  async refine(raw: string, signal?: AbortSignal): Promise<Transcript> {
+    const config = this.o.config();
+    if (!config.polish.enabled) return this.postProcess(raw, config, '', signal);
+    const key = await this.o.apiKey();
+    if (!key) return { text: raw.trim() };
+    return this.postProcess(raw, config, key, signal);
+  }
+
+  private async postProcess(
+    input: string,
+    config: OpenAiSttConfig,
+    key: string,
+    signal?: AbortSignal,
+  ): Promise<Transcript> {
+    const raw = input.trim();
     if (isPromptEcho(raw, config)) {
       this.o.log?.('stt: transcript only echoes the prompt, treating as silence');
       return { text: '' };
     }
+    const cleaned = stripPromptLeak(raw, config);
+    if (cleaned !== raw) this.o.log?.('stt: removed prompt fragments from transcript');
+    return this.polishText(cleaned, config, key, signal);
+  }
+
+  private async polishText(
+    raw: string,
+    config: OpenAiSttConfig,
+    key: string,
+    signal?: AbortSignal,
+  ): Promise<Transcript> {
     if (!config.polish.enabled || !raw) return { text: raw };
 
     try {
-      const polished = await this.polish(raw, config, key, options.signal);
+      const polished = await this.polish(raw, config, key, signal);
       if (!polished) return { text: raw };
       if (looksLikeAnswer(raw, polished)) {
         this.o.log?.('stt: polishing answered instead of cleaning, using raw transcript');
@@ -90,7 +120,7 @@ export class OpenAiTranscriber implements SpeechToText {
       }
       return { text: polished, raw };
     } catch (err) {
-      if (options.signal?.aborted) throw err;
+      if (signal?.aborted) throw err;
       this.o.log?.(`stt: polishing failed, using raw transcript (${String(err)})`);
       return { text: raw };
     }
@@ -193,6 +223,32 @@ export function isPromptEcho(
   if (!text) return false;
   const terms = config.glossary.map((t) => t.trim()).filter(Boolean);
   return [buildPrompt(config), terms.join(','), ...terms].some((p) => norm(p) === text);
+}
+
+/**
+ * Removes prompt fragments the model sometimes copies into a real transcript: our own sentences
+ * ("Gesprochen wird …", "Fachbegriffe: …") and a leading "context:" label.
+ */
+export function stripPromptLeak(
+  raw: string,
+  config: Pick<OpenAiSttConfig, 'dialectHint' | 'glossary'>,
+): string {
+  let text = raw.replace(/^\s*["'«]?\s*(context|kontext)\s*:\s*/i, '');
+  const sentences: string[] = [];
+  if (config.dialectHint) sentences.push(`Gesprochen wird ${config.dialectHint}`);
+  sentences.push('Gesprochen wird Schweizerdeutsch', 'Gesprochen wird Hochdeutsch');
+  for (const s of sentences) {
+    text = text.replace(new RegExp(`${escapeRegExp(s)}[.!]?`, 'giu'), ' ');
+  }
+  text = text.replace(/Fachbegriffe\s*:[^.\n]*\.?/giu, ' ');
+  return text
+    .replace(/[ \t]{2,}/g, ' ')
+    .replace(/\s+([.,!?])/g, '$1')
+    .trim();
+}
+
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+');
 }
 
 function errorText(err: unknown): string {
