@@ -49,6 +49,13 @@ export interface AppConfig {
     enabled: boolean;
     port: number;
   };
+  /** Main window «Agent Desk» (ADR-018). */
+  desk: {
+    leftCollapsed: boolean;
+    rightCollapsed: boolean;
+    /** Do not open the main window at startup. */
+    startInTray: boolean;
+  };
 }
 
 export const STT_MODELS = ['gpt-4o-transcribe', 'gpt-4o-mini-transcribe', 'whisper-1'] as const;
@@ -89,6 +96,7 @@ export function defaultConfig(profile: string): AppConfig {
     },
     privacy: { cloudAllowed: true, historyEntries: 50 },
     remote: { enabled: false, port: 47613 },
+    desk: { leftCollapsed: false, rightCollapsed: false, startInTray: false },
   };
 }
 

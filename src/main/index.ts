@@ -22,8 +22,8 @@ if (!app.requestSingleInstanceLock()) {
 } else {
   const vb = new VoiceBridgeApp(profile, dataDir);
 
-  app.on('second-instance', () => vb.openSettings());
-  // Tray app: closing the settings window must not quit.
+  app.on('second-instance', () => vb.openDesk());
+  // Tray app: closing the main window must not quit.
   app.on('window-all-closed', () => {});
 
   let stopping = false;

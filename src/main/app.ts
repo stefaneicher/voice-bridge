@@ -27,7 +27,13 @@ import { OpenAiTranscriber, SttError } from '../stt/openai';
 import { LiveTranscription } from '../stt/live';
 import { RealtimeTranscription } from '../stt/realtime';
 import { normalizeConfig, type AppConfig } from '../shared/config';
-import { IPC, type OverlayAnchor, type SettingsData } from '../shared/ipc';
+import {
+  IPC,
+  type DeskLayout,
+  type InspectorTab,
+  type OverlayAnchor,
+  type SettingsData,
+} from '../shared/ipc';
 import { History } from './history';
 import { RemoteManager } from './remote';
 import { ElectronRecorder } from './recorder';
@@ -35,7 +41,7 @@ import { SecretStore } from './secrets';
 import { readJson, writeJson } from './store';
 import { AppTray } from './tray';
 import { failureViews, overlayView, trayStatus } from './view';
-import { Overlays, createRecorderWindow, createSettingsWindow, type OverlayRole } from './windows';
+import { Overlays, createDeskWindow, createRecorderWindow, type OverlayRole } from './windows';
 
 declare const __APP_VERSION__: string;
 
@@ -66,7 +72,7 @@ export class VoiceBridgeApp {
   private agents!: AgentRegistry;
   private controller!: SessionController;
   private tray!: AppTray;
-  private settingsWindow: BrowserWindow | null = null;
+  private deskWindow: BrowserWindow | null = null;
   private remote!: RemoteManager;
   private lastPhase: ControllerState['phase']['name'] = 'idle';
   private knownFailures = new Set<string>();
@@ -155,7 +161,8 @@ export class VoiceBridgeApp {
 
     this.tray = new AppTray({
       togglePause: () => this.controller.setPaused(!this.controller.getState().paused),
-      openSettings: () => this.openSettings(),
+      openDesk: () => this.openDesk(),
+      openSettings: () => this.openDesk('settings'),
       openProfile: (p) => this.launchProfile(p),
       copy: (text) => void clipboard.writeText(text),
       quit: () => app.quit(),
@@ -176,6 +183,7 @@ export class VoiceBridgeApp {
     this.controller.subscribe((s) => this.onState(s));
     this.onState(this.controller.getState());
     this.agents.onChange(() => this.pushFailures());
+    if (!this.config.desk.startInTray) this.openDesk();
     log(`started profile "${this.profile}", pipe ${pipePath(this.profile)}`);
   }
 
@@ -188,14 +196,22 @@ export class VoiceBridgeApp {
     this.tray?.destroy();
   }
 
-  openSettings(): void {
-    if (this.settingsWindow && !this.settingsWindow.isDestroyed()) {
-      this.settingsWindow.show();
-      this.settingsWindow.focus();
+  /** Shows the main window «Agent Desk» (ADR-018); `tab` selects the inspector tab. */
+  openDesk(tab: InspectorTab | null = null): void {
+    const existing = this.deskWindow;
+    if (existing && !existing.isDestroyed()) {
+      if (existing.isMinimized()) existing.restore();
+      existing.show();
+      existing.focus();
+      existing.webContents.send(IPC.deskOpen, tab);
       return;
     }
-    this.settingsWindow = createSettingsWindow();
-    this.settingsWindow.on('closed', () => (this.settingsWindow = null));
+    const win = createDeskWindow();
+    this.deskWindow = win;
+    win.webContents.once('did-finish-load', () => win.webContents.send(IPC.deskOpen, tab));
+    win.on('closed', () => {
+      if (this.deskWindow === win) this.deskWindow = null;
+    });
   }
 
   // ------------------------------------------------------------------ wiring
@@ -315,8 +331,11 @@ export class VoiceBridgeApp {
   private registerIpc(): void {
     const fromOverlay = (e: Electron.IpcMainEvent): OverlayRole | null =>
       this.overlays.role(e.sender);
-    const fromSettings = (e: Electron.IpcMainInvokeEvent) =>
-      !!this.settingsWindow && e.sender === this.settingsWindow.webContents;
+    // The settings live in the desk window (ADR-018).
+    const fromSettings = (e: Electron.IpcMainInvokeEvent | Electron.IpcMainEvent) =>
+      !!this.deskWindow &&
+      !this.deskWindow.isDestroyed() &&
+      e.sender === this.deskWindow.webContents;
 
     ipcMain.on(
       IPC.overlaySize,
@@ -403,11 +422,21 @@ export class VoiceBridgeApp {
     ipcMain.handle(IPC.clearHistory, (e) => {
       if (fromSettings(e)) this.history.clear();
     });
+    ipcMain.on(IPC.deskLayout, (e, layout: Partial<DeskLayout> | null) => {
+      if (!fromSettings(e) || !layout) return;
+      const desk = this.config.desk;
+      if (typeof layout.leftCollapsed === 'boolean') desk.leftCollapsed = layout.leftCollapsed;
+      if (typeof layout.rightCollapsed === 'boolean') desk.rightCollapsed = layout.rightCollapsed;
+      writeJson(this.configPath, this.config);
+    });
   }
 
   private applyConfig(next: AppConfig): void {
     const prewarmChanged = next.audio.prewarm !== this.config.audio.prewarm;
     next.agents.lastSessionId = this.config.agents.lastSessionId;
+    // The desk writes its layout directly; a settings save must not reset it.
+    next.desk.leftCollapsed = this.config.desk.leftCollapsed;
+    next.desk.rightCollapsed = this.config.desk.rightCollapsed;
     this.config = next;
     writeJson(this.configPath, next);
     this.input?.setBindings({ dictate: next.hotkeys.dictate, agent: next.hotkeys.agent });

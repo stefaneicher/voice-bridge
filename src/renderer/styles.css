@@ -29,8 +29,8 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-html:not([data-view='settings']),
-html:not([data-view='settings']) body {
+html:not([data-view='desk']),
+html:not([data-view='desk']) body {
   background: transparent;
   overflow: hidden;
   user-select: none;

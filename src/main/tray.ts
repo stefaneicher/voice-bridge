@@ -13,6 +13,7 @@ const STATUS_LABEL: Record<TrayView['status'], string> = {
 
 export interface TrayActions {
   togglePause(): void;
+  openDesk(): void;
   openSettings(): void;
   openProfile(profile: string): void;
   copy(text: string): void;
@@ -68,6 +69,7 @@ export class AppTray {
       { label: 'Verlauf', submenu: history },
       { type: 'separator' },
       { label: v.paused ? 'Fortsetzen' : 'Pausieren', click: () => this.actions.togglePause() },
+      { label: 'Agent Desk öffnen', click: () => this.actions.openDesk() },
       { label: 'Einstellungen …', click: () => this.actions.openSettings() },
       { label: 'Beenden', click: () => this.actions.quit() },
     ];

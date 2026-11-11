@@ -185,23 +185,22 @@ export function createRecorderWindow(): BrowserWindow {
   return win;
 }
 
-export function createSettingsWindow(): BrowserWindow {
-  // Tall enough that the longest page (Spracherkennung) fits without scrolling, but never
-  // taller than the screen.
+/** Main window «Agent Desk» (ADR-018); contains the settings. Recreated after it was closed. */
+export function createDeskWindow(): BrowserWindow {
   const { height: screenHeight } = screen.getPrimaryDisplay().workAreaSize;
   const win = new BrowserWindow({
-    width: 1100,
-    height: Math.min(900, screenHeight),
+    width: 1200,
+    height: Math.min(780, screenHeight),
     minWidth: 760,
-    minHeight: 520,
+    minHeight: 480,
     show: false,
-    title: 'Voice-Bridge – Einstellungen',
+    title: 'Agent Desk',
     backgroundColor: '#15151c',
     autoHideMenuBar: true,
     webPreferences: secureWebPreferences,
   });
   hardenNavigation(win);
-  load(win, 'settings');
+  load(win, 'desk');
   win.once('ready-to-show', () => win.show());
   return win;
 }

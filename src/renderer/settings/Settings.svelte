@@ -7,10 +7,12 @@
     sameBinding,
   } from '../../core/bindings';
   import type { HotkeyAction, HotkeyBinding, Modifier, MouseButton } from '../../core/types';
-  import { STT_MODELS, type AppConfig } from '../../shared/config';
+  import { STT_MODELS } from '../../shared/config';
   import QRCode from 'qrcode';
-  import type { RemoteData, SettingsData } from '../../shared/ipc';
+  import type { RemoteData } from '../../shared/ipc';
+  import { settings } from '../lib/settings-store.svelte';
 
+  // Shown in the desk's inspector (ADR-018): narrow, with the sections as tabs on top.
   const SECTIONS = [
     ['general', 'Allgemein'],
     ['hotkeys', 'Hotkeys'],
@@ -22,8 +24,8 @@
   ] as const;
   type Section = (typeof SECTIONS)[number][0];
 
-  let data = $state<SettingsData | null>(null);
-  let config = $state<AppConfig | null>(null);
+  const data = $derived(settings.data);
+  const config = $derived(settings.config);
   let section = $state<Section>('general');
   let apiKey = $state('');
   let glossary = $state('');
@@ -44,12 +46,10 @@
     if (section === 'phone') void window.vb.getRemote().then(showRemote);
   });
 
-  async function load() {
-    data = await window.vb.getSettings();
-    config = $state.snapshot(data.config);
-    glossary = config.stt.glossary.join(', ');
+  function showGlossary() {
+    glossary = settings.config?.stt.glossary.join(', ') ?? '';
   }
-  void load();
+  void settings.load().then(showGlossary);
 
   function flash(ok: boolean, text: string) {
     notice = { ok, text };
@@ -64,9 +64,9 @@
         .split(/[,\n]/)
         .map((t) => t.trim())
         .filter(Boolean);
-      data = await window.vb.saveSettings($state.snapshot(config));
+      await settings.save();
       if (section === 'phone') await showRemote(await window.vb.getRemote());
-      config = $state.snapshot(data.config);
+      showGlossary();
       flash(true, 'Gespeichert');
     } catch (err) {
       flash(false, `Speichern fehlgeschlagen: ${String(err)}`);
@@ -77,7 +77,7 @@
 
   async function storeKey(remove = false) {
     try {
-      data = await window.vb.setApiKey(remove ? null : apiKey);
+      settings.set(await window.vb.setApiKey(remove ? null : apiKey));
       apiKey = '';
       flash(true, remove ? 'API-Key entfernt' : 'API-Key sicher gespeichert');
     } catch (err) {
@@ -146,13 +146,9 @@
 
 <div class="settings">
   <nav>
-    <div class="brand">Voice-Bridge</div>
     {#each SECTIONS as [id, label] (id)}
       <button class:active={section === id} onclick={() => (section = id)}>{label}</button>
     {/each}
-    {#if data}
-      <div class="version">Version {data.version}</div>
-    {/if}
   </nav>
 
   <main>
@@ -173,11 +169,17 @@
               type="checkbox"
               checked={data.openAtLogin}
               onchange={async (e) => {
-                data = await window.vb.setOpenAtLogin(e.currentTarget.checked);
+                settings.set(await window.vb.setOpenAtLogin(e.currentTarget.checked));
               }}
             />
           </div>
         {/if}
+        <div class="field">
+          <label class="label" for="tray"
+            >Beim Start im Tray bleiben (Agent Desk nicht öffnen)</label
+          >
+          <input id="tray" type="checkbox" bind:checked={config.desk.startInTray} />
+        </div>
         <dl>
           <dt>Pipe für <code>vb run</code></dt>
           <dd><code>{data.pipePath}</code></dd>
@@ -477,40 +479,25 @@
 </div>
 
 <style>
-  :global(html[data-view='settings']),
-  :global(html[data-view='settings'] body) {
-    background:
-      radial-gradient(900px 600px at 85% 5%, rgba(42, 165, 161, 0.14), transparent 60%),
-      radial-gradient(700px 500px at 0% 60%, rgba(36, 94, 113, 0.18), transparent 60%),
-      var(--vb-ink);
-    color: var(--vb-text);
-    height: 100%;
-  }
   .settings {
-    display: grid;
-    grid-template-columns: 220px 1fr;
-    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
   }
   nav {
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
     gap: 2px;
-    padding: 20px 12px;
-    border-right: 1px solid var(--vb-line);
+    padding: 8px;
+    border-bottom: 1px solid var(--vb-line);
     background: rgba(29, 29, 39, 0.7);
   }
-  .brand {
-    font: 800 18px var(--font-ui);
-    letter-spacing: -0.02em;
-    padding: 0 10px 16px;
-  }
   nav button {
-    text-align: left;
-    padding: 9px 10px;
+    padding: 6px 9px;
     border: 0;
     border-radius: 8px;
     background: transparent;
-    font: 500 14px var(--font-ui);
+    font: 500 13px var(--font-ui);
     color: var(--vb-text-2);
     cursor: pointer;
   }
@@ -519,18 +506,11 @@
     color: var(--vb-dictate);
     box-shadow: 0 0 0 1px var(--vb-line);
   }
-  .version {
-    margin-top: auto;
-    padding: 10px;
-    font-size: 12px;
-    color: var(--vb-dim);
-  }
   main {
-    padding: 32px 40px;
-    max-width: 760px;
+    padding: 16px 16px 24px;
   }
   h1 {
-    font: 800 28px var(--font-ui);
+    font: 800 20px var(--font-ui);
     letter-spacing: -0.03em;
     margin: 0 0 6px;
   }
@@ -541,6 +521,7 @@
   }
   .field {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
     gap: 16px;
@@ -568,7 +549,7 @@
     border-radius: 10px;
     background: var(--vb-ink-2);
     color: var(--vb-text);
-    min-width: 240px;
+    min-width: 0;
   }
   input[type='checkbox'] {
     width: 18px;
@@ -695,7 +676,7 @@
   }
   dl {
     display: grid;
-    grid-template-columns: 200px 1fr;
+    grid-template-columns: 1fr;
     gap: 10px;
   }
   dt {

@@ -96,7 +96,15 @@ export interface VoiceBridgeApi {
   getRemote(): Promise<RemoteData>;
   newPairingCode(): Promise<RemoteData>;
   removeDevice(id: string): Promise<RemoteData>;
+
+  // main window «Agent Desk» (ADR-018)
+  /** Main asks the desk to show an inspector tab (tray «Einstellungen …», second start). */
+  onDeskOpen(cb: (tab: InspectorTab | null) => void): () => void;
+  setDeskLayout(layout: DeskLayout): void;
 }
+
+export type InspectorTab = 'session' | 'settings';
+export type DeskLayout = Pick<AppConfig['desk'], 'leftCollapsed' | 'rightCollapsed'>;
 
 export interface RemoteData {
   enabled: boolean;
@@ -135,6 +143,8 @@ export const IPC = {
   recorderPcm: 'vb:recorder-pcm',
   liveText: 'vb:live-text',
   recorderReady: 'vb:recorder-ready',
+  deskOpen: 'vb:desk-open',
+  deskLayout: 'vb:desk-layout',
 } as const;
 
 export type RecorderCommand =

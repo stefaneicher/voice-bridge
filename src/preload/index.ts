@@ -29,6 +29,8 @@ const api: VoiceBridgeApi = {
   getRemote: () => ipcRenderer.invoke(IPC.getRemote),
   newPairingCode: () => ipcRenderer.invoke(IPC.newPairingCode),
   removeDevice: (id) => ipcRenderer.invoke(IPC.removeDevice, id),
+  onDeskOpen: (cb) => on(IPC.deskOpen, cb),
+  setDeskLayout: (layout) => ipcRenderer.send(IPC.deskLayout, layout),
 };
 
 /** Only for the hidden recorder window. */

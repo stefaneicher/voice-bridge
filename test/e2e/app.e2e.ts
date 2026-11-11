@@ -58,13 +58,13 @@ describe('Electron app (smoke)', () => {
     rmSync(dir, { recursive: true, force: true });
   });
 
-  it('creates the overlays and the recorder once at startup', async () => {
+  it('opens the Agent Desk and creates the overlays and the recorder once at startup', async () => {
     const urls = await until(async () => {
       const list = await windowUrls();
-      return list.length >= 4 ? list : undefined;
+      return list.length >= 5 ? list : undefined;
     });
     const views = urls.map((u) => u.split('#')[1]).sort();
-    expect(views).toEqual(['pill', 'popup', 'recorder', 'toast']);
+    expect(views).toEqual(['desk', 'pill', 'popup', 'recorder', 'toast']);
   });
 
   it('accepts a vb run session on the profile pipe', async () => {
@@ -82,7 +82,7 @@ describe('Electron app (smoke)', () => {
     socket.end();
   });
 
-  it('opens the settings when started a second time (single instance per profile)', async () => {
+  it('shows the Agent Desk when started a second time (single instance per profile)', async () => {
     const second = spawn(electronPath, [root, '--no-sandbox', '--profile', PROFILE], {
       env: { ...process.env, XDG_CONFIG_HOME: dir, APPDATA: dir, XDG_RUNTIME_DIR: dir },
       stdio: 'ignore',
@@ -90,11 +90,9 @@ describe('Electron app (smoke)', () => {
     const code = await new Promise<number | null>((r) => second.on('exit', r));
     expect(code).toBe(0);
 
-    const settings = await until(async () =>
-      app.windows().find((p) => p.url().endsWith('#settings')),
-    );
-    await settings.waitForSelector('text=Profil e2e');
-    expect(await settings.title()).toBe('Voice-Bridge – Einstellungen');
+    const desk = await until(async () => app.windows().find((p) => p.url().endsWith('#desk')));
+    await desk.waitForSelector('text=Profil e2e');
+    expect(await desk.title()).toBe('Agent Desk');
   });
 
   it('renders without page errors', () => {
