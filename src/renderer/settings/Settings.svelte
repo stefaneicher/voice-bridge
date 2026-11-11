@@ -129,13 +129,12 @@
 
   function pickTrigger(action: HotkeyAction, e: Event & { currentTarget: HTMLSelectElement }) {
     if (!config) return;
-    const b = config.hotkeys[action];
     const value = e.currentTarget.value;
     if (value === 'key') return;
-    setBinding(
-      action,
-      withModifiers({ device: 'mouse', button: value as MouseButton }, b.modifiers ?? []),
-    );
+    // A mouse button from the list starts without modifiers; leftover Ctrl/Alt from a key binding
+    // would otherwise make the button only fire while those keys are held.
+    setBinding(action, { device: 'mouse', button: value as MouseButton });
+    const b = config.hotkeys[action];
     e.currentTarget.value = b.device === 'mouse' ? b.button : 'key';
   }
 
@@ -278,6 +277,10 @@
         <div class="field">
           <label class="label" for="polish">Ausgabe als Hochdeutsch (CH, ss statt ß)</label>
           <input id="polish" type="checkbox" bind:checked={config.stt.polish.enabled} />
+        </div>
+        <div class="field">
+          <label class="label" for="live">Live-Transkription (Text erscheint beim Sprechen)</label>
+          <input id="live" type="checkbox" bind:checked={config.stt.live.enabled} />
         </div>
         <div class="field">
           <label class="label" for="raw">Rohtranskript zusätzlich anzeigen</label>

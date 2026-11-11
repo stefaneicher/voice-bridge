@@ -73,11 +73,14 @@ export interface VoiceBridgeApi {
   onOverlay(cb: (view: OverlayView) => void): () => void;
   onFailures(cb: (failures: FailureView[], sessions: SessionInfo[]) => void): () => void;
   onLevel(cb: (level: number) => void): () => void;
+  /** Text recognised so far while recording (live transcription); '' when a recording starts. */
+  onLiveText(cb: (text: string) => void): () => void;
   selectSession(id: string): void;
   resolveFailure(id: string, action: FailureAction | { type: 'copy' }): void;
   copyText(text: string): void;
   revealSession(id: string): void;
-  setOverlaySize(width: number, height: number, anchor: OverlayAnchor): void;
+  /** `above`: px of content above the anchored part (e.g. live text over the popup). */
+  setOverlaySize(width: number, height: number, anchor: OverlayAnchor, above?: number): void;
   ready(): void;
 
   // settings
@@ -129,11 +132,13 @@ export const IPC = {
   recorderCommand: 'vb:recorder-command',
   recorderReply: 'vb:recorder-reply',
   recorderLevel: 'vb:recorder-level',
+  recorderPcm: 'vb:recorder-pcm',
+  liveText: 'vb:live-text',
   recorderReady: 'vb:recorder-ready',
 } as const;
 
 export type RecorderCommand =
-  | { id: number; type: 'start'; deviceId: string }
+  | { id: number; type: 'start'; deviceId: string; stream?: boolean }
   | { id: number; type: 'stop' }
   | { id: number; type: 'cancel' }
   | { id: number; type: 'warm'; deviceId: string; enabled: boolean };

@@ -11,12 +11,13 @@ const api: VoiceBridgeApi = {
   onOverlay: (cb) => on(IPC.overlay, cb),
   onFailures: (cb) => on(IPC.failures, cb),
   onLevel: (cb) => on(IPC.level, cb),
+  onLiveText: (cb) => on(IPC.liveText, cb),
   selectSession: (id) => ipcRenderer.send(IPC.selectSession, id),
   resolveFailure: (id, action) => ipcRenderer.send(IPC.resolveFailure, id, action),
   copyText: (text) => ipcRenderer.send(IPC.copyText, text),
   revealSession: (id) => ipcRenderer.send(IPC.revealSession, id),
-  setOverlaySize: (width, height, anchor) =>
-    ipcRenderer.send(IPC.overlaySize, width, height, anchor),
+  setOverlaySize: (width, height, anchor, above = 0) =>
+    ipcRenderer.send(IPC.overlaySize, width, height, anchor, above),
   ready: () => ipcRenderer.send(IPC.ready),
   getSettings: () => ipcRenderer.invoke(IPC.getSettings),
   saveSettings: (config) => ipcRenderer.invoke(IPC.saveSettings, config),
@@ -35,6 +36,7 @@ const recorder = {
   onCommand: (cb: (c: RecorderCommand) => void) => on(IPC.recorderCommand, cb),
   reply: (r: RecorderReply) => ipcRenderer.send(IPC.recorderReply, r),
   level: (level: number) => ipcRenderer.send(IPC.recorderLevel, level),
+  pcm: (pcm: Uint8Array) => ipcRenderer.send(IPC.recorderPcm, pcm),
   ready: () => ipcRenderer.send(IPC.recorderReady),
 };
 

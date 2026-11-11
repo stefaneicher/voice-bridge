@@ -19,3 +19,12 @@ export function formatAgo(iso: string | undefined, now = Date.now()): string {
 export function truncate(text: string, max: number): string {
   return text.length > max ? `${text.slice(0, max - 1).trimEnd()} …` : text;
 }
+
+/** The newest part of a growing live transcript, so the overlay stays small. */
+export function liveTail(text: string, max = 220): string {
+  const t = text.trim();
+  if (t.length <= max) return t;
+  const cut = t.slice(t.length - max);
+  const space = cut.indexOf(' ');
+  return `… ${space > 0 && space < 30 ? cut.slice(space + 1) : cut}`;
+}

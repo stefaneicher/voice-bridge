@@ -1,5 +1,6 @@
 import { normalizeModifiers } from '../core/bindings';
 import type { HotkeyBinding, MouseButton } from '../core/types';
+import { LIVE_DELAYS, type LiveDelay } from './live-delay';
 
 /** Per-profile configuration (see examples/config.example.json). API keys are never stored here. */
 export interface AppConfig {
@@ -24,6 +25,8 @@ export interface AppConfig {
     glossary: string[];
     baseUrl: string;
     polish: { enabled: boolean; model: string; instruction: string };
+    /** Realtime transcription while speaking (ADR-016); falls back to `model` on failure. */
+    live: { enabled: boolean; model: string; delay: LiveDelay };
     showRawTranscript: boolean;
     timeoutMs: number;
   };
@@ -73,6 +76,7 @@ export function defaultConfig(profile: string): AppConfig {
         instruction:
           'Schreibe in gut lesbarem Schweizer Hochdeutsch (ss statt ß). Inhalt nicht verändern, Füllwörter entfernen.',
       },
+      live: { enabled: true, model: 'gpt-live-transcribe', delay: 'low' },
       showRawTranscript: false,
       timeoutMs: 15000,
     },
@@ -129,6 +133,7 @@ export function normalizeConfig(input: unknown, profile: string): AppConfig {
   merged.hotkeys.minHoldMs = clamp(merged.hotkeys.minHoldMs, 0, 5000);
   merged.hotkeys.maxRecordingSec = clamp(merged.hotkeys.maxRecordingSec, 5, 600);
   merged.stt.timeoutMs = clamp(merged.stt.timeoutMs, 1000, 120_000);
+  if (!LIVE_DELAYS.includes(merged.stt.live.delay)) merged.stt.live.delay = d.stt.live.delay;
   merged.privacy.historyEntries = clamp(merged.privacy.historyEntries, 0, 1000);
   merged.remote.port = clamp(merged.remote.port, 1024, 65535);
   return merged;

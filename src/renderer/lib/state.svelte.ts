@@ -8,13 +8,19 @@ class OverlayState {
   sessions = $state<SessionInfo[]>([]);
   levels = $state<number[]>(Array(12).fill(0.2));
   now = $state(Date.now());
+  /** Text recognised so far in the current recording (live transcription). */
+  liveText = $state('');
 
   constructor() {
     if (typeof window === 'undefined' || !window.vb) return;
     window.vb.onOverlay((v) => {
+      if (v.kind === 'recording' && this.view.kind !== 'recording') {
+        this.levels = Array(12).fill(0.2);
+        this.liveText = '';
+      }
       this.view = v;
-      if (v.kind === 'recording') this.levels = Array(12).fill(0.2);
     });
+    window.vb.onLiveText((t) => (this.liveText = t));
     window.vb.onFailures((f, s) => {
       this.failures = f;
       this.sessions = s;

@@ -22,6 +22,8 @@ import { ClipboardPasteInserter } from '../output/inserter';
 import { ElectronClipboard, clipboardOnlyKeys } from '../output/electron-clipboard';
 import { Win32Keys } from '../output/win32';
 import { OpenAiTranscriber, SttError } from '../stt/openai';
+import { LiveTranscription } from '../stt/live';
+import { RealtimeTranscription } from '../stt/realtime';
 import { normalizeConfig, type AppConfig } from '../shared/config';
 import { IPC, type OverlayAnchor, type SettingsData } from '../shared/ipc';
 import { History } from './history';
@@ -45,6 +47,9 @@ const realClock: Clock = {
 
 const log = (msg: string) => console.log(`[voice-bridge ${new Date().toISOString()}] ${msg}`);
 
+/** How long to wait for the final live transcript after release before using the file fallback. */
+const LIVE_FINISH_TIMEOUT_MS = 5000;
+
 export class VoiceBridgeApp {
   private config!: AppConfig;
   private readonly configPath: string;
@@ -53,6 +58,7 @@ export class VoiceBridgeApp {
   private overlays!: Overlays;
   private recorderWindow!: BrowserWindow;
   private recorder!: ElectronRecorder;
+  private live!: LiveTranscription;
   private input: PlatformInput | null = null;
   private bridge!: PtyBridgeAdapter;
   private agents!: AgentRegistry;
@@ -83,10 +89,18 @@ export class VoiceBridgeApp {
 
     this.recorderWindow = createRecorderWindow();
     this.overlays = new Overlays();
+    this.live = new LiveTranscription({
+      open: (onText) => this.openLiveSession(onText),
+      onText: (text) => this.overlays.broadcast(IPC.liveText, text),
+      finishTimeoutMs: () => LIVE_FINISH_TIMEOUT_MS,
+      log,
+    });
     this.recorder = new ElectronRecorder(
       () => (this.recorderWindow.isDestroyed() ? null : this.recorderWindow.webContents),
       () => this.config.audio.deviceId,
       (level) => this.overlays.broadcast(IPC.level, level),
+      undefined,
+      { stream: () => this.live.active, onPcm: (pcm) => this.live.push(pcm) },
     );
     if (this.config.audio.prewarm) {
       // Waits for the recorder window's ready signal.
@@ -120,8 +134,9 @@ export class VoiceBridgeApp {
     }
 
     // The phone feeds the same controller: merged input events and a switchable audio source.
+    // Only the local microphone streams live (ADR-016).
     const mergedInput = new MergedInput(input);
-    const switchingRecorder = new SwitchingRecorder(this.recorder);
+    const switchingRecorder = new SwitchingRecorder(this.live.recorder(this.recorder));
     this.controller = new SessionController({
       input: mergedInput,
       recorder: switchingRecorder,
@@ -188,6 +203,7 @@ export class VoiceBridgeApp {
       baseUrl: this.config.stt.baseUrl,
       log,
     });
+    const stt = this.live.stt(openai, (raw, signal) => openai.refine(raw, signal));
     return {
       transcribe: (clip, options) => {
         if (!this.config.privacy.cloudAllowed) {
@@ -195,9 +211,30 @@ export class VoiceBridgeApp {
             new SttError('Cloud-Nutzung ist in diesem Profil ausgeschaltet', 'no-key'),
           );
         }
-        return openai.transcribe(clip, options);
+        return stt.transcribe(clip, options);
       },
     };
+  }
+
+  private openLiveSession(onText: (text: string) => void): RealtimeTranscription | null {
+    const { stt, privacy } = this.config;
+    if (!stt.live.enabled || !privacy.cloudAllowed) return null;
+    const apiKey = this.secrets.get();
+    if (!apiKey) return null;
+    return new RealtimeTranscription({
+      baseUrl: stt.baseUrl,
+      apiKey,
+      config: {
+        model: stt.live.model,
+        language: stt.language,
+        // No prompt sentence for live: the realtime model copies it into the text ("context: …").
+        prompt: '',
+        keywords: stt.glossary,
+        delay: stt.live.delay,
+      },
+      onText,
+      log,
+    });
   }
 
   private createInserter() {

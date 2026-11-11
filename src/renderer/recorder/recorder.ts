@@ -1,7 +1,10 @@
-import { encodeWav, level, resample } from '../../audio/wav';
+import { StreamResampler, encodeWav, level, resample, toPcm16 } from '../../audio/wav';
 import type { RecorderCommand, RecorderReply } from '../../shared/ipc';
 
 const TARGET_RATE = 16_000;
+/** Live stream format of the realtime transcription API (ADR-016). */
+const STREAM_RATE = 24_000;
+const STREAM_BATCH = STREAM_RATE / 10;
 const LEVEL_INTERVAL_MS = 33;
 
 /**
@@ -18,6 +21,9 @@ class Recorder {
   private deviceId = 'default';
   private levelAcc: number[] = [];
   private lastLevelAt = 0;
+  private streamer: StreamResampler | null = null;
+  private streamBuf: Float32Array[] = [];
+  private streamLen = 0;
 
   async handle(c: RecorderCommand): Promise<RecorderReply> {
     try {
@@ -31,10 +37,15 @@ class Recorder {
           await this.ensure(c.deviceId);
           await this.ctx!.resume();
           this.chunks = [];
+          this.resetStream(
+            c.stream ? new StreamResampler(this.ctx!.sampleRate, STREAM_RATE) : null,
+          );
           this.recording = true;
           return { id: c.id, ok: true };
         case 'stop': {
           this.recording = false;
+          this.flushStream();
+          this.resetStream(null);
           const rate = this.ctx?.sampleRate ?? TARGET_RATE;
           const merged = merge(this.chunks);
           this.chunks = [];
@@ -50,6 +61,7 @@ class Recorder {
         case 'cancel':
           this.recording = false;
           this.chunks = [];
+          this.resetStream(null);
           if (!this.warm) this.release();
           return { id: c.id, ok: true };
       }
@@ -87,6 +99,12 @@ class Recorder {
   private onFrame(frame: Float32Array): void {
     if (!this.recording) return;
     this.chunks.push(new Float32Array(frame));
+    if (this.streamer) {
+      const out = this.streamer.push(frame);
+      this.streamBuf.push(out);
+      this.streamLen += out.length;
+      if (this.streamLen >= STREAM_BATCH) this.flushStream();
+    }
     this.levelAcc.push(level(frame));
     const now = performance.now();
     if (now - this.lastLevelAt >= LEVEL_INTERVAL_MS) {
@@ -94,6 +112,19 @@ class Recorder {
       window.vbRecorder.level(Math.max(...this.levelAcc));
       this.levelAcc = [];
     }
+  }
+
+  private flushStream(): void {
+    if (this.streamLen === 0) return;
+    window.vbRecorder.pcm(toPcm16(merge(this.streamBuf)));
+    this.streamBuf = [];
+    this.streamLen = 0;
+  }
+
+  private resetStream(streamer: StreamResampler | null): void {
+    this.streamer = streamer;
+    this.streamBuf = [];
+    this.streamLen = 0;
   }
 
   private release(): void {

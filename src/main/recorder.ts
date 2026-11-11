@@ -10,7 +10,8 @@ type Command = RecorderCommand extends infer C
 
 /**
  * RecorderPort backed by Web Audio in a hidden renderer window (decision on O-2, ADR-007).
- * Audio stays in memory; the WAV bytes travel over IPC once, at release.
+ * Audio stays in memory; the WAV bytes travel over IPC once, at release. With live
+ * transcription, 24 kHz PCM additionally streams to the main process while recording.
  */
 export class ElectronRecorder implements RecorderPort {
   private seq = 0;
@@ -24,6 +25,8 @@ export class ElectronRecorder implements RecorderPort {
     private readonly deviceId: () => string,
     private readonly onLevel: (level: number) => void,
     private readonly timeoutMs = 5000,
+    /** Live stream hooks (ADR-016): whether to stream PCM on start, and where it goes. */
+    private readonly live?: { stream: () => boolean; onPcm: (pcm: Uint8Array) => void },
   ) {
     ipcMain.on(IPC.recorderReply, (e, reply: RecorderReply) => {
       if (e.sender !== this.contents()) return;
@@ -36,10 +39,17 @@ export class ElectronRecorder implements RecorderPort {
     ipcMain.on(IPC.recorderLevel, (e, level: number) => {
       if (e.sender === this.contents() && typeof level === 'number') this.onLevel(level);
     });
+    ipcMain.on(IPC.recorderPcm, (e, pcm: unknown) => {
+      if (e.sender === this.contents() && pcm instanceof Uint8Array) this.live?.onPcm(pcm);
+    });
   }
 
   async start(): Promise<void> {
-    await this.call({ type: 'start', deviceId: this.deviceId() });
+    await this.call({
+      type: 'start',
+      deviceId: this.deviceId(),
+      stream: this.live?.stream() ?? false,
+    });
   }
 
   async stop(): Promise<AudioClip> {

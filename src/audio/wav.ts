@@ -46,6 +46,47 @@ export function resample(input: Float32Array, fromRate: number, toRate: number):
   return out;
 }
 
+/**
+ * Linear-interpolation resampler for a stream of frames. Keeps the fractional read position and the
+ * last sample across frames, so consecutive outputs join without gaps or clicks.
+ */
+export class StreamResampler {
+  private pos = 0;
+  private prev = 0;
+  private readonly ratio: number;
+
+  constructor(fromRate: number, toRate: number) {
+    this.ratio = fromRate / toRate;
+  }
+
+  push(input: Float32Array): Float32Array {
+    if (input.length === 0) return new Float32Array(0);
+    const out: number[] = [];
+    const at = (i: number) => (i < 0 ? this.prev : input[i]!);
+    let p = this.pos;
+    while (p < input.length - 1) {
+      const i0 = Math.floor(p);
+      const frac = p - i0;
+      out.push(at(i0) * (1 - frac) + at(i0 + 1) * frac);
+      p += this.ratio;
+    }
+    this.pos = p - input.length;
+    this.prev = input[input.length - 1]!;
+    return Float32Array.from(out);
+  }
+}
+
+/** Float samples (-1..1) as raw 16-bit little-endian PCM, the format the realtime API expects. */
+export function toPcm16(samples: Float32Array): Uint8Array {
+  const out = new Uint8Array(samples.length * 2);
+  const view = new DataView(out.buffer);
+  for (let i = 0; i < samples.length; i++) {
+    const s = Math.max(-1, Math.min(1, samples[i]!));
+    view.setInt16(i * 2, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+  }
+  return out;
+}
+
 /** RMS level of a frame, mapped to 0..1 for the UI meter. */
 export function level(frame: Float32Array): number {
   if (frame.length === 0) return 0;
