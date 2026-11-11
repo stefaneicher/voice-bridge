@@ -1,5 +1,5 @@
 import { spawn as nodeSpawn, type SpawnOptions } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { lstatSync } from 'node:fs';
 import { win32 } from 'node:path';
 import type { SessionLauncher } from '../core';
 
@@ -24,6 +24,19 @@ export interface TerminalLauncherOptions {
   spawn?: Spawn;
 }
 
+/**
+ * `existsSync` follows links and reports `false` for app execution aliases such as
+ * `%LOCALAPPDATA%\Microsoft\WindowsApps\wt.exe`; `lstat` sees the alias itself.
+ */
+function pathExists(path: string): boolean {
+  try {
+    lstatSync(path);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 // Characters cmd.exe would interpret even inside quotes, or that break the quoting.
 const CMD_UNSAFE = /["%&|<>^\r\n]/;
 
@@ -41,7 +54,7 @@ export class TerminalLauncher implements SessionLauncher {
   constructor(private readonly o: TerminalLauncherOptions) {
     this.platform = o.platform ?? process.platform;
     this.env = o.env ?? process.env;
-    this.exists = o.exists ?? existsSync;
+    this.exists = o.exists ?? pathExists;
     this.spawn = o.spawn ?? (nodeSpawn as unknown as Spawn);
   }
 
@@ -77,7 +90,12 @@ export class TerminalLauncher implements SessionLauncher {
     }
     const comspec = this.env.ComSpec || 'cmd.exe';
     // `start` takes the folder from the working directory, never from the command string.
-    const line = ['/d', '/c', 'start', '""', ...vbArgs.map((a) => `"${a}"`)].join(' ');
+    // `start "x.cmd" …` runs `cmd /k "x.cmd" … "last"` and cmd then strips the outer quotes,
+    // which breaks the command. A leading `call` keeps cmd from touching the quotes.
+    const quoted = vbArgs.map((a) => `"${a}"`);
+    const line = ['/d', '/c', 'start', '""', `"${comspec}"`, '/d', '/k', 'call', ...quoted].join(
+      ' ',
+    );
     return this.start(comspec, [line], {
       cwd: folder,
       detached: true,

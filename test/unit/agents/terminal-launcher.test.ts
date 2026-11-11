@@ -71,7 +71,9 @@ describe('TerminalLauncher', () => {
     await launcher.launch(DIR, 't1');
     expect(calls[0]).toEqual({
       command: 'C:\\Windows\\cmd.exe',
-      args: [`/d /c start "" "${VB}" "run" "--profile" "privat" "--launch" "t1" "--" "copilot"`],
+      args: [
+        `/d /c start "" "C:\\Windows\\cmd.exe" /d /k call "${VB}" "run" "--profile" "privat" "--launch" "t1" "--" "copilot"`,
+      ],
       options: { cwd: DIR, detached: true, stdio: 'ignore', windowsVerbatimArguments: true },
     });
   });
