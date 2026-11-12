@@ -3,6 +3,7 @@
   "packages": {
     ".": {
       "release-type": "node",
+      "prerelease": true,
       "package-name": "@stefaneicher/voice-bridge",
       "include-component-in-tag": false,
       "extra-files": ["README.md"],

@@ -1,14 +1,18 @@
 # Voice-Bridge
 
+[![Status](https://img.shields.io/badge/Status-Alpha-ff5a5f)](#alpha-version)
 [![CI](https://github.com/stefaneicher/voice-bridge/actions/workflows/ci.yml/badge.svg)](https://github.com/stefaneicher/voice-bridge/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/stefaneicher/voice-bridge/actions/workflows/codeql.yml/badge.svg)](https://github.com/stefaneicher/voice-bridge/actions/workflows/codeql.yml)
-[![Release](https://img.shields.io/github/v/release/stefaneicher/voice-bridge?label=Release&color=2aa5a1)](https://github.com/stefaneicher/voice-bridge/releases/latest)
-[![Windows](https://img.shields.io/badge/Windows-Installer-245e71?logo=windows&logoColor=white)](https://github.com/stefaneicher/voice-bridge/releases/latest)
-[![Android](https://img.shields.io/badge/Android-APK-a3d858?logo=android&logoColor=white)](https://github.com/stefaneicher/voice-bridge/releases/latest)
+[![Release](https://img.shields.io/github/v/release/stefaneicher/voice-bridge?label=Release&color=2aa5a1&include_prereleases)](https://github.com/stefaneicher/voice-bridge/releases)
+[![Windows](https://img.shields.io/badge/Windows-Installer-245e71?logo=windows&logoColor=white)](https://github.com/stefaneicher/voice-bridge/releases)
+[![Android](https://img.shields.io/badge/Android-APK-a3d858?logo=android&logoColor=white)](https://github.com/stefaneicher/voice-bridge/releases)
 [![Webseite](https://img.shields.io/badge/Webseite-stefaneicher.github.io-2aa5a1)](https://stefaneicher.github.io/voice-bridge/)
 [![Conventional Commits](https://img.shields.io/badge/Conventional_Commits-1.0.0-686a7a)](https://www.conventionalcommits.org/)
 
 Systemweite Push-to-Talk-Spracheingabe für Windows. Schweizerdeutsch rein, Hochdeutsch raus.
+
+> [!WARNING]
+> <a id="alpha-version"></a>**Alpha-Version.** Voice-Bridge ist in einer frühen Entwicklungsphase. Funktionen können fehlen oder fehlerhaft sein, und Einstellungen, Protokoll und Bedienung können sich zwischen Versionen ohne Übergang ändern. Auf echter Windows-Hardware, im Firmennetz und unter Citrix ist noch nicht alles abgenommen (siehe [Backlog](docs/backlog.md)). Releases sind als Pre-Release markiert.
 
 **Webseite:** https://stefaneicher.github.io/voice-bridge/
 

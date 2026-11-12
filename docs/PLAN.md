@@ -135,7 +135,7 @@ type DeliveryResult = { ok: true } | { ok: false; reason: 'gone' | 'busy' | 'io'
 ### 3.4 Speech-to-Text für Schweizerdeutsch
 
 - Die OpenAI-API kennt kein Sprachkürzel für Schweizerdeutsch. Deshalb **zwei Stufen**, einzeln konfigurierbar:
-  1. **Transkription** (`gpt-4o-transcribe`, Fallback `whisper-1`) mit `language=de` und einem Prompt mit Glossar und Hinweis auf Dialekt. Ergebnis ist das **Rohtranskript**.
+  1. **Transkription** (`gpt-transcribe`, seit ADR-019; vorher `gpt-4o-transcribe`) mit `languages=[de]`, einem Prompt mit Dialekt-Hinweis und dem Glossar als `keywords`. Ergebnis ist das **Rohtranskript**.
   2. **Glättung** (optional, standardmässig aus, kleines Chat-Modell): Dialekt ins Schweizer Hochdeutsch (ss statt ß), Füllwörter weg, Inhalt unverändert.
 - Ob eine Stufe reicht, entscheidet ein Messvergleich mit 20 eigenen Berndeutsch-Aufnahmen (Spike S4).
 - Lokale Engine später über dasselbe Interface (whisper.cpp oder Parakeet über sherpa-onnx, wie bei OpenWhispr).

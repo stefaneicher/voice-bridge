@@ -69,7 +69,7 @@ fun PairingScreen(error: String?, connecting: Boolean, onScan: () -> Unit, onLin
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Spacer(Modifier.height(24.dp))
-        Text("VOICE-BRIDGE", color = VB.Lime, fontSize = 12.sp, letterSpacing = 1.2.sp, fontFamily = FontFamily.Monospace)
+        Text("VOICE-BRIDGE · ALPHA", color = VB.Lime, fontSize = 12.sp, letterSpacing = 1.2.sp, fontFamily = FontFamily.Monospace)
         Text("Dein Handy ist das Mikrofon.", color = VB.Text, fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, lineHeight = 34.sp, letterSpacing = (-0.5).sp)
         Text(
             "Auf dem PC in Voice-Bridge unter Einstellungen → Handy «Verbindungen erlauben» einschalten " +

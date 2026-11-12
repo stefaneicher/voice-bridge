@@ -22,7 +22,8 @@ describe('normalizeConfig', () => {
     expect(c.profile).toBe('citrix');
     expect(c.hotkeys.dictate).toEqual({ device: 'keyboard', keycode: 124, label: 'F13' });
     expect(c.hotkeys.minHoldMs).toBe(300);
-    expect(c.stt.model).toBe('whisper-1');
+    // Retired by OpenAI on 26 Feb 2027: moved to the successor.
+    expect(c.stt.model).toBe('gpt-transcribe');
     expect(c.stt.glossary).toEqual(defaultConfig('x').stt.glossary);
     expect(c.stt.polish.enabled).toBe(false);
     expect(c.stt.polish.model).toBe('gpt-4o-mini');

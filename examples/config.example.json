@@ -14,7 +14,7 @@
   },
   "stt": {
     "engine": "openai",
-    "model": "gpt-4o-transcribe",
+    "model": "gpt-transcribe",
     "language": "de",
     "dialectHint": "Schweizerdeutsch (Berndeutsch)",
     "glossary": ["Copilot", "Firstmate", "Citrix", "Pull Request", "Deployment"],

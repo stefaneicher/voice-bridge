@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   OpenAiTranscriber,
   buildPrompt,
+  glossaryTerms,
   isPromptEcho,
   looksLikeAnswer,
   stripPromptLeak,
@@ -50,9 +51,12 @@ describe('OpenAiTranscriber', () => {
     expect(result).toEqual({ text: 'Ich melde mich morgen.', raw: 'I mäude mi morn.' });
     expect(f.calls[0]!.url).toBe('https://api.openai.com/v1/audio/transcriptions');
     const form = f.calls[0]!.init.body as FormData;
-    expect(form.get('model')).toBe('gpt-4o-transcribe');
-    expect(form.get('language')).toBe('de');
-    expect(String(form.get('prompt'))).toContain('Schweizerdeutsch');
+    expect(form.get('model')).toBe('gpt-transcribe');
+    // gpt-transcribe rejects requests that send both `language` and `languages`.
+    expect(form.has('language')).toBe(false);
+    expect(form.getAll('languages[]')).toEqual(['de']);
+    expect(String(form.get('prompt'))).toBe('Gesprochen wird Schweizerdeutsch (Berndeutsch).');
+    expect(form.getAll('keywords[]')).toEqual(['Copilot', 'Citrix', 'Pull Request', 'Deployment']);
     expect((f.calls[0]!.init.headers as Record<string, string>).authorization).toBe(
       'Bearer sk-test',
     );
@@ -97,9 +101,8 @@ describe('OpenAiTranscriber', () => {
     expect(looksLikeAnswer('Was ist X?', 'X ist:\nA')).toBe(true);
     const cfg = { dialectHint: 'Berndeutsch', glossary: ['Copilot', 'Citrix'] };
     expect(isPromptEcho('Copilot.', cfg)).toBe(true);
-    expect(isPromptEcho('Gesprochen wird Berndeutsch. Fachbegriffe: Copilot, Citrix.', cfg)).toBe(
-      true,
-    );
+    expect(isPromptEcho('Gesprochen wird Berndeutsch.', cfg)).toBe(true);
+    expect(isPromptEcho('Copilot, Citrix', cfg)).toBe(true);
     expect(isPromptEcho('Starte Copilot bitte', cfg)).toBe(false);
     expect(isPromptEcho('', cfg)).toBe(false);
   });
@@ -183,10 +186,15 @@ describe('OpenAiTranscriber', () => {
     await expect(stt.transcribe(clip)).rejects.toMatchObject({ code: 'timeout' });
   });
 
-  it('builds the prompt from dialect hint and glossary', () => {
-    expect(buildPrompt({ dialectHint: 'Berndeutsch', glossary: ['Copilot', ' ', 'Citrix'] })).toBe(
-      'Gesprochen wird Berndeutsch. Fachbegriffe: Copilot, Citrix.',
-    );
-    expect(buildPrompt({ glossary: [] })).toBe('');
+  it('puts only the dialect hint into the prompt and the glossary into keywords', () => {
+    expect(buildPrompt({ dialectHint: 'Berndeutsch' })).toBe('Gesprochen wird Berndeutsch.');
+    expect(buildPrompt({})).toBe('');
+    expect(glossaryTerms({ glossary: ['Copilot', ' ', 'Pull\nRequest'] })).toEqual([
+      'Copilot',
+      'Pull Request',
+    ]);
+    expect(
+      glossaryTerms({ glossary: Array.from({ length: 150 }, (_, i) => `t${i}`) }),
+    ).toHaveLength(100);
   });
 });

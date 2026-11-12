@@ -149,7 +149,7 @@
       <span>Profil {settings.data.config.profile}</span>
       <span>Pipe <code>{settings.data.pipePath}</code></span>
       <span class="grow"></span>
-      <span>Version {settings.data.version}</span>
+      <span>Version {settings.data.version} · Alpha</span>
     {/if}
   </footer>
 </div>

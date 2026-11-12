@@ -58,7 +58,10 @@ export interface AppConfig {
   };
 }
 
-export const STT_MODELS = ['gpt-4o-transcribe', 'gpt-4o-mini-transcribe', 'whisper-1'] as const;
+export const STT_MODELS = ['gpt-transcribe'] as const;
+
+/** Shut down by OpenAI on 26 Feb 2027; stored configs are moved to gpt-transcribe (ADR-019). */
+const RETIRED_STT_MODELS = ['gpt-4o-transcribe', 'gpt-4o-mini-transcribe', 'whisper-1'];
 
 export function defaultConfig(profile: string): AppConfig {
   return {
@@ -72,7 +75,7 @@ export function defaultConfig(profile: string): AppConfig {
     audio: { deviceId: 'default', sampleRate: 16000, prewarm: true },
     stt: {
       engine: 'openai',
-      model: 'gpt-4o-transcribe',
+      model: 'gpt-transcribe',
       language: 'de',
       dialectHint: 'Schweizerdeutsch (Berndeutsch)',
       glossary: ['Copilot', 'Citrix', 'Pull Request', 'Deployment'],
@@ -141,6 +144,7 @@ export function normalizeConfig(input: unknown, profile: string): AppConfig {
   merged.hotkeys.minHoldMs = clamp(merged.hotkeys.minHoldMs, 0, 5000);
   merged.hotkeys.maxRecordingSec = clamp(merged.hotkeys.maxRecordingSec, 5, 600);
   merged.stt.timeoutMs = clamp(merged.stt.timeoutMs, 1000, 120_000);
+  if (RETIRED_STT_MODELS.includes(merged.stt.model)) merged.stt.model = d.stt.model;
   if (!LIVE_DELAYS.includes(merged.stt.live.delay)) merged.stt.live.delay = d.stt.live.delay;
   merged.privacy.historyEntries = clamp(merged.privacy.historyEntries, 0, 1000);
   merged.remote.port = clamp(merged.remote.port, 1024, 65535);
