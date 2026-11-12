@@ -162,7 +162,7 @@ jobs:
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" artifacts/* --clobber
           else
-            gh release create "$TAG" artifacts/* --title "Voice-Bridge $TAG" --generate-notes \
+            gh release create "$TAG" artifacts/* --title "Voice-Bridge $TAG" --generate-notes --prerelease \
               --target "$(git rev-parse HEAD)"
           fi
       - name: Publish to GitHub Packages
