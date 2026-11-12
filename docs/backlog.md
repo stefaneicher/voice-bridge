@@ -60,7 +60,7 @@ Legende: ☐ offen · ◐ in Arbeit · ☑ erledigt
 
 ### ☐ S4 STT Berndeutsch
 - 20 eigene Aufnahmen (5–20 s, Alltag und Fachbegriffe).
-- Vergleich: `gpt-transcribe` (Datei) vs. `gpt-live-transcribe` (live), je mit und ohne Stufe 2 (Glättung). Die gpt-4o-Modelle und `whisper-1` entfallen am 26.2.2027 (ADR-018).
+- Vergleich: `gpt-transcribe` (Datei) vs. `gpt-live-transcribe` (live), je mit und ohne Stufe 2 (Glättung). Die gpt-4o-Modelle und `whisper-1` entfallen am 26.2.2027 (ADR-019).
 - Messen: Latenz (p50/p95), subjektive Qualität 1–5, Kosten.
 
 **Ergebnis:** Tabelle und Default-Wahl in `decisions.md` (ADR-005).
@@ -136,6 +136,18 @@ Legende: ☐ offen · ◐ in Arbeit · ☑ erledigt
 - Overlay während des Wartens: «Starte Session in ‹Ordner› …».
 - Pro Token genau ein Start; ein weiteres Loslassen während des Starts wird ignoriert.
 - **Fertig, wenn** der Text in der neuen Session ankommt; nach 20 s ohne bereite Session Fehler-Dialog «Neue Session nicht bereit» mit Hinweis «Im Terminal bestätigen», «Nochmals» (wartet weiter auf dasselbe Token, startet kein zweites Terminal) und «Kopieren». Keine Umleitung. Unit-Tests für Core, Starter, Bereitschaftserkennung und Popup-Zeile.
+
+### ◐ T-027 Hauptfenster «Agent Desk» (ADR-018)
+- **Umgesetzt:** Stufen 1–3 (Gerüst mit Einklapp-Variante «Schiene», Sessions, Composer mit Verlauf und Diktat-Umleitung); Unit-Tests für die Logik in `src/core`. **Offen:** Test der Oberfläche von Hand, Konsolen-Spiegel.
+- **Stufe 1 · Gerüst:** Fenstertitel «Agent Desk», links Werkzeugleiste (44 px) und Sessions, Mitte Composer, rechts Inspektor. Linke und rechte Spalte klappen zu einer 28 px breiten Schiene mit senkrechtem Titel ein; ein Klick auf die Schiene klappt auf. Der Zustand bleibt nach einem Neustart erhalten (pro Profil, `desk.*` in der Konfiguration).
+- Die bestehenden Einstellungen sind im Inspektor erreichbar (Reiter «Einstellungen», Werkzeug ⚙, Tray «Einstellungen …», zweiter Start). Es gibt nur einen Konfigurationsspeicher; ein Schnellschalter im Inspektor ist sofort auch in den Einstellungen sichtbar. Kein separates Einstellungsfenster mehr.
+- Startet mit dem Fenster, ausser «Beim Start im Tray bleiben» ist gesetzt. ✕ schliesst nur das Fenster.
+- **Stufe 2 · Sessions:** Liste aller Sessions mit Name, Ordner und Status «bereit», «beschäftigt», «getrennt». Die fixierte Session ist markiert. Klick fixiert per ID; das Popup zeigt danach dieselbe Session vorgewählt. Fehlt die fixierte Session, bleibt sie als «getrennt» sichtbar und es wird nichts umgestellt.
+- «＋ Neue Session» startet über den Starter aus T-026 ein Terminal im Ordner der fixierten (sonst ersten) Session und fixiert die neue Session, sobald sie sich mit dem Token meldet (ausser der Nutzer hat inzwischen selbst ein anderes Ziel gewählt). Ohne bekannten Ordner (oder über «…») wird zuerst ein Ordner gewählt. Ohne Starter ist die Aktion ausgeblendet.
+- **Stufe 3 · Composer:** Textfeld in der Mitte, Strg+Enter sendet an die fixierte Session über den normalen Zustellweg. Erfolgreich gesendete Prompts erscheinen im Verlauf (nur Arbeitsspeicher); Pfeil hoch/runter blättert im leeren Feld. Bei einem Fehler bleibt der Text im Feld und die Meldung nennt den Grund.
+- Hat der Agent Desk den Fokus und ist der Composer aktiv, landet ein Diktat im Composer statt am Cursor.
+- **Nicht Teil davon:** Konsolen-Spiegel (später, nur lesend, eigener ADR).
+- **Fertig, wenn** Unit-Tests für Status-Abbildung, Fixieren, Starten, Senden, Verlauf und Diktat-Umleitung grün sind und `src/core` ≥ 90 % Abdeckung hat.
 
 ---
 

@@ -235,7 +235,31 @@ Kurzform: Kontext → Entscheid → Folgen. Neue Einträge unten anhängen, alte
 
 ---
 
-## ADR-018 · gpt-transcribe statt gpt-4o-transcribe
+## ADR-018 · Hauptfenster «Agent Desk»
+
+**Status:** angenommen (T-027)
+
+**Kontext:** Bisher hat Voice-Bridge neben den Overlays nur das Einstellungsfenster. Wer mit mehreren Copilot-Sessions arbeitet, will die Sessions, ihren Status und das aktuelle Ziel an einem Ort sehen, einen Prompt auch tippen und eine neue Session starten können. Das Konzept (lokal, `.lavish/main-window.html`) schlägt ein Hauptfenster im Stil von IntelliJ vor und bewertet die Risiken: Ein Spiegel der Konsole hat nur eine PTY-Grösse (hoch), braucht beim Einstieg mitten in der Session einen Schnappschuss (mittel), erlaubt doppelte Eingabe (mittel) und muss ruhende Sessions lesen (mittel). Diktat bei eigenem Fokus (tief) und doppelte Schalter (tief) sind lösbar.
+
+**Entscheid:**
+- Neues Hauptfenster mit Fenstertitel «Agent Desk». Das Produkt heisst weiter «Voice-Bridge» (Tray, Installer, Profile).
+- Aufbau: links eine Werkzeugleiste (44 px) und die einklappbare Liste «Sessions», in der Mitte Composer und Prompt-Verlauf, rechts der einklappbare Inspektor mit Session-Details, Schnellschaltern und den Einstellungen.
+- Einklappen nach Variante B «Schiene»: Die Spalte wird zu einer 28 px breiten Leiste mit senkrechtem Titel, ein Klick klappt sie wieder auf. Der Zustand gilt pro Profil und liegt in der Konfiguration (`desk.leftCollapsed`, `desk.rightCollapsed`).
+- **Ein Konfigurationsspeicher:** Einstellungen und Schnellschalter im Inspektor lesen und schreiben dieselbe Konfiguration über denselben Store im Renderer. Das separate Einstellungsfenster entfällt; Tray «Einstellungen …» und ein zweiter Start öffnen den Agent Desk mit den Einstellungen im Inspektor. Abweichung vom Konzept: Dort ersetzen die Einstellungen hinter ⚙ die Mitte; hier liegen sie im rechten Bereich, damit Sessions und Composer sichtbar bleiben.
+- Das Fenster öffnet beim Start, ausser «Beim Start im Tray bleiben» (`desk.startInTray`) ist gesetzt. ✕ schliesst nur das Fenster, Voice-Bridge läuft im Tray weiter.
+- Die Sessions-Liste zeigt alle Sessions mit Name, Ordner und Status (bereit / beschäftigt / getrennt). Ein Klick fixiert die Session per ID als Ziel (dasselbe Ziel wie im Popup). Fehlt die fixierte Session, bleibt sie als «getrennt» stehen; es wird nie still auf eine andere umgestellt. «＋ Neue Session» nutzt den Starter aus ADR-017.
+- Der Composer schickt Text über denselben Zustellweg wie der Agent-Hotkey, strikt an die gewählte Session-ID. Bei einem Fehler bleibt der Text im Feld. Gesendete Prompts stehen in einem Verlauf im Arbeitsspeicher (nur für diesen Lauf).
+- **Diktat bei eigenem Fokus:** Hat der Agent Desk den Fokus und ist der Composer aktiv, geht ein Diktat in den Composer statt über die Zwischenablage an den Cursor (kleiner, getesteter `RoutedInserter`).
+- **Konsolen-Spiegel zuletzt und nur lesend:** Die Mitte zeigt vorerst den Prompt-Verlauf. Ein Spiegel der Copilot-Konsole kommt als letzter Schritt, nur lesend, mit eigenem ADR (PTY-Grösse, Schnappschuss, ruhende Sessions).
+
+**Folgen:**
+- Das E2E-Startszenario rechnet mit dem Hauptfenster bzw. mit `desk.startInTray`.
+- Das Overlay-Verhalten (Pill, Popup, Toast) bleibt unverändert; kein `focus()` auf Overlays.
+- Weitere Schritte laut Konzept (T-024/T-025, Konsole) sind nicht Teil von T-027.
+
+---
+
+## ADR-019 · gpt-transcribe statt gpt-4o-transcribe
 
 **Status:** angenommen (11.11.2026), ändert ADR-005 (Modell und Parameter von Stufe 1)
 

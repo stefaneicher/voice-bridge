@@ -8,14 +8,14 @@ import { mount, type Component } from 'svelte';
 
 const view = location.hash.slice(1);
 document.documentElement.dataset.view = view;
-if (view === 'settings') document.title = 'Voice-Bridge – Einstellungen';
+if (view === 'desk') document.title = 'Agent Desk';
 
 // Each window loads only its own view, so overlay listeners never run in other windows.
 const views: Record<string, () => Promise<{ default: Component }>> = {
   pill: () => import('./overlays/Pill.svelte'),
   popup: () => import('./overlays/Popup.svelte'),
   toast: () => import('./overlays/Toast.svelte'),
-  settings: () => import('./settings/Settings.svelte'),
+  desk: () => import('./desk/Desk.svelte'),
 };
 
 if (view === 'recorder') {

@@ -6,6 +6,7 @@ import type {
   SessionInfo,
   SessionView,
 } from '../core/types';
+import type { DeskSession } from '../core/desk';
 import type { AppConfig } from './config';
 
 export type OverlayAnchor = 'bottom-center' | 'bottom-right' | 'cursor';
@@ -96,6 +97,42 @@ export interface VoiceBridgeApi {
   getRemote(): Promise<RemoteData>;
   newPairingCode(): Promise<RemoteData>;
   removeDevice(id: string): Promise<RemoteData>;
+
+  // main window «Agent Desk» (ADR-018)
+  /** Main asks the desk to show an inspector tab (tray «Einstellungen …», second start). */
+  onDeskOpen(cb: (tab: InspectorTab | null) => void): () => void;
+  setDeskLayout(layout: DeskLayout): void;
+  getDesk(): Promise<DeskData | null>;
+  onDesk(cb: (data: DeskData) => void): () => void;
+  /** Fixes the agent target by ID; never redirects to another session. */
+  pinSession(id: string): void;
+  /** «＋ Neue Session» via the T-026 launcher; null asks for a folder first. */
+  launchSession(folder: string | null): Promise<DeskActionResult | null>;
+  /** Composer: sends to the pinned session only; on failure the text stays in the composer. */
+  sendPrompt(text: string): Promise<DeskActionResult | null>;
+  /** Whether the composer is the active input of the desk (dictation goes there, ADR-018). */
+  setComposerActive(active: boolean): void;
+  /** Dictated text for the composer while the desk has focus. */
+  onComposerText(cb: (text: string) => void): () => void;
+}
+
+export type InspectorTab = 'session' | 'settings';
+export type DeskLayout = Pick<AppConfig['desk'], 'leftCollapsed' | 'rightCollapsed'>;
+
+export interface DeskData {
+  sessions: DeskSession[];
+  pinnedId: string | null;
+  canLaunch: boolean;
+  /** Folder «＋ Neue Session» opens in by default. */
+  newFolder?: string;
+  /** Prompts sent from the composer during this run, newest first (memory only). */
+  history: string[];
+}
+
+/** ok: false with an empty message: the user cancelled (e.g. the folder dialog). */
+export interface DeskActionResult {
+  ok: boolean;
+  message: string;
 }
 
 export interface RemoteData {
@@ -135,6 +172,15 @@ export const IPC = {
   recorderPcm: 'vb:recorder-pcm',
   liveText: 'vb:live-text',
   recorderReady: 'vb:recorder-ready',
+  deskOpen: 'vb:desk-open',
+  deskLayout: 'vb:desk-layout',
+  getDesk: 'vb:get-desk',
+  desk: 'vb:desk',
+  pinSession: 'vb:pin-session',
+  launchSession: 'vb:launch-session',
+  sendPrompt: 'vb:send-prompt',
+  composerActive: 'vb:composer-active',
+  composerText: 'vb:composer-text',
 } as const;
 
 export type RecorderCommand =

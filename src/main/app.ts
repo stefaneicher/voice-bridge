@@ -2,19 +2,24 @@ import { spawn } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { join } from 'node:path';
 import type { BrowserWindow } from 'electron';
-import { Notification, app, clipboard, ipcMain, session } from 'electron';
+import { Notification, app, clipboard, dialog, ipcMain, session } from 'electron';
 import { copilotTitleLookup } from '../agents/copilot-sessions';
 import { PtyBridgeAdapter } from '../agents/pty-bridge';
 import { pipePath } from '../agents/pipe';
 import { TerminalLauncher } from '../agents/terminal-launcher';
 import {
   AgentRegistry,
+  PromptHistory,
+  RoutedInserter,
   SessionController,
   bindingLabel,
+  deskSessions,
+  newSessionFolder,
   windowsKeyLabel,
   type Clock,
   type ControllerState,
   type FailureAction,
+  type SessionInfo,
   type SpeechToText,
 } from '../core';
 import { createPlatformInput, type PlatformInput } from '../input';
@@ -27,7 +32,15 @@ import { OpenAiTranscriber, SttError } from '../stt/openai';
 import { LiveTranscription } from '../stt/live';
 import { RealtimeTranscription } from '../stt/realtime';
 import { normalizeConfig, type AppConfig } from '../shared/config';
-import { IPC, type OverlayAnchor, type SettingsData } from '../shared/ipc';
+import {
+  IPC,
+  type DeskActionResult,
+  type DeskData,
+  type DeskLayout,
+  type InspectorTab,
+  type OverlayAnchor,
+  type SettingsData,
+} from '../shared/ipc';
 import { History } from './history';
 import { RemoteManager } from './remote';
 import { ElectronRecorder } from './recorder';
@@ -35,7 +48,7 @@ import { SecretStore } from './secrets';
 import { readJson, writeJson } from './store';
 import { AppTray } from './tray';
 import { failureViews, overlayView, trayStatus } from './view';
-import { Overlays, createRecorderWindow, createSettingsWindow, type OverlayRole } from './windows';
+import { Overlays, createDeskWindow, createRecorderWindow, type OverlayRole } from './windows';
 
 declare const __APP_VERSION__: string;
 
@@ -66,10 +79,16 @@ export class VoiceBridgeApp {
   private agents!: AgentRegistry;
   private controller!: SessionController;
   private tray!: AppTray;
-  private settingsWindow: BrowserWindow | null = null;
+  private deskWindow: BrowserWindow | null = null;
   private remote!: RemoteManager;
   private lastPhase: ControllerState['phase']['name'] = 'idle';
   private knownFailures = new Set<string>();
+  /** Last seen data of the pinned session, so the desk can show it as «getrennt» once it is gone. */
+  private pinnedInfo: SessionInfo | undefined;
+  /** Composer prompts of this run (ADR-018); never written to disk. */
+  private readonly prompts = new PromptHistory();
+  /** The desk reports whether its composer is the active input. */
+  private composerActive = false;
 
   constructor(
     private readonly profile: string,
@@ -143,7 +162,11 @@ export class VoiceBridgeApp {
       input: mergedInput,
       recorder: switchingRecorder,
       stt: this.createStt(),
-      inserter: this.createInserter(),
+      inserter: new RoutedInserter(
+        this.createInserter(),
+        () => this.composerReceives(),
+        (text) => this.toComposer(text),
+      ),
       agents: this.agents,
       clock: realClock,
       minHoldMs: this.config.hotkeys.minHoldMs,
@@ -155,7 +178,8 @@ export class VoiceBridgeApp {
 
     this.tray = new AppTray({
       togglePause: () => this.controller.setPaused(!this.controller.getState().paused),
-      openSettings: () => this.openSettings(),
+      openDesk: () => this.openDesk(),
+      openSettings: () => this.openDesk('settings'),
       openProfile: (p) => this.launchProfile(p),
       copy: (text) => void clipboard.writeText(text),
       quit: () => app.quit(),
@@ -176,6 +200,7 @@ export class VoiceBridgeApp {
     this.controller.subscribe((s) => this.onState(s));
     this.onState(this.controller.getState());
     this.agents.onChange(() => this.pushFailures());
+    if (!this.config.desk.startInTray) this.openDesk();
     log(`started profile "${this.profile}", pipe ${pipePath(this.profile)}`);
   }
 
@@ -188,14 +213,25 @@ export class VoiceBridgeApp {
     this.tray?.destroy();
   }
 
-  openSettings(): void {
-    if (this.settingsWindow && !this.settingsWindow.isDestroyed()) {
-      this.settingsWindow.show();
-      this.settingsWindow.focus();
+  /** Shows the main window «Agent Desk» (ADR-018); `tab` selects the inspector tab. */
+  openDesk(tab: InspectorTab | null = null): void {
+    const existing = this.deskWindow;
+    if (existing && !existing.isDestroyed()) {
+      if (existing.isMinimized()) existing.restore();
+      existing.show();
+      existing.focus();
+      existing.webContents.send(IPC.deskOpen, tab);
       return;
     }
-    this.settingsWindow = createSettingsWindow();
-    this.settingsWindow.on('closed', () => (this.settingsWindow = null));
+    const win = createDeskWindow();
+    this.deskWindow = win;
+    win.webContents.once('did-finish-load', () => win.webContents.send(IPC.deskOpen, tab));
+    win.on('closed', () => {
+      if (this.deskWindow === win) {
+        this.deskWindow = null;
+        this.composerActive = false;
+      }
+    });
   }
 
   // ------------------------------------------------------------------ wiring
@@ -309,14 +345,74 @@ export class VoiceBridgeApp {
   private pushFailures(state = this.controller.getState()): void {
     void this.agents.listSessions().then((sessions) => {
       this.overlays.broadcast(IPC.failures, failureViews(state), sessions);
+      const desk = this.deskWindow;
+      if (desk && !desk.isDestroyed()) desk.webContents.send(IPC.desk, this.deskData(sessions));
     });
+  }
+
+  private deskData(sessions: SessionInfo[]): DeskData {
+    const pinnedId = this.controller.getState().lastSessionId;
+    const pinned = sessions.find((s) => s.id === pinnedId);
+    if (pinned) this.pinnedInfo = pinned;
+    return {
+      sessions: deskSessions(sessions, pinnedId, this.pinnedInfo),
+      pinnedId,
+      canLaunch: this.controller.canLaunch(),
+      newFolder: newSessionFolder(sessions, pinnedId),
+      history: [...this.prompts.entries],
+    };
+  }
+
+  /** Dictation goes into the composer only while our own desk window has focus (ADR-018). */
+  private composerReceives(): boolean {
+    const win = this.deskWindow;
+    return this.composerActive && !!win && !win.isDestroyed() && win.isFocused();
+  }
+
+  private toComposer(text: string): boolean {
+    const win = this.deskWindow;
+    if (!win || win.isDestroyed()) return false;
+    win.webContents.send(IPC.composerText, text);
+    return true;
+  }
+
+  /** Composer «Senden»: strictly to the pinned session; the renderer keeps the text on failure. */
+  private async sendPrompt(text: string): Promise<DeskActionResult> {
+    const pinned = this.controller.getState().lastSessionId ?? undefined;
+    const result = await this.controller.sendText(pinned, text);
+    if (!result.ok) return result;
+    this.prompts.add(text);
+    this.pushFailures();
+    return { ok: true, message: '' };
+  }
+
+  /** «＋ Neue Session» from the desk; without a folder the user picks one first. */
+  private async launchFromDesk(folder: string | null): Promise<DeskActionResult> {
+    let target = folder;
+    if (!target) {
+      const win = this.deskWindow;
+      const options: Electron.OpenDialogOptions = {
+        title: 'Ordner für die neue Session',
+        properties: ['openDirectory'],
+      };
+      const picked = await (win && !win.isDestroyed()
+        ? dialog.showOpenDialog(win, options)
+        : dialog.showOpenDialog(options));
+      target = picked.canceled ? null : (picked.filePaths[0] ?? null);
+      if (!target) return { ok: false, message: '' };
+    }
+    const result = await this.controller.launchSession(target);
+    return result.ok ? { ok: true, message: '' } : result;
   }
 
   private registerIpc(): void {
     const fromOverlay = (e: Electron.IpcMainEvent): OverlayRole | null =>
       this.overlays.role(e.sender);
-    const fromSettings = (e: Electron.IpcMainInvokeEvent) =>
-      !!this.settingsWindow && e.sender === this.settingsWindow.webContents;
+    // The settings live in the desk window (ADR-018).
+    const fromSettings = (e: Electron.IpcMainInvokeEvent | Electron.IpcMainEvent) =>
+      !!this.deskWindow &&
+      !this.deskWindow.isDestroyed() &&
+      e.sender === this.deskWindow.webContents;
 
     ipcMain.on(
       IPC.overlaySize,
@@ -344,7 +440,9 @@ export class VoiceBridgeApp {
       if (fromOverlay(e) && typeof text === 'string') void clipboard.writeText(text);
     });
     ipcMain.on(IPC.revealSession, (e, id: string) => {
-      if (fromOverlay(e) && typeof id === 'string') void this.agents.reveal(id);
+      if ((fromOverlay(e) || fromSettings(e)) && typeof id === 'string') {
+        void this.agents.reveal(id);
+      }
     });
 
     ipcMain.handle(IPC.getSettings, (e) => (fromSettings(e) ? this.settingsData() : null));
@@ -403,11 +501,38 @@ export class VoiceBridgeApp {
     ipcMain.handle(IPC.clearHistory, (e) => {
       if (fromSettings(e)) this.history.clear();
     });
+    ipcMain.on(IPC.deskLayout, (e, layout: Partial<DeskLayout> | null) => {
+      if (!fromSettings(e) || !layout) return;
+      const desk = this.config.desk;
+      if (typeof layout.leftCollapsed === 'boolean') desk.leftCollapsed = layout.leftCollapsed;
+      if (typeof layout.rightCollapsed === 'boolean') desk.rightCollapsed = layout.rightCollapsed;
+      writeJson(this.configPath, this.config);
+    });
+    ipcMain.handle(IPC.getDesk, async (e) =>
+      fromSettings(e) ? this.deskData(await this.agents.listSessions()) : null,
+    );
+    ipcMain.on(IPC.pinSession, (e, id: unknown) => {
+      if (fromSettings(e) && typeof id === 'string') this.controller.pinSession(id);
+    });
+    ipcMain.handle(IPC.launchSession, (e, folder: unknown) => {
+      if (!fromSettings(e)) return null;
+      return this.launchFromDesk(typeof folder === 'string' && folder ? folder : null);
+    });
+    ipcMain.handle(IPC.sendPrompt, (e, text: unknown) => {
+      if (!fromSettings(e) || typeof text !== 'string') return null;
+      return this.sendPrompt(text);
+    });
+    ipcMain.on(IPC.composerActive, (e, active: unknown) => {
+      if (fromSettings(e)) this.composerActive = active === true;
+    });
   }
 
   private applyConfig(next: AppConfig): void {
     const prewarmChanged = next.audio.prewarm !== this.config.audio.prewarm;
     next.agents.lastSessionId = this.config.agents.lastSessionId;
+    // The desk writes its layout directly; a settings save must not reset it.
+    next.desk.leftCollapsed = this.config.desk.leftCollapsed;
+    next.desk.rightCollapsed = this.config.desk.rightCollapsed;
     this.config = next;
     writeJson(this.configPath, next);
     this.input?.setBindings({ dictate: next.hotkeys.dictate, agent: next.hotkeys.agent });

@@ -30,6 +30,19 @@ describe('normalizeConfig', () => {
     expect(c).not.toHaveProperty('evil');
   });
 
+  it('keeps the Agent Desk layout and falls back for wrong types', () => {
+    expect(defaultConfig('p').desk).toEqual({
+      leftCollapsed: false,
+      rightCollapsed: false,
+      startInTray: false,
+    });
+    const c = normalizeConfig(
+      { desk: { leftCollapsed: true, rightCollapsed: 'yes', startInTray: true } },
+      'p',
+    );
+    expect(c.desk).toEqual({ leftCollapsed: true, rightCollapsed: false, startInTray: true });
+  });
+
   it('clamps numbers and rejects invalid bindings', () => {
     const c = normalizeConfig(
       { hotkeys: { agent: { device: 'mouse', button: 'Left' }, maxRecordingSec: 99999 } },

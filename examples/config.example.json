@@ -40,5 +40,10 @@
   "privacy": {
     "cloudAllowed": true,
     "historyEntries": 50
+  },
+  "desk": {
+    "leftCollapsed": false,
+    "rightCollapsed": false,
+    "startInTray": false
   }
 }

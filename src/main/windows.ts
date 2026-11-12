@@ -1,5 +1,11 @@
 import { join } from 'node:path';
-import { BrowserWindow, screen, shell, type BrowserWindowConstructorOptions } from 'electron';
+import {
+  BrowserWindow,
+  nativeTheme,
+  screen,
+  shell,
+  type BrowserWindowConstructorOptions,
+} from 'electron';
 import type { OverlayAnchor } from '../shared/ipc';
 import {
   anchoredSize,
@@ -185,23 +191,24 @@ export function createRecorderWindow(): BrowserWindow {
   return win;
 }
 
-export function createSettingsWindow(): BrowserWindow {
-  // Tall enough that the longest page (Spracherkennung) fits without scrolling, but never
-  // taller than the screen.
+/** Main window «Agent Desk» (ADR-018); contains the settings. Recreated after it was closed. */
+export function createDeskWindow(): BrowserWindow {
+  // The UI is dark only; without this Windows draws a light title bar in light mode.
+  nativeTheme.themeSource = 'dark';
   const { height: screenHeight } = screen.getPrimaryDisplay().workAreaSize;
   const win = new BrowserWindow({
-    width: 1100,
-    height: Math.min(900, screenHeight),
+    width: 1200,
+    height: Math.min(780, screenHeight),
     minWidth: 760,
-    minHeight: 520,
+    minHeight: 480,
     show: false,
-    title: 'Voice-Bridge – Einstellungen',
+    title: 'Agent Desk',
     backgroundColor: '#15151c',
     autoHideMenuBar: true,
     webPreferences: secureWebPreferences,
   });
   hardenNavigation(win);
-  load(win, 'settings');
+  load(win, 'desk');
   win.once('ready-to-show', () => win.show());
   return win;
 }

@@ -60,7 +60,7 @@ export class OpenAiTranscriber implements SpeechToText {
       `audio.${ext}`,
     );
     // gpt-transcribe: `languages[]` replaces `language` (sending both is rejected), literal terms go
-    // to `keywords[]`, `prompt` carries only free-form context (ADR-018).
+    // to `keywords[]`, `prompt` carries only free-form context (ADR-019).
     form.append('model', config.model);
     form.append('languages[]', config.language);
     form.append('response_format', 'json');
