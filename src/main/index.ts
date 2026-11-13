@@ -27,11 +27,24 @@ if (!app.requestSingleInstanceLock()) {
   app.on('window-all-closed', () => {});
 
   let stopping = false;
+  let confirmingQuit = false;
   app.on('before-quit', (e) => {
     if (stopping) return;
-    stopping = true;
     e.preventDefault();
-    void vb.stop().finally(() => app.exit(0));
+    if (confirmingQuit) return;
+    confirmingQuit = true;
+    void vb
+      .confirmQuit()
+      .then((confirmed) => {
+        confirmingQuit = false;
+        if (!confirmed) return;
+        stopping = true;
+        void vb.stop().finally(() => app.exit(0));
+      })
+      .catch((err: unknown) => {
+        confirmingQuit = false;
+        console.error('[voice-bridge] quit confirmation failed', err);
+      });
   });
 
   void app.whenReady().then(async () => {

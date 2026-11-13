@@ -8,6 +8,9 @@ function on<T extends unknown[]>(channel: string, cb: (...args: T) => void): () 
 }
 
 const api: VoiceBridgeApi = {
+  getSpeechLab: () => ipcRenderer.invoke(IPC.getSpeechLab),
+  speechLab: (command) => ipcRenderer.invoke(IPC.speechLabCommand, command),
+  onSpeechLab: (cb) => on(IPC.speechLabState, cb),
   onOverlay: (cb) => on(IPC.overlay, cb),
   onFailures: (cb) => on(IPC.failures, cb),
   onLevel: (cb) => on(IPC.level, cb),

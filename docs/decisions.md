@@ -271,6 +271,39 @@ Kurzform: Kontext → Entscheid → Folgen. Neue Einträge unten anhängen, alte
 
 ---
 
+## ADR-020 · Live-STT mit mittlerer Verzögerung und sofortigem Aufnahmebeginn
+
+**Status:** angenommen (13.11.2026)
+
+**Kontext:** Bei schnellem Sprechen nach dem Hotkey konnte der Anfang fehlen: Der Recorder setzte den Aufnahmestatus erst nach `AudioContext.resume()`, obwohl der Mikrofon-Stream bereits offen sein konnte. Zudem war die Live-Verzögerung auf «low» gesetzt, obwohl höhere Stufen zugunsten der Erkennungsqualität spätere Vorschau-Texte liefern.
+
+**Entscheid:**
+- Der Recorder aktiviert die Aufnahme vor dem asynchronen Vorbereiten/Fortsetzen des Audio-Kontexts. Fehler setzen den Zustand zurück; es gibt keinen Vorlauf-Audiopuffer vor dem Tastendruck.
+- Live-STT verwendet standardmässig `medium`. Die Stufe ist in den Einstellungen auswählbar; das separat konfigurierte Datei-Modell bleibt unverändert.
+- Konfigurationen ohne Versionsfeld werden einmalig auf Version 1 migriert und auf «medium» gesetzt. Danach bleiben explizite Einstellungen erhalten.
+
+**Folgen:** Die Live-Vorschau kann etwas später erscheinen als mit «low». Das behebt den Verlust des ersten Audioblocks, garantiert aber keine fehlerfreie Erkennung einzelner Wörter oder Laute.
+
+---
+
+## ADR-021 · Isoliertes Spracherkennungs-Testlabor mit Zustimmung je Aufnahme
+
+**Status:** angenommen (13.11.2026), ergänzt ADR-007 und ADR-018
+
+**Kontext:** Für die Verbesserung der Spracherkennung sollen reproduzierbare, vom Nutzer ausgewählte Sprachbeispiele vorliegen. Audio darf lokal gespeichert werden, aber nur nach ausdrücklicher Zustimmung; einzelne Testpakete können danach manuell zum Auswerten bereitgestellt werden. Der RAM-Standard aus PLAN und ADR-007 bleibt verbindlich.
+
+**Entscheid:**
+- Ein Werkzeug im Agent Desk ersetzt dessen Mitte durch einen kleinen Testmodus. Normale Diktat-/Agent-Aufnahmen und Handy-Eingaben sind pausiert; Composer-Senden, Session-Start und Wiederholungen alter Zustellfehler sind gesperrt. Kein Testpfad kennt einen Agent- oder Einfüge-Port. Beim Verlassen wird der vorige Pausezustand wiederhergestellt.
+- Ein Testsatz, explizite Cloud-Bestätigung pro Versuch, Start/Stop-Schaltflächen und maximal 120 Sekunden Aufnahme bilden den ersten vertikalen Schnitt. Recorder und konfigurierte Live-/Datei-STT sowie optionale Nachbearbeitung werden wiederverwendet, aber mit eigener Lab-Pipeline ohne Diagnose-Logging. Kein zusätzlicher Dienst, keine Telemetrie, keine automatische Übertragung von Testpaketen.
+- Die im Main-Prozess empfangene WAV-Aufnahme, erwarteter/finaler Text, Rohtext (falls vorhanden), monotone Vorschau-Schnappschüsse, separate Stop-/Final-Zeitpunkte, Ereignisse und ein erlaubnislistenbasierter STT-Konfigurationsausschnitt bleiben zunächst nur im RAM. Die Zeitbasis beginnt bei der Start-Anforderung und enthält die Mikrofon-Startzeit. Korrektheit wird manuell beurteilt, nicht automatisch für Mundart bewertet.
+- Ausschliesslich «Audio + Messdaten lokal speichern» autorisiert die dauerhafte Speicherung genau der aktuellen Aufnahme; Cloud-Zustimmung ist ausdrücklich **keine** Speicherzustimmung. Ein neuer Versuch überschreibt kein ungespeichertes Ergebnis. Fehler erhalten vorhandene Daten im RAM; Schliessen des Desk verlangt zuerst das ausdrückliche Verwerfen/Schliessen der Auswahl und Verlassen des Labors.
+- Pro Profil und Test eine atomar geschriebene JSON-Datei unter `speech-lab`, `schemaVersion: 1`, inklusive Base64-WAV (16 kHz, mono, PCM16). Maximal 100 gespeicherte Tests, keine automatische Bereinigung. Der Exportdialog schreibt einen ausgewählten gespeicherten Test als gleiches portables JSON-Paket; keine neue Abhängigkeit/ZIP-Bibliothek. IDs, Grössen, Typen und WAV-Kopf werden beim Laden geprüft; unbekannte oder beschädigte Dateien werden ohne Änderung mit Hinweis übersprungen.
+- Gespeicherte Aufnahmen können geladen, manuell bewertet und vollständig gelöscht werden. Beim Löschen des geöffneten Tests verschwindet auch dessen RAM-Kopie. Exporte sind unabhängige Kopien. Keine API-Keys, Endpoint-URLs, Session-Ziele oder sonstige Konfiguration im Paket.
+
+**Folgen:** Bewusste Ausnahme vom RAM-Standard nur für ausgewählte Lab-Aufnahmen. Pakete enthalten sensible Stimme und Texte; Weitergabe bleibt eine manuelle Nutzeraktion. Base64 benötigt etwa 33 % mehr Platz. Kein Audio-Player, Import, automatisches Scoring, Batch-Replay oder Modellvergleich im MVP. Normales Diktat bleibt unverändert.
+
+---
+
 ## Offen
 
 | # | Frage | Wer/Wann |

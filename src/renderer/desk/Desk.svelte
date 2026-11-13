@@ -1,16 +1,38 @@
 <script lang="ts">
   import type { InspectorTab } from '../../shared/ipc';
+  import type { LabCommand, LabState } from '../../shared/speech-lab';
   import { settings } from '../lib/settings-store.svelte';
   import Settings from '../settings/Settings.svelte';
   import Composer from './Composer.svelte';
   import { desk } from './desk-store.svelte';
   import SessionInspector from './SessionInspector.svelte';
   import SessionList from './SessionList.svelte';
+  import SpeechLab from './SpeechLab.svelte';
 
   // Collapse variant B «Schiene» (ADR-018): a collapsed pane becomes a 28px rail.
   let leftCollapsed = $state(false);
   let rightCollapsed = $state(false);
   let tab = $state<InspectorTab>('session');
+  let lab = $state<LabState | null>(null);
+  let labError = $state('');
+
+  $effect(() => {
+    const off = window.vb.onSpeechLab((state) => (lab = state));
+    void window.vb.getSpeechLab().then((state) => (lab = state));
+    return off;
+  });
+
+  async function labAction(command: LabCommand): Promise<boolean> {
+    try {
+      const reply = await window.vb.speechLab(command);
+      lab = reply.state;
+      labError = reply.message;
+      return !reply.message;
+    } catch {
+      labError = 'Testlabor nicht erreichbar. Bitte erneut versuchen.';
+      return false;
+    }
+  }
 
   void settings.load().then(() => {
     const desk = settings.data?.config.desk;
@@ -66,6 +88,13 @@
     <span class="spacer"></span>
     <button
       class="tool"
+      class:on={lab?.enabled}
+      title="Spracherkennungs-Testlabor"
+      aria-label="Spracherkennungs-Testlabor"
+      onclick={() => labAction({ type: 'enter' })}>⚗</button
+    >
+    <button
+      class="tool"
       class:on={!rightCollapsed && tab === 'settings'}
       title="Einstellungen"
       aria-label="Einstellungen"
@@ -99,7 +128,12 @@
   {/if}
 
   <main class="center">
-    <Composer />
+    {#if labError}<p class="lab-error" role="alert">{labError}</p>{/if}
+    {#if lab?.enabled}
+      <SpeechLab state={lab} action={labAction} />
+    {:else}
+      <Composer />
+    {/if}
   </main>
 
   {#if rightCollapsed}
@@ -135,7 +169,12 @@
         >
       </header>
       <div class="body">
-        {#if tab === 'settings'}
+        {#if lab?.enabled}
+          <p class="lab-error">
+            Testlabor aktiv. Einstellungen sind für den Test fixiert. Zuerst den RAM-Test verwerfen
+            bzw. die Auswahl schliessen und das Testlabor verlassen.
+          </p>
+        {:else if tab === 'settings'}
           <Settings />
         {:else}
           <SessionInspector />
@@ -295,6 +334,10 @@
     flex-direction: column;
     min-width: 0;
     min-height: 0;
+  }
+  .lab-error {
+    padding: 12px;
+    overflow-wrap: anywhere;
   }
   .status {
     grid-column: 1 / -1;

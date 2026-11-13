@@ -53,9 +53,24 @@ export class ElectronRecorder implements RecorderPort {
   }
 
   async stop(): Promise<AudioClip> {
-    const r = await this.call({ type: 'stop' });
+    let r: Extract<RecorderReply, { ok: true }>;
+    try {
+      r = await this.call({ type: 'stop' });
+    } catch (error) {
+      if (!(error instanceof Error) || error.message !== 'Recorder antwortet nicht') throw error;
+      r = await this.call({ type: 'stop' });
+    }
     if (!r.wav) throw new Error('Keine Audiodaten');
-    return { data: new Uint8Array(r.wav), mimeType: 'audio/wav', durationMs: r.durationMs ?? 0 };
+    const clip = {
+      data: new Uint8Array(r.wav),
+      mimeType: 'audio/wav',
+      durationMs: r.durationMs ?? 0,
+    };
+    const wc = this.contents();
+    if (wc && !wc.isDestroyed()) {
+      wc.send(IPC.recorderCommand, { id: ++this.seq, type: 'ack' } satisfies RecorderCommand);
+    }
+    return clip;
   }
 
   cancel(): void {

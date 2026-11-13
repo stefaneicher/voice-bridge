@@ -11,7 +11,7 @@ const LEVEL_INTERVAL_MS = 33;
  * Microphone capture in the hidden recorder window (Web Audio). Samples are only collected between
  * start and stop and live in memory; nothing is written to disk.
  */
-class Recorder {
+export class Recorder {
   private stream: MediaStream | null = null;
   private ctx: AudioContext | null = null;
   private nodes: AudioNode[] = [];
@@ -24,6 +24,7 @@ class Recorder {
   private streamer: StreamResampler | null = null;
   private streamBuf: Float32Array[] = [];
   private streamLen = 0;
+  private lastStop: RecorderReply | null = null;
 
   async handle(c: RecorderCommand): Promise<RecorderReply> {
     try {
@@ -34,33 +35,48 @@ class Recorder {
           else if (!this.recording) this.release();
           return { id: c.id, ok: true };
         case 'start':
-          await this.ensure(c.deviceId);
-          await this.ctx!.resume();
-          this.chunks = [];
-          this.resetStream(
-            c.stream ? new StreamResampler(this.ctx!.sampleRate, STREAM_RATE) : null,
-          );
           this.recording = true;
+          this.chunks = [];
+          this.lastStop = null;
+          try {
+            await this.ensure(c.deviceId);
+            this.resetStream(
+              c.stream ? new StreamResampler(this.ctx!.sampleRate, STREAM_RATE) : null,
+            );
+            await this.ctx!.resume();
+          } catch (err) {
+            this.recording = false;
+            this.chunks = [];
+            this.resetStream(null);
+            throw err;
+          }
           return { id: c.id, ok: true };
         case 'stop': {
+          if (this.lastStop) return { ...this.lastStop, id: c.id };
           this.recording = false;
           this.flushStream();
           this.resetStream(null);
           const rate = this.ctx?.sampleRate ?? TARGET_RATE;
           const merged = merge(this.chunks);
-          this.chunks = [];
-          if (!this.warm) this.release();
           const pcm = resample(merged, rate, TARGET_RATE);
-          return {
+          const reply: RecorderReply = {
             id: c.id,
             ok: true,
             wav: encodeWav(pcm, TARGET_RATE),
             durationMs: Math.round((pcm.length / TARGET_RATE) * 1000),
           };
+          this.chunks = [];
+          if (!this.warm) this.release();
+          this.lastStop = reply;
+          return reply;
         }
+        case 'ack':
+          this.lastStop = null;
+          return { id: c.id, ok: true };
         case 'cancel':
           this.recording = false;
           this.chunks = [];
+          this.lastStop = null;
           this.resetStream(null);
           if (!this.warm) this.release();
           return { id: c.id, ok: true };

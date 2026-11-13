@@ -79,6 +79,20 @@ Beide Tasten sind in den Einstellungen frei belegbar (auch Tastaturtasten). Für
 
 Geht etwas schief (Session beendet, Transkription fehlgeschlagen), bleibt der Text bzw. die Aufnahme erhalten, bis du entscheidest: erneut versuchen, andere Session wählen, kopieren oder verwerfen.
 
+### Spracherkennung mit eigenen Testdaten prüfen
+
+Im Agent Desk öffnet **⚗ Spracherkennungs-Testlabor** einen isolierten Modus: keine Zustellung an Agents, kein Einfügen am Cursor; globale Aufnahme und Handy sind währenddessen pausiert.
+
+1. Eigenen erwarteten Satz eingeben oder ein Beispiel wählen. Bei Mundart selbst festlegen, ob die erwartete Ausgabe Mundart oder Hochdeutsch sein soll.
+2. Den Cloud-Hinweis lesen und **für diesen Test** zustimmen. «Aufnahme starten», auf «Aufnahme läuft» warten, sprechen und «Aufnahme stoppen» wählen (automatisch nach 120 s). Bei aktiviertem Live-STT fliesst Audio schon beim Sprechen an die konfigurierte API; Datei-Fallback und optionale Nachbearbeitung entsprechen den vorhandenen Einstellungen.
+3. Erwarteten und finalen Text vergleichen, Vorschau-Verlauf und Zeitpunkte ansehen, manuell als korrekt/fehlerhaft bewerten und bei Bedarf eine Korrektur eintragen. Zeiten laufen monoton ab Start-Anforderung, inklusive Mikrofonstart; «Stoppen → Final» misst die verbleibende Erkennungszeit.
+4. **Ohne weitere Aktion bleibt alles nur im RAM.** Erst **Audio + Messdaten lokal speichern** ist die ausdrückliche Zustimmung für diese Aufnahme. Sie gilt nicht für folgende Tests. Fehler behalten vorhandenes Audio, Texte und Vorschauen im RAM.
+5. Unter «Gespeicherte Tests» einzelne Aufnahmen ansehen, erneut bewerten, exportieren oder mit **Audio + Messdaten endgültig löschen** entfernen. Vor einem neuen Test den aktuellen RAM-Test ausdrücklich verwerfen bzw. die Auswahl schliessen; danach lässt sich auch der Testmodus verlassen.
+
+Gespeicherte Tests liegen pro Profil unter `%APPDATA%\voice-bridge\<profil>\speech-lab\` (max. 100; keine automatische Löschung). Jede versionierte JSON-Datei enthält Metadaten **und** das 16-kHz-Mono-WAV als Base64. Der native Exportdialog kopiert genau einen ausgewählten gespeicherten Test in dieselbe portable Darstellung, ohne Upload. Bewertungsänderungen vorher speichern. Enthalten sind Stimme, Testsatz, Transkripte, Vorschauen, Ereignisse und relevante STT-Einstellungen, aber keine API-Keys, Endpoint-URLs oder Session-Ziele. Base64 macht das Paket etwa ein Drittel grösser. Nur bewusst ausgewählte Pakete weitergeben; das Löschen in der App entfernt keine manuell exportierten Kopien. Beschädigte/unbekannte Dateiversionen werden mit Hinweis übersprungen und bleiben unverändert.
+
+MVP-Grenzen: kein Import, keine automatische Bewertung/Word-Error-Rate, kein Audio-Player, kein Batch-Replay und kein Modellvergleich. Vorhandenes WAV kann zum externen Auswerten aus `audio.data` Base64-dekodiert werden. Normales Diktat speichert weiterhin kein Audio auf Disk.
+
 ## Handy als Mikrofon (Android)
 
 1. Im Release die Datei `voice-bridge-android-<version>.apk` aufs Handy laden und installieren (Installation aus unbekannten Quellen erlauben).

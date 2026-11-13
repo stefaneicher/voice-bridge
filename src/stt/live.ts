@@ -1,4 +1,5 @@
 import type { AudioClip, RecorderPort, SpeechToText, Transcript } from '../core';
+import { hasVoiceActivity } from '../audio/voice-activity';
 
 /** One running live transcription (see RealtimeTranscription). */
 export interface LiveSession {
@@ -81,11 +82,21 @@ export class LiveTranscription {
         const session = this.byClip.get(clip);
         if (!session) return fallback.transcribe(clip, options);
         this.byClip.delete(clip);
+        if (hasVoiceActivity(clip) === false) {
+          session.close();
+          this.o.onText('');
+          this.o.log?.('live: no voice activity, skipping transcription');
+          return { text: '' };
+        }
         try {
           const raw = (
             await abortable(session.finish(this.o.finishTimeoutMs()), options.signal)
           ).trim();
-          if (raw) return await refine(raw, options.signal);
+          if (raw) {
+            const transcript = await refine(raw, options.signal);
+            this.o.onText(transcript.text);
+            return transcript;
+          }
           this.o.log?.('live: empty transcript, using file transcription');
         } catch (err) {
           if (options.signal?.aborted) throw err;
@@ -93,7 +104,9 @@ export class LiveTranscription {
         } finally {
           session.close();
         }
-        return fallback.transcribe(clip, options);
+        const transcript = await fallback.transcribe(clip, options);
+        this.o.onText(transcript.text);
+        return transcript;
       },
     };
   }

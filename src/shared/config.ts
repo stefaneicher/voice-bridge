@@ -4,6 +4,7 @@ import { LIVE_DELAYS, type LiveDelay } from './live-delay';
 
 /** Per-profile configuration (see examples/config.example.json). API keys are never stored here. */
 export interface AppConfig {
+  configVersion: 1;
   profile: string;
   hotkeys: {
     dictate: HotkeyBinding;
@@ -62,6 +63,7 @@ export const STT_MODELS = ['gpt-4o-transcribe', 'gpt-4o-mini-transcribe', 'whisp
 
 export function defaultConfig(profile: string): AppConfig {
   return {
+    configVersion: 1,
     profile,
     hotkeys: {
       dictate: { device: 'mouse', button: 'XButton1' },
@@ -83,7 +85,7 @@ export function defaultConfig(profile: string): AppConfig {
         instruction:
           'Schreibe in gut lesbarem Schweizer Hochdeutsch (ss statt ß). Inhalt nicht verändern, Füllwörter entfernen.',
       },
-      live: { enabled: true, model: 'gpt-live-transcribe', delay: 'low' },
+      live: { enabled: true, model: 'gpt-live-transcribe', delay: 'medium' },
       showRawTranscript: false,
       timeoutMs: 15000,
     },
@@ -131,6 +133,8 @@ export function normalizeConfig(input: unknown, profile: string): AppConfig {
   const d = defaultConfig(profile);
   const merged = mergeTyped(d, input) as AppConfig;
   const raw = isObj(input) ? input : {};
+  if (raw.configVersion !== d.configVersion) merged.stt.live.delay = d.stt.live.delay;
+  merged.configVersion = d.configVersion;
   const hk = isObj(raw.hotkeys) ? raw.hotkeys : {};
   merged.hotkeys.dictate = binding(hk.dictate, d.hotkeys.dictate);
   merged.hotkeys.agent = binding(hk.agent, d.hotkeys.agent);

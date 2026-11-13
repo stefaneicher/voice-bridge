@@ -1,4 +1,5 @@
 import type { AudioClip, SpeechToText, Transcript } from '../core';
+import { hasVoiceActivity } from '../audio/voice-activity';
 
 export interface OpenAiSttConfig {
   model: string;
@@ -46,6 +47,10 @@ export class OpenAiTranscriber implements SpeechToText {
   }
 
   async transcribe(clip: AudioClip, options: { signal?: AbortSignal } = {}): Promise<Transcript> {
+    if (hasVoiceActivity(clip) === false) {
+      this.o.log?.('stt: no voice activity, skipping transcription');
+      return { text: '' };
+    }
     const config = this.o.config();
     const key = await this.o.apiKey();
     if (!key) {

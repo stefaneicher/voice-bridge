@@ -8,6 +8,7 @@ import type {
 } from '../core/types';
 import type { DeskSession } from '../core/desk';
 import type { AppConfig } from './config';
+import type { LabCommand, LabReply, LabState } from './speech-lab';
 
 export type OverlayAnchor = 'bottom-center' | 'bottom-right' | 'cursor';
 
@@ -71,6 +72,9 @@ export interface SettingsData {
 
 /** API exposed by the preload script as `window.vb`. */
 export interface VoiceBridgeApi {
+  getSpeechLab(): Promise<LabState>;
+  speechLab(command: LabCommand): Promise<LabReply>;
+  onSpeechLab(cb: (state: LabState) => void): () => void;
   onOverlay(cb: (view: OverlayView) => void): () => void;
   onFailures(cb: (failures: FailureView[], sessions: SessionInfo[]) => void): () => void;
   onLevel(cb: (level: number) => void): () => void;
@@ -147,6 +151,9 @@ export interface RemoteData {
 }
 
 export const IPC = {
+  getSpeechLab: 'vb:get-speech-lab',
+  speechLabCommand: 'vb:speech-lab-command',
+  speechLabState: 'vb:speech-lab-state',
   overlay: 'vb:overlay',
   failures: 'vb:failures',
   level: 'vb:level',
@@ -186,6 +193,7 @@ export const IPC = {
 export type RecorderCommand =
   | { id: number; type: 'start'; deviceId: string; stream?: boolean }
   | { id: number; type: 'stop' }
+  | { id: number; type: 'ack' }
   | { id: number; type: 'cancel' }
   | { id: number; type: 'warm'; deviceId: string; enabled: boolean };
 

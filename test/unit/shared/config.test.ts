@@ -7,6 +7,17 @@ describe('normalizeConfig', () => {
   it('returns defaults for missing or broken input', () => {
     expect(normalizeConfig(undefined, 'privat')).toEqual(defaultConfig('privat'));
     expect(normalizeConfig('garbage', 'privat')).toEqual(defaultConfig('privat'));
+    expect(defaultConfig('privat').stt.live.delay).toBe('medium');
+  });
+
+  it('migrates the old live delay default while preserving later user choices', () => {
+    expect(normalizeConfig({ stt: { live: { delay: 'low' } } }, 'privat').stt.live.delay).toBe(
+      'medium',
+    );
+    expect(
+      normalizeConfig({ configVersion: 1, stt: { live: { delay: 'low' } } }, 'privat').stt.live
+        .delay,
+    ).toBe('low');
   });
 
   it('keeps valid values, replaces wrong types and drops unknown keys', () => {

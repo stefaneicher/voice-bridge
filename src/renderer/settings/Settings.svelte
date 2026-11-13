@@ -8,6 +8,7 @@
   } from '../../core/bindings';
   import type { HotkeyAction, HotkeyBinding, Modifier, MouseButton } from '../../core/types';
   import { STT_MODELS } from '../../shared/config';
+  import { LIVE_DELAYS } from '../../shared/live-delay';
   import QRCode from 'qrcode';
   import type { RemoteData } from '../../shared/ipc';
   import { settings } from '../lib/settings-store.svelte';
@@ -282,6 +283,17 @@
         <div class="field">
           <label class="label" for="live">Live-Transkription (Text erscheint beim Sprechen)</label>
           <input id="live" type="checkbox" bind:checked={config.stt.live.enabled} />
+        </div>
+        <div class="field">
+          <label class="label" for="live-delay">Live-Erkennung</label>
+          <select id="live-delay" bind:value={config.stt.live.delay}>
+            {#each LIVE_DELAYS as delay (delay)}
+              <option value={delay}>{delay}</option>
+            {/each}
+          </select>
+          <span class="hint"
+            >Mittel priorisiert die Erkennungsqualität gegenüber der Vorschau-Latenz.</span
+          >
         </div>
         <div class="field">
           <label class="label" for="raw">Rohtranskript zusätzlich anzeigen</label>
