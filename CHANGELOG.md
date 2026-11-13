@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.3.0](https://github.com/stefaneicher/voice-bridge/compare/v0.2.0...v0.3.0) (2026-11-13)
+
+
+### Neue Funktionen
+
+* **agents:** launch Copilot terminals with vb run --launch and readiness detection ([2b126d8](https://github.com/stefaneicher/voice-bridge/commit/2b126d8c9874812b6cc6cc932d91886de13aeadc))
+* **core:** add voice-started new session target with token-bound launch ([0fb5b38](https://github.com/stefaneicher/voice-bridge/commit/0fb5b389fc44fc8d54afe9ac571fced204b697ac))
+* **ui:** add Agent Desk composer with prompt history and dictation routing ([df359c5](https://github.com/stefaneicher/voice-bridge/commit/df359c55429c676fbdf7228d53c480b283ed1c5b))
+* **ui:** add Agent Desk main window scaffold with collapsible panes ([ff9d717](https://github.com/stefaneicher/voice-bridge/commit/ff9d71780c5261a621fa758ad1fa82db9f80335f))
+* **ui:** show agent sessions in Agent Desk with pinning and new-session launch ([5ff4858](https://github.com/stefaneicher/voice-bridge/commit/5ff4858ae0c8432a81ff4273f88fd33d8c12e9ed))
+* **ui:** show new session row in popup and launch state ([f8e2603](https://github.com/stefaneicher/voice-bridge/commit/f8e26037fa7a19408946aed1b23f01b204a2e76b))
+
+
+### Fehlerbehebungen
+
+* **agents:** find wt.exe app alias and keep cmd fallback quoting intact ([11d783a](https://github.com/stefaneicher/voice-bridge/commit/11d783a6083785df1a45ad307ecc1d45acf25b04))
+* **ui:** dark title bar for the Agent Desk window ([546d008](https://github.com/stefaneicher/voice-bridge/commit/546d0086d62583176021b6658070867106bf2501))
+
+
+### Dokumentation
+
+* add ADR-018 and T-027 for Agent Desk main window ([839a8f0](https://github.com/stefaneicher/voice-bridge/commit/839a8f03e55824eeffb9f52f47d967519179d607))
+* add T-026 and ADR-017 for voice-started sessions ([0b5ae1a](https://github.com/stefaneicher/voice-bridge/commit/0b5ae1af6aa5ffc25b771e2c91660ad66a9eca1b))
+
 ## [0.2.0](https://github.com/stefaneicher/voice-bridge/compare/v0.1.0...v0.2.0) (2026-11-11)
 
 
