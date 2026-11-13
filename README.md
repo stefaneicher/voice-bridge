@@ -75,7 +75,7 @@ Damit eine Session in der Liste erscheint, den Agent über Voice-Bridge starten:
 vb run -- copilot
 ```
 
-Beide Tasten sind in den Einstellungen frei belegbar (auch Tastaturtasten). Für Citrix ein eigenes Profil nutzen: `voice-bridge --profile citrix` und `vb run --profile citrix -- copilot`.
+Beide Tasten sind in den Einstellungen frei belegbar (auch Tastaturtasten). Für getrennte Konfigurationen ein eigenes Profil nutzen: `voice-bridge --profile <name>` und `vb run --profile <name> -- copilot`.
 
 Geht etwas schief (Session beendet, Transkription fehlgeschlagen), bleibt der Text bzw. die Aufnahme erhalten, bis du entscheidest: erneut versuchen, andere Session wählen, kopieren oder verwerfen.
 
@@ -86,7 +86,7 @@ Geht etwas schief (Session beendet, Transkription fehlgeschlagen), bleibt der Te
 3. In der App «QR-Code scannen». Handy und PC müssen im selben WLAN sein.
 4. Ziel wählen («Am Cursor einfügen» oder eine Session), Knopf halten, sprechen, loslassen.
 
-Die Verbindung ist verschlüsselt: Die App vertraut nur dem Zertifikat des gekoppelten PCs (Fingerabdruck im QR-Code). Im Firmennetz und unter Citrix blockiert die Firewall die Verbindung möglicherweise.
+Die Verbindung ist verschlüsselt: Die App vertraut nur dem Zertifikat des gekoppelten PCs (Fingerabdruck im QR-Code). Im Firmennetz blockiert die Firewall die Verbindung möglicherweise.
 
 ## Mockups
 

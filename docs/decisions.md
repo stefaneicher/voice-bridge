@@ -8,7 +8,7 @@ Kurzform: Kontext → Entscheid → Folgen. Neue Einträge unten anhängen, alte
 
 **Status:** angenommen (10.11.2026)
 
-**Kontext:** Die App muss privat und im Firmen-Citrix laufen. In der Firma ist npm installierbar, eine Rust- oder C++-Toolchain vermutlich nicht. Gebraucht werden transparente Overlays, globale Hooks und ein PTY. Für Copilot CLI (ACP) gibt es ein offizielles TS-SDK. OpenWhispr zeigt, dass Electron für Diktat-Overlays funktioniert.
+**Kontext:** Die App muss privat und im Firmennetz laufen. In der Firma ist npm installierbar, eine Rust- oder C++-Toolchain vermutlich nicht. Gebraucht werden transparente Overlays, globale Hooks und ein PTY. Für Copilot CLI (ACP) gibt es ein offizielles TS-SDK. OpenWhispr zeigt, dass Electron für Diktat-Overlays funktioniert.
 
 **Entscheid:** Electron (aktuelle LTS-Linie), TypeScript strict, Svelte 5, electron-vite, Vitest, npm.
 
@@ -82,7 +82,7 @@ Kurzform: Kontext → Entscheid → Folgen. Neue Einträge unten anhängen, alte
 
 **Entscheid:** `--profile <name>` legt fest: Konfigurationsordner (`%APPDATA%/voice-bridge/<profil>/`), safeStorage-Schlüssel, Pipe-Name `voice-bridge-<profil>` und Single-Instance-Lock. Kein Profilwechsel im laufenden Betrieb.
 
-**Folgen:** Privat und Citrix bleiben vollständig getrennt. Zwei Instanzen auf einem Rechner sind möglich.
+**Folgen:** Profile bleiben vollständig getrennt. Zwei Instanzen auf einem Rechner sind möglich.
 
 ---
 
@@ -102,7 +102,7 @@ Kurzform: Kontext → Entscheid → Folgen. Neue Einträge unten anhängen, alte
 
 **Status:** angenommen (10.11.2026), ergänzt ADR-006
 
-**Kontext:** Windows-Named-Pipes sind maschinenweit sichtbar. Auf einem Citrix-Server teilen sich viele Benutzer denselben Namensraum.
+**Kontext:** Windows-Named-Pipes sind maschinenweit sichtbar. Auf einem gemeinsam genutzten Server teilen sich viele Benutzer denselben Namensraum.
 
 **Entscheid:** `\\.\pipe\voice-bridge-<benutzer>-<profil>` (Unix: Socket in `$XDG_RUNTIME_DIR` bzw. tmp). Eine Session-ID kann nur von der Verbindung genutzt werden, die sie registriert hat.
 
@@ -176,7 +176,7 @@ Kurzform: Kontext → Entscheid → Folgen. Neue Einträge unten anhängen, alte
 - **Standard: aus.** Der Server läuft nur, wenn «Verbindungen vom Handy erlauben» eingeschaltet ist.
 
 **Folgen:**
-- Windows fragt beim ersten Start nach der Firewall. Im Firmennetz und unter Citrix blockiert die Firewall eingehende Verbindungen wahrscheinlich.
+- Windows fragt beim ersten Start nach der Firewall. Im Firmennetz blockiert die Firewall eingehende Verbindungen wahrscheinlich.
 - Release-APKs brauchen für Updates denselben Schlüssel: Secrets `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`. Ohne sie wird mit einem Debug-Schlüssel signiert.
 - Zum Bauen braucht es das Android-SDK (CI hat es; lokal Android Studio oder die Kommandozeilen-Tools).
 
@@ -256,6 +256,18 @@ Kurzform: Kontext → Entscheid → Folgen. Neue Einträge unten anhängen, alte
 - Das E2E-Startszenario rechnet mit dem Hauptfenster bzw. mit `desk.startInTray`.
 - Das Overlay-Verhalten (Pill, Popup, Toast) bleibt unverändert; kein `focus()` auf Overlays.
 - Weitere Schritte laut Konzept (T-024/T-025, Konsole) sind nicht Teil von T-027.
+
+---
+
+## ADR-019 · Citrix-Sonderthema gestrichen, Profile bleiben
+
+**Status:** angenommen (11.11.2026), ändert Punkte in `requirements.md` und PLAN §6
+
+**Kontext:** Das Profil `citrix` enthielt keine Citrix-spezifische Logik, es war nur ein Profilname. Ein Testprotokoll für Citrix (Hotkeys, HDX-Audio, Zwischenablage) wurde nie geführt.
+
+**Entscheid:** `docs/citrix.md`, PLAN §6, Meilenstein M4 und der Citrix-Tab in den Einstellungen entfallen. Der Profil-Mechanismus (ADR-006, ADR-008) bleibt unverändert. Citrix wird nicht mehr als Ziel- oder Prüfumgebung geführt.
+
+**Folgen:** `requirements.md` bleibt als ursprüngliche Vorgabe unverändert und nennt Citrix weiterhin. Das Tray-Menü kennt als zweites Profil weiter den Namen `citrix`. Beides ist nur historisch bzw. ein Profilname.
 
 ---
 

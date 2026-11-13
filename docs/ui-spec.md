@@ -22,7 +22,7 @@ Seit ADR-014 im Stil von [stefaneicher.github.io](https://stefaneicher.github.io
 | `--vb-on-accent` | `#0D1716` | Text auf Teal oder Lime |
 | `--vb-rec` | `#FF5A5F` | Aufnahmepunkt, Fehler |
 
-Schriften: **Inter** (UI, Titel in 800), **JetBrains Mono** (Session-Namen, Timer, Terminal, Labels). Mit der App ausliefern, nicht von Google Fonts laden (offline und Citrix).
+Schriften: **Inter** (UI, Titel in 800), **JetBrains Mono** (Session-Namen, Timer, Terminal, Labels). Mit der App ausliefern, nicht von Google Fonts laden (offline).
 
 Radien: Pill 30 px (halbe Höhe), Popup und Toast 16 px, Buttons 12 px, Zeilen 10 px. Schatten: `0 24px 70px rgba(0,0,0,.6)`.
 

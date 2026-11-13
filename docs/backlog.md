@@ -4,7 +4,7 @@ Reihenfolge = Priorität. Jede Aufgabe hat Abnahmekriterien. Ein Spike endet mit
 
 Legende: ☐ offen · ◐ in Arbeit · ☑ erledigt
 
-**Stand 10.11.2026:** Code für M1 und M2 ist umgesetzt und unter Linux getestet (Unit- und PTY-Integrationstests, App-Start). ◐ heisst: umgesetzt, aber noch nicht auf einem echten Windows-Rechner abgenommen. Offen sind die Messungen und Abnahmen, die Hardware brauchen: S0 (Firmen-npm), S1/S2 (Hook und Fokus unter Windows), S4 (STT-Vergleich mit eigenen Aufnahmen), T-010 (Startlatenz), T-012 (Einfügen in Notepad, Outlook, Browser), M4 (Citrix). Das Tray-Flyout aus Mockup 3b ist vorerst ein natives Menü (ADR-010).
+**Stand 10.11.2026:** Code für M1 und M2 ist umgesetzt und unter Linux getestet (Unit- und PTY-Integrationstests, App-Start). ◐ heisst: umgesetzt, aber noch nicht auf einem echten Windows-Rechner abgenommen. Offen sind die Messungen und Abnahmen, die Hardware brauchen: S0 (Firmen-npm), S1/S2 (Hook und Fokus unter Windows), S4 (STT-Vergleich mit eigenen Aufnahmen), T-010 (Startlatenz), T-012 (Einfügen in Notepad, Outlook, Browser). Das Tray-Flyout aus Mockup 3b ist vorerst ein natives Menü (ADR-010).
 
 ---
 
@@ -158,16 +158,16 @@ Legende: ☐ offen · ◐ in Arbeit · ☑ erledigt
 - Damit funktionieren Handy-Mikrofon-Apps (z. B. WO Mic), die unter Windows als Mikrofon erscheinen.
 
 ### ◐ T-031 Handy als Push-to-Talk-Mikrofon (Android-App, ADR-013, Mockup 5)
-- **Umgesetzt:** Server mit TLS-Pinning und Kopplung (PC), Android-App mit QR-Scan, Ziel-Auswahl, Halten-Knopf, Rückmeldung; Unit-, Integrations- und App-Tests. **Offen:** Test auf einem echten Handy, im Firmennetz und unter Citrix.
+- **Umgesetzt:** Server mit TLS-Pinning und Kopplung (PC), Android-App mit QR-Scan, Ziel-Auswahl, Halten-Knopf, Rückmeldung; Unit-, Integrations- und App-Tests. **Offen:** Test auf einem echten Handy, im Firmennetz.
 - Voice-Bridge startet pro Profil einen HTTPS-Server im lokalen Netz und zeigt einen QR-Code (URL + Einmal-Token).
 - Handy-Browser: grosser Halten-Knopf, Session-Auswahl, Ziel «Am Cursor». Audio geht per WebSocket an den PC, ab dort gleicher Ablauf wie mit der Maustaste.
 - HTTPS ist Pflicht, weil Handy-Browser das Mikrofon sonst nicht freigeben: eigenes Zertifikat, einmalige Warnung auf dem Handy.
-- Risiken: Firmen-Firewall und Citrix blockieren eingehende Verbindungen wahrscheinlich. Vor dem Bau Spike: privat und im Firmennetz testen.
+- Risiken: Firmen-Firewall blockiert eingehende Verbindungen wahrscheinlich. Vor dem Bau Spike: privat und im Firmennetz testen.
 - Vor der Umsetzung ADR schreiben (Netzwerk, Pairing, Sicherheit).
 
 ## Phase 4 · M3–M6
 
 - **M3** Einstellungen (Mockup 3c), Profile, safeStorage, Verlauf, Hotkey-Erfassung («Taste drücken …»).
-- **M4** Citrix-Testlauf nach [`citrix.md`](citrix.md).
+- **M4** entfallen (siehe ADR-019).
 - **M5** AcpAdapter (`copilot --acp --stdio`, TS-SDK).
 - **M6** macOS (CGEventTap), Linux X11, lokale Engine.

@@ -14,7 +14,7 @@ export function sanitizeName(name: string): string {
 
 /**
  * Pipe/socket path per user and profile (ADR-006, ADR-008). The user name is part of the name
- * because Windows named pipes are machine-wide, which matters on shared Citrix servers.
+ * because Windows named pipes are machine-wide, which matters on shared servers.
  */
 export function pipePath(
   profile: string,

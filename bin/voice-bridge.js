@@ -16,7 +16,7 @@ Verwendung:
   voice-bridge [--profile <name>] [--background]
 
 Optionen:
-  --profile <name>  Profil (Standard: $VB_PROFILE oder "privat"), z. B. "citrix"
+  --profile <name>  Profil (Standard: $VB_PROFILE oder "privat")
   --background      Im Hintergrund starten und das Terminal freigeben
 
 Agents verbinden:  vb run -- copilot

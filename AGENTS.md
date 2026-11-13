@@ -57,4 +57,4 @@ Das Protokoll in `android/.../Protocol.kt` muss zu `src/remote/protocol.ts` pass
 
 ## Profile
 
-`--profile privat` bzw. `--profile citrix`: getrennte Konfiguration, Secrets, Pipe-Namen und Instanz-Locks (ADR-006).
+`--profile <name>` (Standard `privat`): getrennte Konfiguration, Secrets, Pipe-Namen und Instanz-Locks (ADR-006).

@@ -1,7 +1,7 @@
 # Voice-Bridge – Umsetzungsplan
 
 Stand: 10.11.2026 · Status: Entwurf vor Spike-Phase
-Anforderungen: [requirements.md](requirements.md) · Mockups: [mockups/](mockups/index.html) · UI: [ui-spec.md](ui-spec.md) · Entscheide: [decisions.md](decisions.md) · Aufgaben: [backlog.md](backlog.md) · Citrix: [citrix.md](citrix.md)
+Anforderungen: [requirements.md](requirements.md) · Mockups: [mockups/](mockups/index.html) · UI: [ui-spec.md](ui-spec.md) · Entscheide: [decisions.md](decisions.md) · Aufgaben: [backlog.md](backlog.md)
 
 ---
 
@@ -24,11 +24,11 @@ Entscheidend ist die Firmenumgebung. Dort ist **npm verfügbar**, eine Rust- ode
 | Grösse / RAM | ~100 MB / ~150 MB | ~10 MB / ~40 MB | ~60 MB | ~80 MB + JVM |
 | Referenzprojekt | **OpenWhispr** (Electron) | Handy (Tauri) | – | – |
 
-**Preis von Electron:** grösseres Paket und mehr RAM. In Citrix-VDI kann das spürbar sein. Ausgleich: nur eine Instanz pro Profil, Fenster werden einmal erzeugt und dann nur ein- und ausgeblendet.
+**Preis von Electron:** grösseres Paket und mehr RAM. Ausgleich: nur eine Instanz pro Profil, Fenster werden einmal erzeugt und dann nur ein- und ausgeblendet.
 
 **Warum Svelte statt Angular:** Die Overlays sind vier sehr kleine Fenster. Bei Svelte ist die Startzeit kurz und der Code wenig. electron-vite unterstützt Svelte direkt, Angular nicht. Angular wäre möglich, bringt hier aber nur Tooling-Reibung. Die Logik liegt ohnehin UI-unabhängig in `core/`.
 
-**Ausweg später:** Ist das Paket in Citrix zu gross, lässt sich die UI-unabhängige Kernlogik (TS) behalten und nur die Shell wechseln. Ein Kandidat ist Tauri mit TS-Sidecar. Das ist kein Teil des MVP.
+**Ausweg später:** Ist das Paket zu gross, lässt sich die UI-unabhängige Kernlogik (TS) behalten und nur die Shell wechseln. Ein Kandidat ist Tauri mit TS-Sidecar. Das ist kein Teil des MVP.
 
 ---
 
@@ -151,9 +151,9 @@ type DeliveryResult = { ok: true } | { ok: false; reason: 'gone' | 'busy' | 'io'
 
 ---
 
-## 4. Profile: Privat und Citrix
+## 4. Profile
 
-- Start mit `voice-bridge --profile privat` oder `--profile citrix`.
+- Start mit `voice-bridge --profile <name>` (Standard: `privat`).
 - Pro Profil getrennt:
   - Konfigurationsordner
   - Eintrag im Windows-Tresor (API-Key, über Electron `safeStorage`)
@@ -176,19 +176,9 @@ type DeliveryResult = { ok: true } | { ok: false; reason: 'gone' | 'busy' | 'io'
 
 ---
 
-## 6. Citrix: zu prüfen (ohne Garantie)
+## 6. (entfallen)
 
-| Thema | Frage | Test |
-|---|---|---|
-| Hotkeys | Kommen Maus 4/5 und das Mausrad in der Citrix-Session an? Lassen sie sich dort unterdrücken? | Hook-Logger in der Session, verschiedene Workspace-App-Versionen |
-| Mikrofon | Ist HDX-Audio-Umleitung per Policy erlaubt? Welche Latenz und Qualität? | Testaufnahme, Pegel, Vergleich mit lokal |
-| Netzwerk | Ist `api.openai.com` vom VDA erreichbar? Proxy, TLS-Inspection? | Verbindungstest in den Einstellungen |
-| Zwischenablage / Einfügen | Funktioniert SendInput in der Session? Wird die Zwischenablage zwischen Client und VDA synchronisiert? | Einfügen in Notepad, Outlook, Browser |
-| Sessions | Läuft das Terminal mit Copilot **in derselben** VDA-Session? Named Pipe nur innerhalb der Session | `vb run` im Citrix-Terminal |
-| Installation | Portable `.exe` ohne Admin-Rechte erlaubt? AppLocker? | Portable Build aus GitHub Actions |
-| npm | Funktioniert `npm install` mit Prebuilds (koffi, node-pty, uiohook-napi) hinter dem Firmen-Proxy? | Spike S0 |
-
-Ergebnisse kommen nach `docs/citrix.md`, auch die Einschränkungen.
+Der Abschnitt «Citrix: zu prüfen» wurde gestrichen (siehe ADR-019). Die Nummerierung bleibt, damit Verweise auf §7 gültig bleiben.
 
 ---
 
@@ -228,7 +218,7 @@ voice-bridge/
 │  ├─ renderer/    Svelte: pill/, popup/, toast/, settings/
 │  └─ cli/         vb run
 ├─ test/           unit/, integration/
-├─ docs/          requirements.md, PLAN.md, decisions.md, backlog.md, ui-spec.md, citrix.md, mockups/
+├─ docs/          requirements.md, PLAN.md, decisions.md, backlog.md, ui-spec.md, mockups/
 ├─ examples/      config / adapters / sessions / pipe-protocol Beispiele
 └─ package.json
 ```
@@ -246,8 +236,8 @@ voice-bridge/
 | **S4** | STT-Vergleich Berndeutsch: eine vs. zwei Stufen, Modelle, Latenz | Tabelle in `decisions.md` |
 | **M1** | Diktat end-to-end auf Windows: Tray, Pill, Einfügen, Fehler | nutzbar privat |
 | **M2** | Agent: Popup, Rad/Klick, PtyBridge, Fehlerfälle | nutzbar mit Copilot CLI |
-| **M3** | Einstellungen, Profile, safeStorage, Verlauf | Citrix-Profil testbar |
-| **M4** | Citrix-Testlauf, `docs/citrix.md` | dokumentierte Grenzen |
+| **M3** | Einstellungen, Profile, safeStorage, Verlauf | Profile testbar |
+| **M4** | (entfallen, siehe ADR-019) | |
 | **M5** | AcpAdapter | zweiter Adapter |
 | **M6** | macOS/Linux, lokale Engine | optional |
 

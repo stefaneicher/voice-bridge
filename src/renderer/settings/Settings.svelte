@@ -20,7 +20,6 @@
     ['agents', 'Agents & Sessions'],
     ['phone', 'Handy'],
     ['privacy', 'Datenschutz'],
-    ['citrix', 'Citrix'],
   ] as const;
   type Section = (typeof SECTIONS)[number][0];
 
@@ -159,7 +158,7 @@
         <h1>Profil {config.profile}</h1>
         <p class="lead">
           Eigene Konfiguration, Secrets und Sessions je Profil. Ein anderes Profil startest du über
-          das Tray-Menü oder mit <code>voice-bridge --profile citrix</code>.
+          das Tray-Menü oder mit <code>voice-bridge --profile &lt;name&gt;</code>.
         </p>
         {#if data.openAtLogin !== null}
           <div class="field">
@@ -456,24 +455,12 @@
           Audio wird nur im Arbeitsspeicher gehalten und nach der Transkription verworfen. Bei einem
           Fehler bleibt es, bis du die Meldung schliesst. Kein Telemetrie-Code.
         </p>
-      {:else if section === 'citrix'}
-        <h1>Citrix</h1>
-        <p class="lead">
-          Für Citrix ein eigenes Profil verwenden: <code>voice-bridge --profile citrix</code> und
-          <code>vb run --profile citrix -- copilot</code>.
-        </p>
-        <p class="hint">
-          Zu prüfen sind Hotkeys, Mikrofon-Umleitung, Erreichbarkeit von api.openai.com und das
-          Einfügen. Testprotokoll: docs/citrix.md im Repository.
-        </p>
       {/if}
 
-      {#if section !== 'citrix'}
-        <footer>
-          {#if notice}<span class="notice" class:bad={!notice.ok}>{notice.text}</span>{/if}
-          <button class="btn primary" onclick={save} disabled={saving}>Speichern</button>
-        </footer>
-      {/if}
+      <footer>
+        {#if notice}<span class="notice" class:bad={!notice.ok}>{notice.text}</span>{/if}
+        <button class="btn primary" onclick={save} disabled={saving}>Speichern</button>
+      </footer>
     {/if}
   </main>
 </div>

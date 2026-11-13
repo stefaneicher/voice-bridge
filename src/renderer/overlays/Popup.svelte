@@ -104,8 +104,10 @@
 {/if}
 
 <style>
-  /* Same width as the popup: live text grows upward, the popup itself never moves. */
+  /* Same width as the popup: live text grows upward, the popup itself never moves.
+     content-box: the frame padding must not eat into the 420 px, or the popup's right edge is clipped. */
   .stack {
+    box-sizing: content-box;
     display: flex;
     flex-direction: column;
     gap: 8px;

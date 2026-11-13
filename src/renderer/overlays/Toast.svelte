@@ -25,7 +25,9 @@
     return () => clearTimeout(t);
   });
 
-  const showDone = $derived(!!done && (doneVisible || hovering));
+  // A plain dictation needs no «Eingefügt» confirmation: the text appearing is the feedback.
+  const wantsDone = $derived(!!done && (done.mode === 'agent' || done.showRaw));
+  const showDone = $derived(wantsDone && (doneVisible || hovering));
   const failures = $derived(overlay.failures);
   const visible = $derived(showDone || failures.length > 0);
   const anchor = $derived(

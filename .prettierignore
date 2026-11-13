@@ -3,6 +3,7 @@ out
 dist
 package-lock.json
 docs/mockups
+.lavish
 *.md
 examples
 android

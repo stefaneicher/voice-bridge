@@ -33,6 +33,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.node.json && svelte-check --tsconfig tsconfig.web.json --fail-on-warnings",
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",
+    "lint:staged": "lint-staged",
     "test": "vitest run",
     "test:watch": "vitest",
     "dist:win": "npm run build && electron-builder --win --publish never",

@@ -1,6 +1,12 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
-  "entry": ["bin/*.js", "scripts/*.mjs", "test/**/*.test.ts", "test/e2e/**/*.e2e.ts"],
+  "entry": [
+    "bin/*.js",
+    "scripts/*.mjs",
+    "src/renderer/main.ts",
+    "test/**/*.test.ts",
+    "test/e2e/**/*.e2e.ts"
+  ],
   "project": ["src/**/*.{ts,svelte}", "test/**/*.ts", "bin/*.js", "scripts/*.mjs"],
   "ignoreDependencies": ["node-pty", "uiohook-napi"],
   "ignoreExportsUsedInFile": true

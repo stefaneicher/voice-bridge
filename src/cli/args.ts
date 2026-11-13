@@ -23,7 +23,7 @@ Verwendung:
 
 Beispiele:
   vb run -- copilot
-  vb run --profile citrix --name billing -- copilot
+  vb run --profile arbeit --name billing -- copilot
 
 Optionen:
   --profile <name>  Profil der Voice-Bridge-Instanz (Standard: $VB_PROFILE oder "${DEFAULT_PROFILE}")

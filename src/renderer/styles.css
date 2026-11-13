@@ -12,7 +12,10 @@
   --vb-blue: #245e71;
   --vb-on-accent: #0d1716;
   --vb-dim: #686a7a;
-  --vb-shadow: 0 24px 70px rgba(0, 0, 0, 0.6);
+  /* Tight shadow plus a light hairline: a wide dark halo looks like a muddy half-transparent
+     backdrop on dark host apps such as IntelliJ. */
+  --vb-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.1), 0 4px 14px rgba(0, 0, 0, 0.35), 0 1px 3px rgba(0, 0, 0, 0.4);
   --font-ui: 'Inter', system-ui, sans-serif;
   --font-title: 'Inter', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
@@ -39,7 +42,7 @@ html:not([data-view='desk']) body {
 /* Overlays leave room for the drop shadow inside the transparent window. */
 .overlay-frame {
   display: inline-block;
-  padding: 16px 16px 28px;
+  padding: 12px 12px 20px;
 }
 
 .rec-dot {
