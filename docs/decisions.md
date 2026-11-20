@@ -304,6 +304,105 @@ Kurzform: Kontext → Entscheid → Folgen. Neue Einträge unten anhängen, alte
 
 ---
 
+## ADR-022 · Eigenständiges Android-Diktat
+
+**Status:** Android-Diktat-MVP implementiert; Geräteabnahme auf A54 offen (20.11.2026)
+
+**Kontext:** Die bestehende Android-App ist ein PC-Mikrofon-Client: `MainViewModel`
+startet die Aufnahme nur bei einer PC-Verbindung und übermittelt Audio mit
+`BridgeClient`. Das neue Diktat soll unabhängig auf dem Handy laufen, direkt
+OpenAI verwenden und den Text nur in das sicher identifizierte ursprüngliche
+Feld einfügen. Der Zielentwurf sieht ein Overlay über der vorhandenen Tastatur
+und eine Aktivierung per Hardwaretaste vor.
+
+**Spike-Ergebnis:** Siehe
+[`spikes/android-dictation/README.md`](../spikes/android-dictation/README.md).
+Das Galaxy A54 (`SM-A546B`, Android 16 / API 36, gemeldete One-UI-Kennung
+`80500`) ist per ADB erreichbar; Samsung Keyboard ist aktiv. Ein isolierter
+Debug-Proof-of-Concept prüft Overlay, Lautstärke-Key-down/up über einen
+Bedienungshilfen-Dienst, Einfügen über ein eigenes IME sowie nun den
+Android-13+-Schreibkanal `InputMethod.AccessibilityInputConnection` des
+Bedienungshilfen-Dienstes. Der neue Pfad liest keine Fensterinhalte und
+verwendet nur `commitText()` mit einem festen Prüftext. Android-Unit-Tests,
+Debug-Build und Lint sind erfolgreich; der Debug-Proof-of-Concept ist unter
+`ch.voicebridge.app.spike` auf dem A54 installiert und gestartet. Die
+manuellen Prüfungen ergaben: Overlay bleibt beim Wechsel zu Gmail sichtbar,
+Samsung Keyboard bleibt aktiv, die Pill lässt sich verschieben und ein kurzer
+Tap löst weiter nur den Prüftext aus. Der Prüftext wird in den Nachrichtentext
+eingefügt und beim Wechsel zum Betreff während der Wartezeit nicht umgeleitet.
+Ein Chrome-Login-Passwortfeld wurde erkannt und der Einfügeversuch mit
+«Passwortfeld erkannt · Einfügen gesperrt» blockiert. Ein temporärer
+Debug-PTT-Modus bestätigte für beide Lautstärketasten gedrückt/losgelassen und
+fing die Events ab; beim Loslassen endete der Status. Der Nutzer entschied
+sich gegen die Übernahme, damit die Lautstärke bedienbar bleibt. Der aktuelle
+Debug-Dienst reicht die Tasten weiter. Android bietet keinen
+verlässlichen allgemeinen Push-to-Talk-Hook für beliebige Hardwaretasten.
+Die A54-Probe belegt daher nur die Funktion auf diesem Gerät und den
+Schlüsselkonflikt, nicht eine universelle Aktivierung. Das Overlay
+benötigt eine Systemfreigabe; Einfügung über Bedienungshilfen ist app- und
+versionsabhängig und vor einer Veröffentlichung auf Plattform-/Store-
+Anforderungen zu prüfen. Ein eigenes IME kann über `InputConnection` direkter
+einfügen, ersetzt dafür aber die ausgewählte Tastatur.
+
+**Festgehalten:**
+- Der neue Diktatpfad bleibt unabhängig von PC, Profil und Bridge-Client. Die
+  bestehende PC-Kopplung wird nicht entfernt oder verändert.
+- Direkte OpenAI-Verarbeitung auf Android mit eigenem API-Schlüssel ist der
+  vereinbarte Weg. Lokale Speicherung des Schlüssels wird mit AES-GCM und
+  Android Keystore geschützt; Schlüssel und Audio werden nicht protokolliert,
+  Backups schliessen den Schlüsselciphertext aus.
+- Cloud-Upload benötigt vorherige, verständliche Einwilligung. Audio wird
+  standardmässig nicht auf Disk geschrieben. Ein Fehler oder ein unsicheres
+  Zielfeld darf weder Text verlieren noch auf ein anderes Feld umleiten.
+- Diktat sendet keine Aktion wie «Enter» oder «Senden». Passwortfelder werden
+  soweit anhand der Android-Feldmerkmale erkennbar gesperrt; vollständige
+  Erkennung fremder App-Felder ist nicht garantierbar.
+- Der A54-Test bestätigt den Overlay-Weg mit Samsung Keyboard in Gmail.
+  Bedienungshilfen-Freigabe, App-Kompatibilitäts- und
+  Veröffentlichungsgrenzen bleiben bestehen. Der Nutzer wählte die bewegliche
+  Overlay-Pill mit Tap als MVP-Aktivierung; Hardware-PTT über
+  Lautstärketasten wird wegen des Lautstärke-Konflikts nicht übernommen.
+- Das Overlay soll wie bei Wispr Flow verschiebbar sein. Der Debug-PoC
+  implementiert Ziehen mit Positionsbegrenzung und getrenntem Tap; beides ist
+  auf dem A54 bestätigt.
+- Die Overlay-Pill verwendet einen Tap zum Starten und einen zweiten Tap zum
+  Stoppen. Ein dritter, als «An OpenAI senden» beschrifteter Tap gibt die
+  Aufnahme einzeln frei; Stoppen allein bedeutet keine Cloud-Einwilligung.
+- Der Nutzer hat dem Debug-Test zugestimmt, Lauter/Leiser während des Haltens
+  als PTT-Ereignis abzufangen. Das ist nur ein Status-Probe ohne Audio; die
+  Lautstärke-Tasten waren währenddessen nicht verfügbar. Der Nutzer wählte
+  danach die bewegliche Overlay-Pill als Aktivierung; Hardware-PTT wird nicht
+  ins MVP übernommen.
+- A54-/One-UI-Gerätetest ist Voraussetzung für die Abnahme, nicht für die
+  Erstellung von Unit- und Android-Tests.
+
+**Folgen:** Der neue Debug-Pfad nutzt Android 13+
+`InputMethod.AccessibilityInputConnection`, prüft die Editor-Sitzung,
+vermeidet Feldinhaltszugriff und ist in Gmail sowie einem Chrome-
+Passwortfeld getestet. Die Pill wurde auf dem A54 als verschiebbar bestätigt.
+Daraus folgt keine Universalgarantie für weitere Apps. Der Hardware-PTT-
+Status wurde mit beiden Lautstärketasten bestätigt, aber nur ohne Audio und
+unter Abfangen der Lautstärketasten; er wird nicht ins MVP übernommen. Das
+MVP nutzt die bewegliche Overlay-Pill zum Tippen. Ein eigener
+Mikrofon-Vordergrunddienst wird nur aus der sichtbaren App gestartet und
+bleibt aktiv, solange das Overlay läuft. Dadurch kann die Mikrofonberechtigung
+nach dem App-Wechsel weiter genutzt werden; Android zeigt eine dauerhafte
+Benachrichtigung und einen Aufnahmeindikator.
+
+Das MVP ergänzt AES-GCM-verschlüsselte API-Key-Ablage mit Android Keystore,
+Backup-Ausschluss, RAM-Aufnahme (maximal acht Minuten), OpenAI-Transkription
+mit `gpt-4o-transcribe`, Einfügen nach erneuter Editor-Prüfung und ein
+Testlabor ohne automatische Einfügung. Audio wird erst nach erfolgreicher
+Transkription verworfen. Bei Netzwerk- oder Zielfeldfehlern bleiben Audio
+beziehungsweise Text im laufenden Prozess zum Wiederholen, Kopieren oder
+Verwerfen erhalten. Ein Zielfeldwechsel beendet bereits laufende Aufnahmen;
+eine Teilaufnahme wird nicht automatisch hochgeladen. Der bestehende
+PC-Mikrofonmodus bleibt separat verfügbar.
+Die Abnahme des vollständigen Aufnahme-/Cloud-/Einfügeablaufs auf dem A54 und
+die Prüfung der Plattform-/Store-Anforderungen bleiben offen.
+
+---
+
 ## Offen
 
 | # | Frage | Wer/Wann |

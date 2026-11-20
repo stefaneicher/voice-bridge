@@ -93,12 +93,18 @@ Gespeicherte Tests liegen pro Profil unter `%APPDATA%\voice-bridge\<profil>\spee
 
 MVP-Grenzen: kein Import, keine automatische Bewertung/Word-Error-Rate, kein Audio-Player, kein Batch-Replay und kein Modellvergleich. Vorhandenes WAV kann zum externen Auswerten aus `audio.data` Base64-dekodiert werden. Normales Diktat speichert weiterhin kein Audio auf Disk.
 
-## Handy als Mikrofon (Android)
+## Android-App
 
-1. Im Release die Datei `voice-bridge-android-<version>.apk` aufs Handy laden und installieren (Installation aus unbekannten Quellen erlauben).
-2. Auf dem PC in Voice-Bridge unter **Einstellungen → Handy** «Verbindungen vom Handy erlauben» einschalten, speichern und «QR-Code anzeigen» wählen. Windows fragt einmal nach der Firewall: «Zulassen».
-3. In der App «QR-Code scannen». Handy und PC müssen im selben WLAN sein.
-4. Ziel wählen («Am Cursor einfügen» oder eine Session), Knopf halten, sprechen, loslassen.
+Die Android-App bietet zwei unabhängige Funktionen:
+
+- **Handy-Diktat:** nimmt auf dem Handy auf, sendet Audio nach einem separaten
+  Cloud-Freigabe-Tap direkt an OpenAI und fügt den Text nur in das noch sicher
+  identifizierte ursprüngliche Textfeld ein.
+- **PC-Mikrofon:** behält die bisherige Verbindung zur Windows-App per QR-Code
+  und WLAN. Audio wird verschlüsselt an den gekoppelten PC gestreamt.
+
+Installations-, Einrichtungs-, Datenschutz- und Gerätehinweise stehen in
+[android/README.md](android/README.md).
 
 Die Verbindung ist verschlüsselt: Die App vertraut nur dem Zertifikat des gekoppelten PCs (Fingerabdruck im QR-Code). Im Firmennetz blockiert die Firewall die Verbindung möglicherweise.
 
