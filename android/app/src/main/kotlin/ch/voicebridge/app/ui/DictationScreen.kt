@@ -49,6 +49,7 @@ fun DictationScreen(
     setupError: String?,
     onSaveApiKey: (String) -> Unit,
     onDeleteApiKey: () -> Unit,
+    onOpenApiKeyPage: () -> Unit,
     onRequestMicrophone: () -> Unit,
     onRequestOverlay: () -> Unit,
     onRequestAccessibility: () -> Unit,
@@ -121,6 +122,9 @@ fun DictationScreen(
                 color = VB.Text2,
                 fontSize = 13.sp,
             )
+            TextButton(onClick = onOpenApiKeyPage) {
+                Text("API-Schlüssel bei OpenAI erstellen")
+            }
             OutlinedTextField(
                 value = apiKey,
                 onValueChange = { apiKey = it },

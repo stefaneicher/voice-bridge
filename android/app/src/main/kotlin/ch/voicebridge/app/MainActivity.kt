@@ -1,6 +1,7 @@
 package ch.voicebridge.app
 
 import android.Manifest
+import android.content.ActivityNotFoundException
 import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -67,6 +68,7 @@ class MainActivity : ComponentActivity() {
                         setupError = setup.error,
                         onSaveApiKey = ::saveApiKey,
                         onDeleteApiKey = ::deleteApiKey,
+                        onOpenApiKeyPage = ::openApiKeyPage,
                         onRequestMicrophone = { micPermission.launch(Manifest.permission.RECORD_AUDIO) },
                         onRequestOverlay = {
                             startActivity(
@@ -152,6 +154,14 @@ class MainActivity : ComponentActivity() {
             refreshSetupStatus()
         } catch (error: Exception) {
             refreshSetupStatus(error.message ?: "API-Schlüssel konnte nicht gelöscht werden.")
+        }
+    }
+
+    private fun openApiKeyPage() {
+        try {
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://platform.openai.com/api-keys")))
+        } catch (_: ActivityNotFoundException) {
+            refreshSetupStatus("Kein Browser zum Öffnen der OpenAI-Schlüssel-Seite verfügbar.")
         }
     }
 
