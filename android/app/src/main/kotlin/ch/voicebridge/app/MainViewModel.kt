@@ -41,10 +41,21 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     private val pairingError = MutableStateFlow<String?>(null)
     private var clearOutcome: Job? = null
 
-    private val capture = AudioCapture { bytes, length, level ->
-        client.sendAudio(bytes, length)
-        recording.value = recording.value.copy(levels = recording.value.levels.drop(1) + level.coerceAtLeast(0.1f))
-    }
+    private val capture = AudioCapture(
+        onFrame = { bytes, length, level ->
+            client.sendAudio(bytes, length)
+            recording.value = recording.value.copy(levels = recording.value.levels.drop(1) + level.coerceAtLeast(0.1f))
+        },
+        onFailure = { message ->
+            viewModelScope.launch {
+                if (recording.value.active) {
+                    client.send(AppMessage.Cancel)
+                    recording.value = RecordingState()
+                    outcome.value = Outcome.Failed(message, null)
+                }
+            }
+        },
+    )
 
     val state: StateFlow<UiState> = combine(
         client.connection,

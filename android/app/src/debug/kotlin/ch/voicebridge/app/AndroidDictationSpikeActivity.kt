@@ -10,6 +10,8 @@ import android.os.Bundle
 import android.provider.Settings
 import android.text.TextUtils
 import android.view.Gravity
+import android.view.MotionEvent
+import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
@@ -39,18 +41,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.lifecycleScope
 import ch.voicebridge.app.ui.VB
 import ch.voicebridge.app.ui.VoiceBridgeTheme
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
+import kotlin.math.abs
 
 class AndroidDictationSpikeActivity : ComponentActivity() {
     private var resumedTick by mutableIntStateOf(0)
     private var overlayShown by mutableStateOf(false)
     private var overlayView: TextView? = null
-    private var overlayStatusJob: Job? = null
+    private var overlayX = 0
+    private var overlayY: Int? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,7 +76,7 @@ class AndroidDictationSpikeActivity : ComponentActivity() {
                             Text(if (overlayAllowed) "Overlay erlaubt" else "Overlay erlauben")
                         }
                         OutlinedButton(onClick = ::openAccessibilitySettings, modifier = Modifier.fillMaxWidth()) {
-                            Text(if (accessibilityEnabled) "Tasten-Test bereit" else "Tasten-Test einrichten")
+                            Text(if (accessibilityEnabled) "Bedienungshilfe bereit" else "Bedienungshilfe einrichten")
                         }
                     }
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -108,8 +108,8 @@ class AndroidDictationSpikeActivity : ComponentActivity() {
                     Text("Hardwaretaste", color = VB.Text)
                     Text(state.hardwareKeyStatus, color = VB.Text2)
                     Text(
-                        "Mit aktiviertem Testdienst Lauter oder Leiser kurz drücken und halten. " +
-                            "Der Test beobachtet Key-down/up, verbraucht das Ereignis nicht und verändert keine Lautstärke.",
+                        "Der Debug-Dienst beobachtet Lauter/Leiser und gibt die Tasten weiter. " +
+                            "Hardware-PTT wird nicht verwendet; die Lautstärke bleibt bedienbar.",
                         color = VB.Text3,
                     )
 
@@ -124,16 +124,28 @@ class AndroidDictationSpikeActivity : ComponentActivity() {
                     Text(
                         "Aktiviere und wähle das IME. Seine Schaltfläche wartet 2 Sekunden, " +
                             "prüft dieselbe Editor-Sitzung und fügt nur den Prüftext ein. " +
-                            "Währenddessen zu einem anderen Feld wechseln, um den Abbruch zu prüfen.",
+                            "Dieses Verfahren ersetzt während des Tests Samsung Keyboard.",
                         color = VB.Text3,
                     )
-                    Text(state.insertionStatus, color = VB.Text2)
                     state.pendingText?.let { text ->
                         Text("Erhaltener Prüftext: «$text»", color = VB.Lime)
                         OutlinedButton(onClick = { clipboard.setText(AnnotatedString(text)) }) {
                             Text("Prüftext kopieren")
                         }
                     }
+                    Spacer(Modifier.height(6.dp))
+                    Text("Einfügetest mit Overlay und bestehender Tastatur", color = VB.Text)
+                    Text(
+                        "Aktiviere den Bedienungshilfen-Dienst und blende das Overlay ein. " +
+                            "Ziehe die Pill zum Verschieben; kurzes Tippen startet den Einfügetest. " +
+                            "Wechsle danach z. B. zu Gmail und tippe im Textfeld auf «Voice-Bridge-Test · Prüftext»; " +
+                            "nach 2 Sekunden wird " +
+                            "derselbe Editor geprüft und nur der feste Prüftext eingefügt. " +
+                            "Wechsle während der Wartezeit zu einem anderen Feld, um den Abbruch zu prüfen. " +
+                            "Diese API benötigt Android 13 oder neuer.",
+                        color = VB.Text3,
+                    )
+                    Text("Letzter Einfügetest: ${state.insertionStatus}", color = VB.Text2)
                     Text(
                         "Keine Audioaufnahme, API-Schlüssel, Netzwerkzugriffe, App-Inhaltslesung oder Inhaltslogs. " +
                             "Der Spike ist nur im Debug-Build enthalten.",
@@ -182,7 +194,7 @@ class AndroidDictationSpikeActivity : ComponentActivity() {
         }
 
         val view = TextView(this).apply {
-            text = "●  Voice-Bridge-Test · Tippen"
+            text = "●  Voice-Bridge-Test · Prüftext"
             textSize = 14f
             setTextColor(0xFFEDF6F3.toInt())
             setPadding(dp(18), dp(12), dp(18), dp(12))
@@ -196,9 +208,6 @@ class AndroidDictationSpikeActivity : ComponentActivity() {
             }
             isFocusable = false
             isFocusableInTouchMode = false
-            setOnClickListener {
-                SpikeProofState.reportHardwareKey("Overlay-Tap erkannt · Fokus wird nicht angefordert")
-            }
         }
         val params = WindowManager.LayoutParams(
             ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -210,26 +219,73 @@ class AndroidDictationSpikeActivity : ComponentActivity() {
             PixelFormat.TRANSLUCENT,
         ).apply {
             gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
-            y = dp(150)
+            x = overlayX
+            y = overlayY ?: dp(150)
+        }
+        var downRawX = 0f
+        var downRawY = 0f
+        var startX = params.x
+        var startY = params.y
+        var dragging = false
+        val touchSlop = ViewConfiguration.get(this).scaledTouchSlop
+        view.setOnTouchListener { _, event ->
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    downRawX = event.rawX
+                    downRawY = event.rawY
+                    startX = params.x
+                    startY = params.y
+                    dragging = false
+                    true
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    val deltaX = event.rawX - downRawX
+                    val deltaY = event.rawY - downRawY
+                    if (!dragging && (abs(deltaX) > touchSlop || abs(deltaY) > touchSlop)) {
+                        dragging = true
+                    }
+                    if (dragging) {
+                        val maxHorizontalOffset =
+                            ((resources.displayMetrics.widthPixels - view.width) / 2).coerceAtLeast(0)
+                        val maxVerticalOffset =
+                            (resources.displayMetrics.heightPixels - view.height).coerceAtLeast(0)
+                        params.x = (startX + deltaX.toInt()).coerceIn(-maxHorizontalOffset, maxHorizontalOffset)
+                        params.y = (startY - deltaY.toInt()).coerceIn(0, maxVerticalOffset)
+                        windowManager.updateViewLayout(view, params)
+                        overlayX = params.x
+                        overlayY = params.y
+                    }
+                    true
+                }
+                MotionEvent.ACTION_UP -> {
+                    if (!dragging) requestOverlayProbeInsert()
+                    true
+                }
+                MotionEvent.ACTION_CANCEL -> true
+                else -> false
+            }
         }
 
         try {
             windowManager.addView(view, params)
             overlayView = view
             overlayShown = true
-            overlayStatusJob = lifecycleScope.launch {
-                SpikeProofState.state.collect { state ->
-                    view.text = "●  ${state.hardwareKeyStatus}"
-                }
-            }
         } catch (_: SecurityException) {
             SpikeProofState.reportHardwareKey("Overlay-Freigabe fehlt")
         }
     }
 
+    private fun requestOverlayProbeInsert() {
+        if (!HardwareKeySpikeService.requestOverlayProbeInsert()) {
+            SpikeProofState.prepareInsertion(" Voice-Bridge-Probe")
+            SpikeProofState.reportInsertion(
+                "Bedienungshilfen-Dienst nicht verbunden · Prüftext behalten",
+                keepText = true,
+            )
+        }
+    }
+
     private fun hideOverlay() {
-        overlayStatusJob?.cancel()
-        overlayStatusJob = null
         overlayView?.let { view ->
             if (view.isAttachedToWindow) windowManager.removeView(view)
         }
@@ -251,13 +307,9 @@ class AndroidDictationSpikeActivity : ComponentActivity() {
     }
 
     private fun isInputMethodEnabled(): Boolean {
-        val enabled = Settings.Secure.getString(
-            contentResolver,
-            Settings.Secure.ENABLED_INPUT_METHODS,
-        ).orEmpty()
-        return enabled.split(':').any { value ->
-            ComponentName.unflattenFromString(value.substringBefore(';'))?.className ==
-                SpikeInputMethodService::class.java.name
+        val inputMethodManager = getSystemService(InputMethodManager::class.java) ?: return false
+        return inputMethodManager.enabledInputMethodList.any {
+            it.packageName == packageName && it.serviceName == SpikeInputMethodService::class.java.name
         }
     }
 

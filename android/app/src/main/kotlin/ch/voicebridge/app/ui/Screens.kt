@@ -62,7 +62,13 @@ import ch.voicebridge.app.UiState
 import kotlinx.coroutines.delay
 
 @Composable
-fun PairingScreen(error: String?, connecting: Boolean, onScan: () -> Unit, onLink: (String) -> Unit) {
+fun PairingScreen(
+    error: String?,
+    connecting: Boolean,
+    onScan: () -> Unit,
+    onLink: (String) -> Unit,
+    onOpenDictation: () -> Unit,
+) {
     var link by remember { mutableStateOf("") }
     Column(
         Modifier.fillMaxSize().background(VB.Ink).safeDrawingPadding().padding(24.dp),
@@ -76,6 +82,7 @@ fun PairingScreen(error: String?, connecting: Boolean, onScan: () -> Unit, onLin
                 "und den QR-Code anzeigen lassen. Handy und PC müssen im selben WLAN sein.",
             color = VB.Text2,
         )
+        TextButton(onClick = onOpenDictation) { Text("Stattdessen Handy-Diktat verwenden") }
         Button(onClick = onScan, enabled = !connecting, modifier = Modifier.fillMaxWidth().height(52.dp)) {
             Text(if (connecting) "Verbinde …" else "QR-Code scannen", fontWeight = FontWeight.SemiBold)
         }
@@ -102,10 +109,11 @@ fun MainScreen(
     onReconnect: () -> Unit,
     onUnpair: () -> Unit,
     onDismiss: () -> Unit,
+    onOpenDictation: () -> Unit,
 ) {
     val connected = state.connection as? Connection.Connected
     Column(Modifier.fillMaxSize().background(VB.Ink).safeDrawingPadding().padding(horizontal = 20.dp)) {
-        Header(state.connection, onReconnect, onUnpair)
+        Header(state.connection, onReconnect, onUnpair, onOpenDictation)
         Text(
             "ZIEL WÄHLEN",
             color = VB.Text3,
@@ -153,7 +161,7 @@ fun MainScreen(
 }
 
 @Composable
-private fun Header(connection: Connection, onReconnect: () -> Unit, onUnpair: () -> Unit) {
+private fun Header(connection: Connection, onReconnect: () -> Unit, onUnpair: () -> Unit, onOpenDictation: () -> Unit) {
     Row(Modifier.fillMaxWidth().padding(top = 16.dp), verticalAlignment = Alignment.CenterVertically) {
         val (dot, label) = when (connection) {
             is Connection.Connected -> VB.Teal to "verbunden · Profil ${connection.profile}"
@@ -174,6 +182,7 @@ private fun Header(connection: Connection, onReconnect: () -> Unit, onUnpair: ()
                 fontWeight = FontWeight.SemiBold,
             )
         }
+        TextButton(onClick = onOpenDictation) { Text("Handy-Diktat") }
         if (connection is Connection.Offline) TextButton(onClick = onReconnect) { Text("Erneut") }
         TextButton(onClick = onUnpair) { Text("Entkoppeln", color = VB.Text3) }
     }
@@ -303,14 +312,11 @@ private fun PushToTalk(
 }
 
 @Composable
-fun PermissionHint(onRequest: () -> Unit) {
+fun PermissionHint(onRequest: () -> Unit, onOpenDictation: () -> Unit) {
     Column(Modifier.fillMaxSize().background(VB.Ink).padding(24.dp), verticalArrangement = Arrangement.Center) {
         Text("Mikrofon erlauben", color = VB.Text, fontSize = 22.sp, fontWeight = FontWeight.SemiBold)
-        Text(
-            "Voice-Bridge nimmt nur auf, solange du den Knopf hältst. Der Ton geht verschlüsselt an deinen PC und wird nicht gespeichert.",
-            color = VB.Text2,
-            modifier = Modifier.padding(vertical = 12.dp),
-        )
+        Text("Voice-Bridge nimmt nur auf, solange du den Knopf hältst. Der Ton geht verschlüsselt an deinen PC und wird nicht gespeichert.", color = VB.Text2, modifier = Modifier.padding(vertical = 12.dp))
         Button(onClick = onRequest, colors = ButtonDefaults.buttonColors()) { Text("Erlauben") }
+        TextButton(onClick = onOpenDictation) { Text("Handy-Diktat öffnen") }
     }
 }

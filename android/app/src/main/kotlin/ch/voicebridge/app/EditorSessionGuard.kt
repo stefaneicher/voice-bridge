@@ -7,12 +7,12 @@ data class EditorIdentity(
     val imeOptions: Int,
 )
 
-data class EditorSessionToken internal constructor(
+class EditorSessionToken internal constructor(
     internal val generation: Long,
     internal val identity: EditorIdentity,
 )
 
-/** A delayed insert is valid only for the exact IME editor session that requested it. */
+/** A delayed insert is valid only for the exact editor session that requested it. */
 class EditorSessionGuard {
     private var generation = 0L
     private var identity: EditorIdentity? = null
@@ -34,5 +34,4 @@ class EditorSessionGuard {
 
     fun isCurrent(token: EditorSessionToken, currentIdentity: EditorIdentity?): Boolean =
         token.generation == generation && token.identity == identity && currentIdentity == identity
-
 }

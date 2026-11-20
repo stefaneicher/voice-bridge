@@ -19,7 +19,7 @@ class SpikeInputMethodService : InputMethodService() {
     override fun onCreateInputView(): View =
         LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(24, 16, 24, 18)
+            setPadding(dp(24), dp(16), dp(24), dp(18))
             setBackgroundColor(0xFF15151C.toInt())
             addView(
                 TextView(context).apply {
@@ -28,14 +28,14 @@ class SpikeInputMethodService : InputMethodService() {
                     textSize = 12f
                     gravity = Gravity.CENTER
                 },
-                LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 40),
+                LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(40)),
             )
             addView(
                 Button(context).apply {
                     text = "Prüftext in 2 s einfügen"
                     setOnClickListener { requestProbeInsert() }
                 },
-                LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 52),
+                LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(52)),
             )
             addView(
                 TextView(context).apply {
@@ -44,7 +44,7 @@ class SpikeInputMethodService : InputMethodService() {
                     textSize = 12f
                     gravity = Gravity.CENTER
                 },
-                LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 36),
+                LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(36)),
             )
         }
 
@@ -109,6 +109,8 @@ class SpikeInputMethodService : InputMethodService() {
         inputType = inputType,
         imeOptions = imeOptions,
     )
+
+    private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
 
     private fun isPasswordInput(inputType: Int): Boolean {
         if (inputType and InputType.TYPE_MASK_CLASS != InputType.TYPE_CLASS_TEXT) return false

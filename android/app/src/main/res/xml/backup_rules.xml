@@ -2,4 +2,5 @@
 <!-- The pairing token must not leave the device. -->
 <full-backup-content>
     <exclude domain="sharedpref" path="pairing.xml" />
+    <exclude domain="sharedpref" path="dictation_keys.xml" />
 </full-backup-content>

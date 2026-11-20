@@ -19,7 +19,7 @@ object SpikeProofState {
 
     fun prepareInsertion(text: String) {
         mutableState.value = mutableState.value.copy(
-            insertionStatus = "Prüftext bleibt im Arbeitsspeicher, bis das Ziel bestätigt ist",
+            insertionStatus = "Prüftext bleibt zur manuellen Kontrolle im Arbeitsspeicher",
             pendingText = text,
         )
     }

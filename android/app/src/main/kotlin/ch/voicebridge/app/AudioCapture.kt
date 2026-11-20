@@ -12,7 +12,10 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 /** Records 16 kHz mono PCM16 in 20 ms frames. Nothing is written to storage. */
-class AudioCapture(private val onFrame: (bytes: ByteArray, length: Int, level: Float) -> Unit) {
+class AudioCapture(
+    private val onFrame: (bytes: ByteArray, length: Int, level: Float) -> Unit,
+    private val onFailure: (message: String) -> Unit = {},
+) {
     private var job: Job? = null
     @Volatile private var running = false
 
@@ -20,31 +23,72 @@ class AudioCapture(private val onFrame: (bytes: ByteArray, length: Int, level: F
     @SuppressLint("MissingPermission")
     fun start(scope: CoroutineScope): Boolean {
         if (running) return true
-        val minBuffer = AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNEL, ENCODING)
+        val minBuffer = try {
+            AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNEL, ENCODING)
+        } catch (_: IllegalArgumentException) {
+            return false
+        } catch (_: SecurityException) {
+            return false
+        }
         if (minBuffer <= 0) return false
-        val recorder = AudioRecord(
-            MediaRecorder.AudioSource.VOICE_RECOGNITION,
-            SAMPLE_RATE,
-            CHANNEL,
-            ENCODING,
-            maxOf(minBuffer, FRAME_BYTES * 8),
-        )
+        val recorder = try {
+            AudioRecord(
+                MediaRecorder.AudioSource.VOICE_RECOGNITION,
+                SAMPLE_RATE,
+                CHANNEL,
+                ENCODING,
+                maxOf(minBuffer, FRAME_BYTES * 8),
+            )
+        } catch (_: IllegalArgumentException) {
+            return false
+        } catch (_: SecurityException) {
+            return false
+        }
         if (recorder.state != AudioRecord.STATE_INITIALIZED) {
             recorder.release()
             return false
         }
         running = true
-        recorder.startRecording()
+        try {
+            recorder.startRecording()
+        } catch (_: IllegalStateException) {
+            running = false
+            recorder.release()
+            return false
+        } catch (_: SecurityException) {
+            running = false
+            recorder.release()
+            return false
+        }
+        if (recorder.recordingState != AudioRecord.RECORDSTATE_RECORDING) {
+            running = false
+            recorder.release()
+            return false
+        }
         job = scope.launch(Dispatchers.IO) {
             val buffer = ByteArray(FRAME_BYTES)
             try {
                 while (running && isActive) {
                     val n = recorder.read(buffer, 0, buffer.size)
-                    if (n > 0) onFrame(buffer, n, level(buffer, n))
+                    when {
+                        n > 0 -> onFrame(buffer, n, level(buffer, n))
+                        n < 0 -> {
+                            if (running) onFailure("Die Mikrofonaufnahme wurde unterbrochen.")
+                            break
+                        }
+                    }
                 }
+            } catch (_: SecurityException) {
+                if (running) onFailure("Der Mikrofonzugriff wurde widerrufen.")
+            } catch (_: IllegalStateException) {
+                if (running) onFailure("Die Mikrofonaufnahme ist fehlgeschlagen.")
             } finally {
-                recorder.stop()
-                recorder.release()
+                running = false
+                try {
+                    if (recorder.recordingState == AudioRecord.RECORDSTATE_RECORDING) recorder.stop()
+                } finally {
+                    recorder.release()
+                }
             }
         }
         return true
