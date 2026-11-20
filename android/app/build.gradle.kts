@@ -30,6 +30,9 @@ android {
     }
 
     buildTypes {
+        debug {
+            applicationIdSuffix = ".spike"
+        }
         release {
             isMinifyEnabled = true
             isShrinkResources = true

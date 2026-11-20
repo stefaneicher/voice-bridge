@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Voice-Bridge · Spike</string>
+    <string name="spike_accessibility_label">Voice-Bridge Hardwaretasten-Test (Debug)</string>
+    <string name="spike_accessibility_description">Testet, ob Android Hardwaretasten an Voice-Bridge weitergibt. Der Dienst liest keine Fensterinhalte und verändert keine Tastenaktionen.</string>
+    <string name="spike_ime_label">Voice-Bridge Einfügetest (Debug)</string>
+</resources>
