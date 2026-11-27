@@ -112,6 +112,15 @@ class AndroidDictationSpikeActivity : ComponentActivity() {
                             "Hardware-PTT wird nicht verwendet; die Lautstärke bleibt bedienbar.",
                         color = VB.Text3,
                     )
+                    Text("Tastatur-Sichtbarkeit", color = VB.Text)
+                    Text(state.keyboardWindowStatus, color = VB.Text2)
+                    Text(
+                        "Der zusätzliche Debug-Test prüft ausschliesslich, ob Android ein " +
+                            "Eingabemethoden-Fenster meldet. Er liest keine Fensterstruktur und " +
+                            "keinen Text. Android verlangt für diese Metadaten die allgemeine " +
+                            "Fensterinhalts-Fähigkeit. Der produktive Diktat-Dienst bleibt davon unberührt.",
+                        color = VB.Text3,
+                    )
 
                     Spacer(Modifier.height(6.dp))
                     Text("Einfügetest mit Voice-Bridge-IME", color = VB.Text)

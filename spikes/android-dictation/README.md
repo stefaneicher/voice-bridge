@@ -41,6 +41,14 @@ API-Schlüssel oder PC-Kopplung.
   Text-Passwortfelder werden gesperrt. Es wird kein Enter gesendet.
 - Unit-Tests für die Editor-Sitzungswache liegen unter
   `android/app/src/testDebug/`.
+- Der zusätzliche Debug-only `KeyboardWindowProbeService` prüft, ob die
+  Accessibility-Fensterliste ein Fenster vom Typ `TYPE_INPUT_METHOD` enthält.
+  Er liest keine Fensterstruktur, UI-Elemente, Feldtexte, Paketnamen oder
+  Titel. Android verlangt für diese Metadaten trotzdem
+  `canRetrieveWindowContent=true` und `FLAG_RETRIEVE_INTERACTIVE_WINDOWS`.
+  Der Produktionsdienst verwendet für die automatische Pill-Sichtbarkeit
+  dieselbe Typprüfung und deklariert deshalb ebenfalls diese Fähigkeit. Er
+  liest oder traversiert trotzdem keine Fensterstruktur oder Inhalte.
 
 ### Ausführen auf dem Galaxy A54
 
@@ -67,6 +75,13 @@ API-Schlüssel oder PC-Kopplung.
 6. Tatsächliche Ziel-Apps einzeln prüfen. Weder Overlay- noch IME-Probe
    beweist Universalunterstützung aller Editoren; Befunde und One-UI-Version
    hier ergänzen.
+7. Für den Tastaturfenster-Test zusätzlich «Voice-Bridge Tastaturfenster-Test
+   (Debug)» unter den Bedienungshilfen aktivieren. In einem normalen Textfeld
+   die Bildschirmtastatur öffnen und danach schliessen; nach jedem Wechsel
+   zurück zum Spike zeigt «Tastatur-Sichtbarkeit», ob Android ein
+   Eingabemethoden-Fenster gemeldet hat. Für Gboard und Samsung Keyboard
+   separat wiederholen. Der Probe-Dienst liest ausschliesslich
+   `AccessibilityWindowInfo.type`; er loggt keine Fenster- oder Feldinhalte.
 
 Der Debug-Build verwendet die Paket-ID `ch.voicebridge.app.spike`. Er kann
 dadurch parallel zur vorhandenen, anders signierten Voice-Bridge-Installation
@@ -104,6 +119,30 @@ installiert werden, ohne diese zu ersetzen oder ihre PC-Kopplung anzutasten.
   - Das Debug-IME fügt seinen festen Prüftext in Gmail ein.
   - Beim Wechsel vom ursprünglichen Gmail-Feld zum Betreff vor dem nächsten
     verzögerten Einfügen erfolgte laut Nutzer kein Einfügen in das neue Feld.
+- **Tastaturfenster-Probe auf dem A54 (ADB):**
+  - Der Debug-Probe-Dienst wurde in den Bedienungshilfen aktiviert; Wispr Flow
+    blieb aktiviert.
+  - Bei eingeklappter Samsung Keyboard zeigte der Spike zunächst «Kein
+    Eingabemethoden-Fenster erkannt». Nach dem Fokussieren des Spike-Testfelds
+    und dem Öffnen von Samsung Keyboard wechselte der Status zu
+    «Eingabemethoden-Fenster erkannt».
+  - Beim Schliessen über Samsungs Tastatur-Navigationsschaltfläche wechselte
+    der Status zurück zu «Kein Eingabemethoden-Fenster erkannt». Öffnen und
+    Schliessen wurden damit auf diesem A54 bestätigt.
+  - Gboard ist auf dem Gerät nicht als Eingabemethode installiert; ein
+    Tastaturvergleich steht aus.
+  - Die Probe zeigt ausschliesslich das Vorhandensein eines
+    `TYPE_INPUT_METHOD`-Fensters an; Feldinhalt und Fensterstruktur werden
+    nicht gelesen. Die breitere, von Android verlangte Accessibility-Fähigkeit
+    bleibt eine Datenschutz- und Veröffentlichungsgrenze.
+- **Produktionskopplung:** Die Diktat-Pill wird nur eingeblendet, wenn das
+  Overlay eingeschaltet und ein `TYPE_INPUT_METHOD`-Fenster erkannt ist. Beim
+  Schliessen der Tastatur wird die Pill entfernt; das Overlay bleibt aktiviert
+  und wartet auf die nächste Tastatur. Die A54-Probe bestätigt den
+  Öffnen-/Schliessen-Wechsel für Samsung Keyboard. Android verlangt für diese
+  Typmetadaten die allgemeine Fähigkeit zum Abruf von Fensterinhalten; der
+  Produktionsdienst liest ausschliesslich Fenstertypen und keine Fensterknoten,
+  Feldtexte, Paketnamen oder Titel.
 - **Noch offen:** Ob eine andere Hardwaretaste systemweit als Aktivierung
   geeignet ist. Der MVP verwendet gemäss Entscheid die bewegliche Overlay-Pill
   statt Lautstärketasten-PTT. Der Einfügepfad ist erst in Gmail und Chrome

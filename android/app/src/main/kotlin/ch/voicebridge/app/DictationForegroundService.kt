@@ -37,6 +37,8 @@ class DictationForegroundService : Service() {
     private val keyStore by lazy { AndroidApiKeyStore(this) }
     private var windowManager: WindowManager? = null
     private var overlay: TextView? = null
+    private var overlayRequested = false
+    private var keyboardVisible = false
     private var capture: AudioCapture? = null
     private var pcmBuffer: ByteArrayOutputStream? = null
     private var pendingAudio: ByteArray? = null
@@ -73,7 +75,8 @@ class DictationForegroundService : Service() {
 
     override fun onDestroy() {
         recordingTimer?.cancel()
-        val overlayWasEnabled = DictationRuntime.state.value.overlayEnabled
+        val overlayWasEnabled = overlayRequested
+        overlayRequested = false
         removeOverlay()
         serviceScope.cancel()
         if (runningService === this) runningService = null
@@ -101,11 +104,15 @@ class DictationForegroundService : Service() {
             stopSelf()
             return
         }
-        if (!createOverlay()) {
-            stopSelf()
-            return
-        }
-        setState(DictationUiState(phase = DictationPhase.READY, message = "Overlay bereit."))
+        keyboardVisible = DictationAccessibilityService.isKeyboardVisible()
+        overlayRequested = true
+        setState(
+            DictationUiState(
+                phase = DictationPhase.READY,
+                message = if (keyboardVisible) "Overlay bereit." else "Wartet auf Bildschirmtastatur.",
+            ),
+        )
+        synchronizeOverlayVisibility()
     }
 
     private fun startAsForeground() {
@@ -371,8 +378,13 @@ class DictationForegroundService : Service() {
         pendingAudio = null
         editorToken = null
         pcmBuffer = null
-        if (overlay != null) {
-            setState(DictationUiState(phase = DictationPhase.READY, message = "Overlay bereit."))
+        if (overlayRequested) {
+            setState(
+                DictationUiState(
+                    phase = DictationPhase.READY,
+                    message = if (keyboardVisible) "Overlay bereit." else "Wartet auf Bildschirmtastatur.",
+                ),
+            )
         } else {
             setState(DictationUiState(phase = DictationPhase.DISABLED, message = "Overlay ist ausgeschaltet."))
         }
@@ -384,6 +396,7 @@ class DictationForegroundService : Service() {
             setState(state.copy(message = "Bitte Ergebnis kopieren oder ausdrücklich verwerfen, bevor das Overlay ausgeschaltet wird."))
             return
         }
+        overlayRequested = false
         removeOverlay()
         stopForeground(STOP_FOREGROUND_REMOVE)
         setState(DictationUiState(phase = DictationPhase.DISABLED, message = "Overlay ist ausgeschaltet."))
@@ -398,9 +411,9 @@ class DictationForegroundService : Service() {
     }
 
     private fun setState(state: DictationUiState) {
-        val current = state.copy(overlayEnabled = overlay != null)
+        val current = state.copy(overlayEnabled = overlayRequested)
         DictationRuntime.update(current)
-        if (overlay != null) {
+        if (overlayRequested) {
             val notificationText = when (current.phase) {
                 DictationPhase.DISABLED -> "Overlay ausgeschaltet"
                 DictationPhase.READY -> "Overlay aktiv · Aufnahme nur nach Antippen"
@@ -427,6 +440,23 @@ class DictationForegroundService : Service() {
         overlay?.apply {
             text = label
             contentDescription = current.message
+        }
+    }
+
+    private fun synchronizeOverlayVisibility() {
+        val shouldShow = KeyboardWindowPolicy.shouldShowOverlay(overlayRequested, keyboardVisible)
+        if (shouldShow == (overlay != null)) return
+
+        if (shouldShow) {
+            if (createOverlay()) {
+                setState(DictationRuntime.state.value)
+            } else {
+                overlayRequested = false
+                DictationRuntime.update(DictationRuntime.state.value.copy(overlayEnabled = false))
+            }
+        } else {
+            removeOverlay()
+            DictationRuntime.update(DictationRuntime.state.value.copy(overlayEnabled = overlayRequested))
         }
     }
 
@@ -495,6 +525,14 @@ class DictationForegroundService : Service() {
                     service.recordingFailure = "Zielfeld gewechselt. Aufnahme gestoppt und nicht gesendet."
                     service.stopRecording()
                 }
+            }
+        }
+
+        internal fun onKeyboardVisibilityChanged(visible: Boolean) {
+            val service = runningService ?: return
+            service.serviceScope.launch {
+                service.keyboardVisible = visible
+                service.synchronizeOverlayVisibility()
             }
         }
 

@@ -7,6 +7,7 @@ data class SpikeUiState(
     val hardwareKeyStatus: String = "Noch keine Hardwaretaste erkannt",
     val insertionStatus: String = "Einfügetest nicht gestartet",
     val pendingText: String? = null,
+    val keyboardWindowStatus: String = "Noch keine Tastaturfenster-Messung",
 )
 
 object SpikeProofState {
@@ -15,6 +16,16 @@ object SpikeProofState {
 
     fun reportHardwareKey(status: String) {
         mutableState.value = mutableState.value.copy(hardwareKeyStatus = status)
+    }
+
+    fun reportKeyboardWindow(visible: Boolean) {
+        mutableState.value = mutableState.value.copy(
+            keyboardWindowStatus = if (visible) {
+                "Eingabemethoden-Fenster erkannt"
+            } else {
+                "Kein Eingabemethoden-Fenster erkannt"
+            },
+        )
     }
 
     fun prepareInsertion(text: String) {

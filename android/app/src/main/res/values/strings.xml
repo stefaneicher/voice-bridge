@@ -3,5 +3,5 @@
     <string name="app_name">Voice-Bridge</string>
     <string name="scan_prompt">Voice-Bridge-QR-Code auf dem PC scannen</string>
     <string name="dictation_accessibility_label">Voice-Bridge-Diktat</string>
-    <string name="dictation_accessibility_description">Fügt ein bestätigtes Diktat nur in das ursprüngliche, noch aktive Textfeld ein. Feldinhalte werden nicht gelesen. Passwortfelder werden soweit erkennbar gesperrt.</string>
+    <string name="dictation_accessibility_description">Fügt ein bestätigtes Diktat nur in das ursprüngliche, noch aktive Textfeld ein und erkennt, ob die Bildschirmtastatur geöffnet ist. Android verlangt dafür die allgemeine Fähigkeit zum Abruf von Fensterinhalten. Voice-Bridge prüft ausschliesslich Fenstertypen, liest keine Fensterstruktur oder Feldinhalte und sperrt Passwortfelder soweit erkennbar.</string>
 </resources>

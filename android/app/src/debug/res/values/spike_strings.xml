@@ -4,4 +4,6 @@
     <string name="spike_accessibility_label">Voice-Bridge Diktat-/PTT-Test (Debug)</string>
     <string name="spike_accessibility_description">Beobachtet Lauter und Leiser und gibt die Tasten weiter. Nach Overlay-Tipp wird ein Prüftext eingefügt. Der Dienst liest keine Fensterinhalte.</string>
     <string name="spike_ime_label">Voice-Bridge Einfügetest (Debug)</string>
+    <string name="keyboard_window_probe_label">Voice-Bridge Tastaturfenster-Test (Debug)</string>
+    <string name="keyboard_window_probe_description">Debug-Test: erkennt nur, ob ein Eingabemethoden-Fenster vorhanden ist. Liest weder Fensterstruktur noch Text. Android verlangt für die Fensterliste die allgemeine Fähigkeit zum Abruf von Fensterinhalten.</string>
 </resources>

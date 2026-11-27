@@ -6,9 +6,10 @@ import android.accessibilityservice.InputMethod
 import android.annotation.TargetApi
 import android.os.Build
 import android.view.accessibility.AccessibilityEvent
+import android.view.accessibility.AccessibilityWindowInfo
 import android.view.inputmethod.EditorInfo
 
-/** Provides insertion through Android's accessibility input-method channel without reading field contents. */
+/** Inserts through the accessibility input-method channel and detects keyboards from window types only. */
 @TargetApi(Build.VERSION_CODES.TIRAMISU)
 class DictationAccessibilityService : AccessibilityService() {
     private var dictationInputMethod: DictationInputMethod? = null
@@ -19,18 +20,43 @@ class DictationAccessibilityService : AccessibilityService() {
     override fun onServiceConnected() {
         super.onServiceConnected()
         serviceInfo = serviceInfo.apply {
-            flags = flags or AccessibilityServiceInfo.FLAG_INPUT_METHOD_EDITOR
+            flags = flags or AccessibilityServiceInfo.FLAG_INPUT_METHOD_EDITOR or
+                AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS
         }
         connectedService = this
+        reportKeyboardVisibility()
     }
 
-    override fun onAccessibilityEvent(event: AccessibilityEvent?) = Unit
+    override fun onAccessibilityEvent(event: AccessibilityEvent?) {
+        reportKeyboardVisibility()
+    }
 
-    override fun onInterrupt() = Unit
+    override fun onInterrupt() {
+        updateKeyboardVisibility(false)
+    }
 
     override fun onDestroy() {
+        updateKeyboardVisibility(false)
         if (connectedService === this) connectedService = null
         super.onDestroy()
+    }
+
+    private fun reportKeyboardVisibility() {
+        val currentWindows = windows
+        try {
+            updateKeyboardVisibility(
+                KeyboardWindowPolicy.isInputMethodVisible(
+                    currentWindows.map(AccessibilityWindowInfo::getType),
+                ),
+            )
+        } finally {
+            currentWindows.forEach(AccessibilityWindowInfo::recycle)
+        }
+    }
+
+    private fun updateKeyboardVisibility(visible: Boolean) {
+        keyboardVisible = visible
+        DictationForegroundService.onKeyboardVisibilityChanged(visible)
     }
 
     private fun currentWritableSession(): EditorSessionToken? {
@@ -92,6 +118,11 @@ class DictationAccessibilityService : AccessibilityService() {
     companion object {
         @Volatile
         private var connectedService: DictationAccessibilityService? = null
+
+        @Volatile
+        private var keyboardVisible = false
+
+        fun isKeyboardVisible(): Boolean = keyboardVisible
 
         fun currentWritableSession(): EditorSessionToken? =
             connectedService?.currentWritableSession()

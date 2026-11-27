@@ -91,14 +91,18 @@ fun DictationScreen(
                 if (!microphoneGranted) OutlinedButton(onClick = onRequestMicrophone) { Text("Mikrofon erlauben") }
                 StatusLine(overlayPermission, "Schwebendes Overlay")
                 if (!overlayPermission) OutlinedButton(onClick = onRequestOverlay) { Text("Overlay erlauben") }
-                StatusLine(accessibilityEnabled, "Sicheres Einfügen über Bedienungshilfen")
+                StatusLine(accessibilityEnabled, "Sicheres Einfügen und Tastatur erkennen")
                 if (!accessibilityEnabled) OutlinedButton(onClick = onRequestAccessibility) { Text("Bedienungshilfe aktivieren") }
+                Text(
+                    "Für das automatische Einblenden der Pill erkennt Voice-Bridge nur, ob ein Tastaturfenster geöffnet ist. Android verlangt dafür die allgemeine Fähigkeit zum Abruf von Fensterinhalten. Voice-Bridge liest weder Fensterstruktur noch Text aus anderen Apps; bei Unsicherheit bleibt die Pill verborgen.",
+                    color = VB.Text2,
+                )
                 StatusLine(notificationsGranted, "Aufnahmebenachrichtigung")
                 if (!notificationsGranted) OutlinedButton(onClick = onRequestNotifications) { Text("Benachrichtigungen erlauben") }
             }
             Spacer(Modifier.height(2.dp))
             if (state.overlayEnabled) {
-                Text("Overlay läuft. Aufnahme startet nur nach Antippen.", color = VB.Teal)
+                Text("Diktat-Pill aktiv · erscheint mit der Tastatur. Aufnahme startet nur nach Antippen.", color = VB.Teal)
                 OutlinedButton(
                     onClick = onDisableOverlay,
                     enabled = state.phase != DictationPhase.RECORDING &&
